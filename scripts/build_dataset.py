@@ -571,9 +571,10 @@ def main() -> None:
             ]) + ") ON CONFLICT (car_id) DO UPDATE SET updated_at = EXCLUDED.updated_at;"
         )
         for image in image_samples[car["genmodel_id"]]:
+            curated_image_path = f"dataset/images/{car['car_id']}/{Path(image['image_path']).name}"
             seed_lines.append(
                 "INSERT INTO car_images (image_id, car_id, image_path, view_type) VALUES ("
-                + ", ".join([sql_text(image["image_id"]), sql_text(car["car_id"]), sql_text(image["image_path"]), sql_text(image["view_type"])])
+                + ", ".join([sql_text(image["image_id"]), sql_text(car["car_id"]), sql_text(curated_image_path), sql_text(image["view_type"])])
                 + ") ON CONFLICT (image_id) DO NOTHING;"
             )
     for source in SOURCES:

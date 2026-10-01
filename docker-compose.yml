@@ -15,6 +15,8 @@ services:
       - ./database/002_add_descriptions.sql:/docker-entrypoint-initdb.d/003_add_descriptions.sql:ro
       - ./database/003_enrich_missing_data.sql:/docker-entrypoint-initdb.d/004_enrich_missing_data.sql:ro
       - ./database/004_seed_dealers.sql:/docker-entrypoint-initdb.d/005_seed_dealers.sql:ro
+      - ./database/005_use_curated_image_paths.sql:/docker-entrypoint-initdb.d/006_use_curated_image_paths.sql:ro
+      - ./database/006_verify_seed.sql:/docker-entrypoint-initdb.d/007_verify_seed.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U car_rag -d car_rag"]
       interval: 5s

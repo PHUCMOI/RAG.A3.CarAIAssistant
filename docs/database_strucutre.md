@@ -205,6 +205,10 @@ Docker initialization currently applies:
 4. `002_add_descriptions.sql`
 5. `003_enrich_missing_data.sql`
 6. `004_seed_dealers.sql`
+7. `005_use_curated_image_paths.sql`
+8. `006_verify_seed.sql`
+
+The final two scripts make all image records use the committed `dataset/images` paths, normalize serial sequences and fail the first-time initialization if expected row counts or required business-data invariants are not satisfied.
 
 These initialization files run automatically only when PostgreSQL creates a new empty data volume. Existing volumes require an explicit migration command.
 

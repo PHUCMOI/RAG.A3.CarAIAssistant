@@ -58,11 +58,9 @@ Dữ liệu nghiệp vụ trong PostgreSQL được lưu bằng tiếng Anh. Gia
 
 ## Chạy toàn bộ bằng Docker
 
-Yêu cầu: Docker Desktop và Python 3 nếu cần tạo lại dataset.
+Yêu cầu cho first run: Docker Desktop. SQL seed và curated image dataset đã nằm trong repository; không cần Python hoặc corpus raw để dựng phiên bản hiện tại.
 
 ```powershell
-python scripts/build_dataset.py
-python scripts/validate_dataset.py
 docker compose up --build -d
 ```
 
@@ -253,6 +251,8 @@ Các output chính:
 - `database/004_seed_dealers.sql`
 
 Các script PostgreSQL trong `/docker-entrypoint-initdb.d` chỉ tự chạy khi volume database được tạo lần đầu. Với volume đã tồn tại, cần chạy migration tương ứng theo cách thủ công hoặc dùng migration runner trong tương lai.
+
+First-run database được kiểm tra tự động với expected counts: 50 xe, 215 ảnh, 22 đại lý, 9 bảo hành, 61 nguồn và 0 RAG documents. Bảng `documents` cố ý để trống cho indexing pipeline ở giai đoạn tiếp theo. Xem [`database/README.md`](database/README.md) để biết thứ tự SQL, cách kiểm tra và cách áp dụng migration cho volume đã tồn tại.
 
 ## Build và kiểm tra
 
