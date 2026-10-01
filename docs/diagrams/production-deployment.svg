@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520" role="img" aria-labelledby="title desc">
+  <title id="title">Recommended production deployment</title><desc id="desc">Internet traffic enters through TLS reverse proxy to static web assets and API replicas; API and worker access private PostgreSQL, object storage and AI providers.</desc>
+  <defs><style>.bg{fill:#f8fafc}.public{fill:#e0f2fe;stroke:#0369a1;stroke-width:2}.app{fill:#ccfbf1;stroke:#0f766e;stroke-width:2}.private{fill:#ede9fe;stroke:#7c3aed;stroke-width:2}.group{fill:#fff;stroke:#94a3b8;stroke-width:2;stroke-dasharray:8 6}.t{fill:#0f172a;font:700 16px Arial}.s{fill:#475569;font:13px Arial}.a{stroke:#64748b;stroke-width:2.5;fill:none;marker-end:url(#m)}</style><marker id="m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#64748b"/></marker></defs>
+  <rect class="bg" width="1200" height="520" rx="16"/>
+  <g transform="translate(30 190)"><rect class="public" width="150" height="85" rx="12"/><text class="t" x="43" y="37">Internet</text><text class="s" x="25" y="61">User traffic</text></g>
+  <g transform="translate(245 175)"><rect class="public" width="200" height="115" rx="12"/><text class="t" x="34" y="39">Reverse proxy</text><text class="s" x="49" y="68">TLS + routing</text><text class="s" x="34" y="92">Rate limits / headers</text></g>
+  <path class="a" d="M180 232H245"/>
+  <g transform="translate(500 55)"><rect class="app" width="220" height="100" rx="12"/><text class="t" x="34" y="40">Static React assets</text><text class="s" x="51" y="68">CDN or web host</text></g>
+  <g transform="translate(500 215)"><rect class="app" width="220" height="100" rx="12"/><text class="t" x="38" y="40">ASP.NET API replicas</text><text class="s" x="55" y="68">Stateless runtime</text></g>
+  <g transform="translate(500 375)"><rect class="app" width="220" height="100" rx="12"/><text class="t" x="34" y="40">Background worker</text><text class="s" x="43" y="68">Embedding + ingestion</text></g>
+  <path class="a" d="M445 215C470 215 470 105 500 105"/><path class="a" d="M445 250H500"/>
+  <rect class="group" x="790" y="25" width="380" height="465" rx="16"/><text class="t" x="815" y="58">Private infrastructure / providers</text>
+  <g transform="translate(830 90)"><rect class="private" width="300" height="85" rx="12"/><text class="t" x="42" y="36">Managed PostgreSQL</text><text class="s" x="79" y="60">Private + pgvector</text></g>
+  <g transform="translate(830 215)"><rect class="private" width="300" height="85" rx="12"/><text class="t" x="79" y="36">Object storage</text><text class="s" x="72" y="60">Images and uploads</text></g>
+  <g transform="translate(830 340)"><rect class="private" width="300" height="85" rx="12"/><text class="t" x="87" y="36">AI providers</text><text class="s" x="65" y="60">LLM + embeddings</text></g>
+  <path class="a" d="M720 255C770 255 780 132 830 132"/><path class="a" d="M720 265H830"/><path class="a" d="M720 280C770 280 780 382 830 382"/><path class="a" d="M720 425C770 425 770 150 830 150"/><path class="a" d="M720 430C770 430 780 382 830 382"/>
+</svg>

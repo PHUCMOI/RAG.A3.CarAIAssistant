@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="780" viewBox="0 0 1200 780" role="img" aria-labelledby="title desc">
+  <title id="title">Target grounded RAG request flow</title><desc id="desc">The orchestrator performs structured and vector retrieval in parallel, merges the context, asks an LLM, validates citations and returns a grounded answer.</desc>
+  <defs><style>.bg{fill:#f8fafc}.node{fill:#fff;stroke:#334155;stroke-width:2}.orchestrator{fill:#0f766e;stroke:#115e59;stroke-width:2}.ai{fill:#7c3aed;stroke:#5b21b6;stroke-width:2}.db{fill:#1d4ed8;stroke:#1e40af;stroke-width:2}.t{fill:#0f172a;font:700 16px Arial}.w{fill:#fff;font:700 16px Arial}.s{fill:#475569;font:13px Arial}.a{stroke:#64748b;stroke-width:2.5;fill:none;marker-end:url(#m)}.parallel{fill:#fefce8;stroke:#ca8a04;stroke-width:2}</style><marker id="m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#64748b"/></marker></defs>
+  <rect class="bg" width="1200" height="780" rx="16"/>
+  <g transform="translate(50 45)"><rect class="node" width="190" height="80" rx="12"/><text class="t" x="65" y="33">User</text><text class="s" x="32" y="57">Question + context</text></g>
+  <g transform="translate(340 45)"><rect class="node" width="220" height="80" rx="12"/><text class="t" x="52" y="33">Chat endpoint</text><text class="s" x="43" y="57">Validate + authorize</text></g>
+  <g transform="translate(675 40)"><rect class="orchestrator" width="250" height="90" rx="12"/><text class="w" x="44" y="38">Chat orchestrator</text><text class="s" style="fill:#ccfbf1" x="48" y="65">Intent + filter extraction</text></g>
+  <path class="a" d="M240 85H340"/><path class="a" d="M560 85H675"/>
+  <rect class="parallel" x="115" y="190" width="970" height="245" rx="16"/><text class="t" x="140" y="222">Parallel retrieval</text>
+  <g transform="translate(165 260)"><rect class="node" width="235" height="90" rx="12"/><text class="t" x="41" y="36">Structured search</text><text class="s" x="31" y="62">Cars, dealers, warranty</text></g>
+  <g transform="translate(800 260)"><rect class="node" width="235" height="90" rx="12"/><text class="t" x="57" y="36">Vector search</text><text class="s" x="28" y="62">Embed + pgvector query</text></g>
+  <g transform="translate(485 315)"><rect class="db" width="230" height="90" rx="12"/><text class="w" x="48" y="37">PostgreSQL</text><text class="s" style="fill:#dbeafe" x="36" y="63">Records + ranked chunks</text></g>
+  <path class="a" d="M800 130C800 185 282 175 282 260"/><path class="a" d="M800 130C800 185 918 190 918 260"/><path class="a" d="M400 305C450 305 440 360 485 360"/><path class="a" d="M800 305C750 305 760 360 715 360"/>
+  <g transform="translate(445 495)"><rect class="orchestrator" width="310" height="90" rx="12"/><text class="w" x="54" y="36">Merge + rerank context</text><text class="s" style="fill:#ccfbf1" x="47" y="63">Keep claim-to-source mapping</text></g>
+  <g transform="translate(850 500)"><rect class="ai" width="250" height="80" rx="12"/><text class="w" x="65" y="34">LLM provider</text><text class="s" style="fill:#ede9fe" x="46" y="58">Grounded draft answer</text></g>
+  <g transform="translate(445 650)"><rect class="node" width="310" height="90" rx="12"/><text class="t" x="55" y="35">Validate citations + shape</text><text class="s" x="45" y="62">Answer, cards and references</text></g>
+  <g transform="translate(50 655)"><rect class="node" width="250" height="80" rx="12"/><text class="t" x="52" y="34">Grounded response</text><text class="s" x="36" y="58">Answer + cards + citations</text></g>
+  <path class="a" d="M600 405V495"/><path class="a" d="M755 540H850"/><path class="a" d="M975 580C975 625 755 615 755 695"/><path class="a" d="M445 695H300"/>
+</svg>

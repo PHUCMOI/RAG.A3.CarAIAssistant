@@ -1,0 +1,51 @@
+﻿car_id,genmodel_id,brand,display_name,image_count
+car_29_13,29_13,Ford,Ford Fiesta,5
+car_29_14,29_14,Ford,Ford Focus,5
+car_29_28,29_28,Ford,Ford Mustang,5
+car_29_30,29_30,Ford,Ford Ranger,5
+car_29_4,29_4,Ford,Ford EcoSport,5
+car_29_5,29_5,Ford,Ford Edge,5
+car_29_9,29_9,Ford,Ford Explorer,2
+car_34_1,34_1,Honda,Honda Accord,5
+car_34_11,34_11,Honda,Honda Jazz,5
+car_34_2,34_2,Honda,Honda Civic,5
+car_34_3,34_3,Honda,Honda CR-V,5
+car_34_8,34_8,Honda,Honda HR-V,5
+car_36_1,36_1,Hyundai,Hyundai Accent,1
+car_36_20,36_20,Hyundai,Hyundai Santa Fe,5
+car_36_24,36_24,Hyundai,Hyundai Tucson,5
+car_36_4,36_4,Hyundai,Hyundai Elantra,1
+car_36_8,36_8,Hyundai,Hyundai Grand i10,5
+car_43_1,43_1,Kia,Kia Carens,5
+car_43_10,43_10,Kia,Kia Carnival (Sedona),5
+car_43_11,43_11,Kia,Kia Sorento,5
+car_43_13,43_13,Kia,Kia Sportage,5
+car_43_3,43_3,Kia,Kia K3 (Cerato),4
+car_43_6,43_6,Kia,Kia K5 (Optima),5
+car_43_7,43_7,Kia,Kia Morning (Picanto),5
+car_43_9,43_9,Kia,Kia Rio,5
+car_57_10,57_10,Mazda,Mazda2,5
+car_57_11,57_11,Mazda,Mazda3,5
+car_57_13,57_13,Mazda,Mazda6,5
+car_57_5,57_5,Mazda,Mazda BT-50,4
+car_57_6,57_6,Mazda,Mazda CX-3,5
+car_57_7,57_7,Mazda,Mazda CX-5,5
+car_62_15,62_15,Mitsubishi,Mitsubishi Mirage,5
+car_62_16,62_16,Mitsubishi,Mitsubishi Outlander,5
+car_62_20,62_20,Mitsubishi,Mitsubishi Pajero Sport (Shogun Sport),4
+car_62_7,62_7,Mitsubishi,Mitsubishi Eclipse Cross,1
+car_64_14,64_14,Nissan,Nissan Juke,5
+car_64_19,64_19,Nissan,Nissan Murano,4
+car_64_20,64_20,Nissan,Nissan Navara,5
+car_64_3,64_3,Nissan,Nissan Almera,1
+car_64_41,64_41,Nissan,Nissan X-Trail,5
+car_87_10,87_10,Suzuki,Suzuki Swift,0
+car_87_6,87_6,Suzuki,Suzuki Jimny,3
+car_92_11,92_11,Toyota,Toyota Corolla,5
+car_92_19,92_19,Toyota,Toyota Hilux,5
+car_92_2,92_2,Toyota,Toyota Alphard,5
+car_92_21,92_21,Toyota,Toyota Land Cruiser,5
+car_92_30,92_30,Toyota,Toyota Prius,5
+car_92_34,92_34,Toyota,Toyota RAV4,5
+car_92_44,92_44,Toyota,Toyota Yaris,5
+car_92_9,92_9,Toyota,Toyota Camry,0

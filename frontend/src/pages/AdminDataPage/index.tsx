@@ -1,0 +1,1 @@
+export default function AdminDataPage() { return <div className="page narrow"><div className="state-card"><span className="section-kicker">Administration</span><h1>Quản trị dữ liệu</h1><p>Khung route đã sẵn sàng. Authentication và CRUD chưa được triển khai.</p></div></div> }

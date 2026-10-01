@@ -1,0 +1,15 @@
+**/bin/
+**/obj/
+frontend/node_modules/
+frontend/dist/
+.env
+*.user
+*.suo
+**/__pycache__/
+*.py[cod]
+
+# Raw source corpus is about 936 MB and is not stored in Git.
+# Keep processed manifests and reproducible database seed files tracked.
+data/Confirmed_fronts/
+data/tables_V2.0/
+

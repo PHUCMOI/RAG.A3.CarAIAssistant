@@ -1,0 +1,49 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_DB: car_rag
+      POSTGRES_USER: car_rag
+      POSTGRES_PASSWORD: car_rag_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - car-rag-postgres:/var/lib/postgresql/data
+      - ./database/000_extensions.sql:/docker-entrypoint-initdb.d/000_extensions.sql:ro
+      - ./database/001_schema.sql:/docker-entrypoint-initdb.d/001_schema.sql:ro
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/002_seed.sql:ro
+      - ./database/002_add_descriptions.sql:/docker-entrypoint-initdb.d/003_add_descriptions.sql:ro
+      - ./database/003_enrich_missing_data.sql:/docker-entrypoint-initdb.d/004_enrich_missing_data.sql:ro
+      - ./database/004_seed_dealers.sql:/docker-entrypoint-initdb.d/005_seed_dealers.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U car_rag -d car_rag"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/CarRag.Api/Dockerfile
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=car_rag;Username=car_rag;Password=car_rag_dev
+      FrontendOrigin: http://localhost:5173
+    ports:
+      - "5080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    ports:
+      - "5173:80"
+    depends_on:
+      - api
+
+volumes:
+  car-rag-postgres:
+

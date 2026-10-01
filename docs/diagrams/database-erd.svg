@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">AutoWise database entity relationship diagram</title>
+  <desc id="desc">Sources and cars are central entities connected to images, dealers, warranties, and RAG documents.</desc>
+  <defs>
+    <style>
+      .bg{fill:#f8fafc}.box{fill:#fff;stroke:#334155;stroke-width:2}.head{fill:#0f766e}.head2{fill:#1d4ed8}.title{fill:#fff;font:700 18px Arial}.field{fill:#0f172a;font:14px Consolas,monospace}.rel{stroke:#64748b;stroke-width:2;fill:none;marker-end:url(#arrow)}.label{fill:#475569;font:12px Arial}.badge{fill:#e2e8f0;stroke:#94a3b8}.badgeText{fill:#334155;font:700 11px Arial}
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/></marker>
+  </defs>
+  <rect class="bg" width="1200" height="720" rx="16"/>
+
+  <path class="rel" d="M310 190 C390 190 390 190 470 190"/><text class="label" x="350" y="178">price / presence source</text>
+  <path class="rel" d="M310 250 C420 250 380 475 470 475"/><text class="label" x="330" y="345">source_id</text>
+  <path class="rel" d="M310 280 C380 280 360 625 470 625"/><text class="label" x="325" y="500">source_id</text>
+  <path class="rel" d="M720 180 C820 180 800 155 890 155"/><text class="label" x="775" y="143">car_id</text>
+  <path class="rel" d="M720 245 C815 245 810 350 890 350"/><text class="label" x="785" y="285">car_id</text>
+  <path class="rel" d="M720 280 C810 280 810 585 890 585"/><text class="label" x="785" y="450">car_id</text>
+
+  <g transform="translate(40 80)">
+    <rect class="box" width="270" height="245" rx="10"/><path class="head" d="M10 0h250a10 10 0 0 1 10 10v40H0V10A10 10 0 0 1 10 0z"/><text class="title" x="18" y="32">SOURCES</text>
+    <text class="field" x="18" y="78">source_id       PK</text><text class="field" x="18" y="105">title</text><text class="field" x="18" y="132">url</text><text class="field" x="18" y="159">source_type</text><text class="field" x="18" y="186">supports</text><text class="field" x="18" y="213">checked_at</text>
+  </g>
+  <g transform="translate(470 45)">
+    <rect class="box" width="250" height="325" rx="10"/><path class="head2" d="M10 0h230a10 10 0 0 1 10 10v40H0V10A10 10 0 0 1 10 0z"/><text class="title" x="18" y="32">CARS</text>
+    <text class="field" x="18" y="76">car_id           PK</text><text class="field" x="18" y="102">genmodel_id      UK</text><text class="field" x="18" y="128">brand_name</text><text class="field" x="18" y="154">display_name</text><text class="field" x="18" y="180">description</text><text class="field" x="18" y="206">aliases          JSONB</text><text class="field" x="18" y="232">market_status_vn</text><text class="field" x="18" y="258">price_vnd_from</text><text class="field" x="18" y="284">price_source_id  FK</text><text class="field" x="18" y="310">presence_source_id FK</text>
+  </g>
+  <g transform="translate(890 45)">
+    <rect class="box" width="270" height="215" rx="10"/><path class="head" d="M10 0h250a10 10 0 0 1 10 10v40H0V10A10 10 0 0 1 10 0z"/><text class="title" x="18" y="32">CAR_IMAGES</text>
+    <text class="field" x="18" y="78">image_id        PK</text><text class="field" x="18" y="106">car_id          FK</text><text class="field" x="18" y="134">image_path</text><text class="field" x="18" y="162">view_type</text><text class="field" x="18" y="190">image_embedding vector(512)</text>
+  </g>
+  <g transform="translate(470 405)">
+    <rect class="box" width="250" height="205" rx="10"/><path class="head" d="M10 0h230a10 10 0 0 1 10 10v40H0V10A10 10 0 0 1 10 0z"/><text class="title" x="18" y="32">DEALERS</text>
+    <text class="field" x="18" y="78">dealer_id       PK</text><text class="field" x="18" y="106">name            UK</text><text class="field" x="18" y="134">city / address</text><text class="field" x="18" y="162">supported_brands JSONB</text><text class="field" x="18" y="190">source_id       FK</text>
+  </g>
+  <g transform="translate(890 285)">
+    <rect class="box" width="270" height="195" rx="10"/><path class="head" d="M10 0h250a10 10 0 0 1 10 10v40H0V10A10 10 0 0 1 10 0z"/><text class="title" x="18" y="32">WARRANTIES</text>
+    <text class="field" x="18" y="78">warranty_id     PK</text><text class="field" x="18" y="106">car_id          FK / nullable</text><text class="field" x="18" y="134">brand_name</text><text class="field" x="18" y="162">duration / distance</text><text class="field" x="18" y="188">source_id       FK</text>
+  </g>
+  <g transform="translate(890 520)">
+    <rect class="box" width="270" height="180" rx="10"/><path class="head2" d="M10 0h250a10 10 0 0 1 10 10v40H0V10A10 10 0 0 1 10 0z"/><text class="title" x="18" y="32">DOCUMENTS</text>
+    <text class="field" x="18" y="78">document_id     PK</text><text class="field" x="18" y="106">car_id / source_id FK</text><text class="field" x="18" y="134">section / content</text><text class="field" x="18" y="162">text_embedding vector(768)</text>
+  </g>
+  <g transform="translate(40 655)"><rect class="badge" width="125" height="28" rx="14"/><text class="badgeText" x="16" y="19">PK primary key</text></g>
+  <g transform="translate(180 655)"><rect class="badge" width="125" height="28" rx="14"/><text class="badgeText" x="16" y="19">FK foreign key</text></g>
+  <g transform="translate(320 655)"><rect class="badge" width="105" height="28" rx="14"/><text class="badgeText" x="16" y="19">UK unique</text></g>
+</svg>

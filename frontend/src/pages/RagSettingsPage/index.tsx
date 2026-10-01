@@ -1,0 +1,1 @@
+export default function RagSettingsPage() { return <div className="page narrow"><div className="state-card"><span className="section-kicker">RAG operations</span><h1>Cấu hình RAG</h1><p>Khung route đã sẵn sàng. Documents, embeddings và retrieval test chưa được triển khai.</p></div></div> }

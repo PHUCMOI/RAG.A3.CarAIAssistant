@@ -1,0 +1,2 @@
+import { Link, useParams } from 'react-router-dom'
+export default function SourceDetailPage() { const { sourceId } = useParams(); return <div className="page narrow"><div className="state-card source-state"><span className="section-kicker">Nguồn dữ liệu</span><h1>{sourceId}</h1><p>API chi tiết nguồn sẽ được triển khai ở bước tiếp theo. Source ID này đã được giữ trong URL để nối dữ liệu sau.</p><Link className="button" to="/cars">Quay lại kho xe</Link></div></div> }

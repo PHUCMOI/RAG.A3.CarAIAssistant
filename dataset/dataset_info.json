@@ -1,0 +1,7 @@
+{
+  "car_count": 50,
+  "cars_with_images": 48,
+  "cars_without_images": 2,
+  "image_count": 215,
+  "layout": "images/{car_id}/{original_filename}"
+}
