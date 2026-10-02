@@ -12,7 +12,7 @@ AutoWise là website khám phá và tư vấn ô tô tại Việt Nam, sử dụ
 - Kho dữ liệu 50 mẫu xe.
 - Lọc theo từ khóa, hãng, kiểu xe, số ghế và giá tối đa.
 - Trang chi tiết xe.
-- So sánh từ 2 đến 3 xe.
+- So sánh 2–3 xe, chọn/thay/xóa trên màn hình, xem khác biệt và chia sẻ URL.
 - Danh sách 22 đại lý, lọc theo hãng và thành phố.
 - Chatbot structured retrieval từ PostgreSQL.
 - Responsive cho desktop, tablet và mobile.
@@ -142,6 +142,7 @@ http://localhost:5173/compare?ids=car_34_3,car_57_7
 ```http
 GET  /api/health
 GET  /api/cars?query=&brand=&bodyType=&seats=&maxPrice=&limit=
+GET  /api/cars/compare?ids=id1,id2,id3
 GET  /api/cars/{carId}
 GET  /api/dealers?brand=&city=
 GET  /api/sources
@@ -328,7 +329,7 @@ docker compose up -d --build api web
 2. Chọn embedding model tương thích `vector(768)`.
 3. Triển khai full-text, vector và hybrid retrieval.
 4. Kết nối LLM và kiểm tra citation.
-5. Thêm API comparison chuyên dụng.
+5. Mở rộng bộ chọn xe sang server search/pagination khi dataset tăng.
 6. Lưu chat sessions và messages.
 7. Thêm authentication và trang admin CRUD.
 8. Tạo image embeddings `vector(512)` cho tìm kiếm ảnh.

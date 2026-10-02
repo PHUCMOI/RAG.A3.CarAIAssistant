@@ -11,6 +11,11 @@ export type Car = {
   transmission?: string | null
   seats?: number | null
   engine?: string | null
+  enginePowerHp?: number | null
+  lengthMm?: number | null
+  widthMm?: number | null
+  heightMm?: number | null
+  wheelbaseMm?: number | null
   priceVndFrom?: number | null
   priceAsOf?: string | null
   priceSourceId?: string | null

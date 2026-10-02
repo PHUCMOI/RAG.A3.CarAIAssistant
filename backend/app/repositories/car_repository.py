@@ -38,6 +38,11 @@ def map_car_row(row: Any) -> CarDto:
         transmission=row["transmission"],
         seats=row["seats"],
         engine=row["engine"],
+        enginePowerHp=row.get("engine_power_hp"),
+        lengthMm=row.get("length_mm"),
+        widthMm=row.get("width_mm"),
+        heightMm=row.get("height_mm"),
+        wheelbaseMm=row.get("wheelbase_mm"),
         priceVndFrom=row["price_vnd_from"],
         priceAsOf=price_as_of_str,
         priceSourceId=row["price_source_id"],
@@ -97,6 +102,7 @@ class CarRepository:
         sql = f"""
             SELECT car_id, genmodel_id, brand_name, display_name, description, aliases::text,
                    market_status_vn, body_type, fuel_type, transmission, seats, engine,
+                   engine_power_hp, length_mm, width_mm, height_mm, wheelbase_mm,
                    price_vnd_from, price_as_of, price_source_id, warranty_months, warranty_distance_km,
                    presence_source_id, missing_fields::text, image_count
             FROM cars
@@ -118,6 +124,7 @@ class CarRepository:
         sql = """
             SELECT car_id, genmodel_id, brand_name, display_name, description, aliases::text,
                    market_status_vn, body_type, fuel_type, transmission, seats, engine,
+                   engine_power_hp, length_mm, width_mm, height_mm, wheelbase_mm,
                    price_vnd_from, price_as_of, price_source_id, warranty_months, warranty_distance_km,
                    presence_source_id, missing_fields::text, image_count
             FROM cars
@@ -142,6 +149,7 @@ class CarRepository:
         sql = """
             SELECT car_id, genmodel_id, brand_name, display_name, description, aliases::text,
                    market_status_vn, body_type, fuel_type, transmission, seats, engine,
+                   engine_power_hp, length_mm, width_mm, height_mm, wheelbase_mm,
                    price_vnd_from, price_as_of, price_source_id, warranty_months, warranty_distance_km,
                    presence_source_id, missing_fields::text, image_count
             FROM cars

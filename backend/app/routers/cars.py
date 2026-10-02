@@ -2,8 +2,9 @@ from typing import Optional
 import asyncpg
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from app.core.database import get_db_connection
-from app.models.schemas import CarDto, CarListResponse
+from app.models.schemas import CarDto, CarListResponse, CarComparisonResponse
 from app.repositories.car_repository import CarRepository
+from app.application.compare import InvalidComparison, compare_cars
 
 router = APIRouter(prefix="/cars", tags=["Cars"])
 
@@ -29,6 +30,20 @@ async def list_cars(
         limit=clamped_limit,
     )
     return CarListResponse(count=len(cars), items=cars)
+
+
+@router.get("/compare", response_model=CarComparisonResponse)
+async def compare(
+    ids: str = Query(..., max_length=600),
+    conn: asyncpg.Connection = Depends(get_db_connection),
+):
+    async def get_car(car_id: str):
+        return await CarRepository.get_by_id(conn, car_id)
+
+    try:
+        return await compare_cars([value.strip() for value in ids.split(",")], get_car)
+    except InvalidComparison as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 @router.get("/{car_id}", response_model=CarDto)

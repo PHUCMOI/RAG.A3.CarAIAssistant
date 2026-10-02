@@ -24,6 +24,11 @@ class CarDto(CamelModel):
     transmission: Optional[str] = Field(None, alias="transmission")
     seats: Optional[int] = Field(None, alias="seats")
     engine: Optional[str] = Field(None, alias="engine")
+    engine_power_hp: Optional[int] = Field(None, alias="enginePowerHp")
+    length_mm: Optional[int] = Field(None, alias="lengthMm")
+    width_mm: Optional[int] = Field(None, alias="widthMm")
+    height_mm: Optional[int] = Field(None, alias="heightMm")
+    wheelbase_mm: Optional[int] = Field(None, alias="wheelbaseMm")
     price_vnd_from: Optional[int] = Field(None, alias="priceVndFrom")
     price_as_of: Optional[str] = Field(None, alias="priceAsOf")
     price_source_id: Optional[str] = Field(None, alias="priceSourceId")
@@ -37,6 +42,11 @@ class CarDto(CamelModel):
 class CarListResponse(CamelModel):
     count: int
     items: list[CarDto]
+
+
+class CarComparisonResponse(CamelModel):
+    items: list[CarDto]
+    missing_ids: list[str] = Field(default_factory=list, alias="missingIds")
 
 
 class DealerDto(CamelModel):
