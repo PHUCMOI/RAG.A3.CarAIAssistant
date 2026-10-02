@@ -297,6 +297,8 @@ docker compose up -d --build api web
 
 ## Tài liệu thiết kế
 
+- [`docs/csharp_owner_features.md`](docs/csharp_owner_features.md): thiết kế module C# do bạn owner — đơn hàng, thanh toán, bàn giao, chatbot orchestration và phân tích; chưa triển khai.
+
 - [`docs/spec.md`](docs/spec.md): phạm vi sản phẩm và release plan.
 - [`docs/database_strucutre.md`](docs/database_strucutre.md): database, ERD và index.
 - [`docs/artechture.md`](docs/artechture.md): kiến trúc và RAG flow.
