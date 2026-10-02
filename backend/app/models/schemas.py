@@ -103,6 +103,24 @@ class SourceDto(CamelModel):
     checked_at: str = Field(..., alias="checkedAt")
 
 
+class SourceReference(CamelModel):
+    record_id: str = Field(alias="recordId")
+    label: str
+    car_id: Optional[str] = Field(None, alias="carId")
+
+
+class SourceReferences(CamelModel):
+    cars: list[SourceReference] = Field(default_factory=list)
+    prices: list[SourceReference] = Field(default_factory=list)
+    warranties: list[SourceReference] = Field(default_factory=list)
+    dealers: list[SourceReference] = Field(default_factory=list)
+    documents: list[SourceReference] = Field(default_factory=list)
+
+
+class SourceDetailResponse(SourceDto):
+    references: SourceReferences
+
+
 class SourceListResponse(CamelModel):
     count: int
     items: list[SourceDto]

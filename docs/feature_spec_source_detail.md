@@ -48,3 +48,21 @@
 - Archiving complete source webpages.
 - Automated fact verification.
 
+
+## Implementation — 2026-10-02
+
+Đã triển khai metadata, link ngoài HTTP(S) an toàn, xử lý loading/404/lỗi và retry.
+API detail bổ sung `references` gồm `cars`, `prices`, `warranties`, `dealers`,
+`documents`; mỗi item có `recordId`, `label`, `carId` nullable. Nhóm rỗng không
+hiển thị bảng. Xe/giá/bảo hành theo xe dẫn đến trang xe; đại lý dẫn đến danh sách
+đại lý, còn bảo hành theo hãng và tài liệu không có detail route nên hiển thị tên.
+Không fetch nội dung trang nguồn; nguồn dataset không có nút mở URL.
+
+Validation: 21 backend tests pass (mock DB), frontend build pass, browser checks
+metadata, dataset link suppression, 404 và retry 503. Preview desktop/mobile dùng
+fixture local, không phải bằng chứng PostgreSQL integration. Docker daemon chưa
+chạy nên truy vấn reference SQL chưa được kiểm chứng trên database thực.
+`source-detail-preview.png` là screenshot với fixture kiểm thử.
+
+Phần này chỉ đọc metadata/tham chiếu nguồn; không triển khai RAG retrieval,
+embedding hoặc generation. Phần RAG do hai dev khác phụ trách.

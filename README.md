@@ -17,7 +17,8 @@ AutoWise là website khám phá và tư vấn ô tô tại Việt Nam, sử dụ
 - Chatbot structured retrieval từ PostgreSQL.
 - Responsive cho desktop, tablet và mobile.
 - Swagger/OpenAPI cho backend.
-- API danh sách/chi tiết nguồn và danh sách bảo hành (giao diện nguồn vẫn placeholder).
+- API danh sách/chi tiết nguồn và danh sách bảo hành.
+- Màn hình chi tiết nguồn, phạm vi hỗ trợ và bản ghi tham chiếu.
 - Docker Compose cho toàn bộ hệ thống.
 
 ### Chưa triển khai
@@ -31,7 +32,7 @@ AutoWise là website khám phá và tư vấn ô tô tại Việt Nam, sử dụ
 - Tích hợp nhận diện ảnh vào frontend/API chính. Prototype độc lập nằm tại `image_service/`, cần model runtime tương thích index.
 - Text/image vector search trong API chính; prototype ảnh có FAISS index 512 chiều riêng.
 
-Các route Admin, RAG Settings và Source Detail hiện mới là placeholder giao diện.
+Các route Admin và RAG Settings hiện mới là placeholder giao diện.
 
 ## Công nghệ
 
@@ -124,7 +125,7 @@ Vite sẽ proxy request `/api` đến `http://localhost:5080`.
 | `/compare?ids=...` | So sánh xe | Hoạt động |
 | `/dealers` | Danh sách đại lý | Hoạt động |
 | `/chat` | Chatbot | Structured retrieval |
-| `/sources/:sourceId` | Chi tiết nguồn | Placeholder |
+| `/sources/:sourceId` | Chi tiết nguồn | Hoạt động |
 | `/admin/data` | Quản trị dữ liệu | Placeholder |
 | `/admin/rag` | Cấu hình RAG | Placeholder |
 
@@ -327,7 +328,7 @@ docker compose up -d --build api web
 2. Chọn embedding model tương thích `vector(768)`.
 3. Triển khai full-text, vector và hybrid retrieval.
 4. Kết nối LLM và kiểm tra citation.
-5. Thêm API nguồn, bảo hành và comparison chuyên dụng.
+5. Thêm API comparison chuyên dụng.
 6. Lưu chat sessions và messages.
 7. Thêm authentication và trang admin CRUD.
 8. Tạo image embeddings `vector(512)` cho tìm kiếm ảnh.
