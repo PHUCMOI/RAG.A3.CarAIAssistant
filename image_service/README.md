@@ -289,13 +289,13 @@ Service hỗ trợ tinh chỉnh hành vi thông qua biến môi trường hoặc
 
 ## 5. Chạy chung với toàn bộ hệ thống AutoWise
 
-Service đã được cấu hình sẵn trong file [`docker-compose.yml`](../docker-compose.yml) ở thư mục gốc của repository. Để khởi động toàn bộ ứng dụng gồm Database Postgres, Backend C#, Frontend React và Image Service Python:
+Service đã được cấu hình sẵn trong file [`docker-compose.yml`](../docker-compose.yml) ở thư mục gốc của repository. Để khởi động toàn bộ ứng dụng gồm Database Postgres, Backend Python/FastAPI, Frontend React và Image Service Python:
 
 ```bash
-docker compose up -d
+docker compose --profile image up -d
 ```
 Cổng dịch vụ:
 * Frontend Web: `http://localhost:5173`
-* Backend API C#: `http://localhost:5080`
+* Backend API Python/FastAPI: `http://localhost:5080`
 * **Image Retrieval Service**: `http://localhost:8000`
 * PostgreSQL / pgvector: `localhost:5432`

@@ -1,10 +1,6 @@
-**/bin/
-**/obj/
 frontend/node_modules/
 frontend/dist/
 .env
-*.user
-*.suo
 **/__pycache__/
 *.py[cod]
 
@@ -16,3 +12,6 @@ data/tables_V2.0/
 
 .venv/
 .pytest_cache/
+
+# Exclude local build artifacts left by the previous backend.
+backend/CarRag.Api/

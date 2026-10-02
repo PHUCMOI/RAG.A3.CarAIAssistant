@@ -395,18 +395,18 @@ Python scripts phù hợp cho offline ingestion/experimentation. Runtime query o
 Tên cấu hình đề xuất:
 
 ```text
-Rag__Enabled
-Rag__TextTopK
-Rag__LexicalCandidateCount
-Rag__VectorCandidateCount
-Rag__FinalContextCount
-Rag__MaxContextCharacters
-Rag__MinimumRetrievalScore
-Rag__EmbeddingModel
-Rag__EmbeddingDimension
-Rag__ImageEmbeddingModel
-Rag__ImageEmbeddingDimension
-Rag__DocumentTemplateVersion
+RAG_ENABLED
+RAG_TEXT_TOP_K
+RAG_LEXICAL_CANDIDATE_COUNT
+RAG_VECTOR_CANDIDATE_COUNT
+RAG_FINAL_CONTEXT_COUNT
+RAG_MAX_CONTEXT_CHARACTERS
+RAG_MINIMUM_RETRIEVAL_SCORE
+RAG_EMBEDDING_MODEL
+RAG_EMBEDDING_DIMENSION
+RAG_IMAGE_EMBEDDING_MODEL
+RAG_IMAGE_EMBEDDING_DIMENSION
+RAG_DOCUMENT_TEMPLATE_VERSION
 AI__LlmProvider
 AI__LlmModel
 AI__EmbeddingProvider

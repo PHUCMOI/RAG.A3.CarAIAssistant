@@ -4,18 +4,28 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 from app.core import database
-from app.core.config import Settings, parse_ado_connection_string
+from app.core.config import Settings
 
 
-def test_legacy_cors_setting(monkeypatch):
-    monkeypatch.setenv("FrontendOrigin", "https://example.test")
-    monkeypatch.delenv("FRONTEND_ORIGIN", raising=False)
+def test_cors_setting(monkeypatch):
+    monkeypatch.setenv("FRONTEND_ORIGIN", "https://example.test")
     assert Settings(_env_file=None).frontend_origin == "https://example.test"
 
 
 def test_connection_password_is_url_encoded():
-    dsn = parse_ado_connection_string("Host=localhost;Username=user;Password=a@b/#%;Database=car_rag")
-    assert "user:a%40b%2F%23%25@localhost" in dsn
+    settings = Settings(_env_file=None, database_url=None,
+                        postgres_user="user", postgres_password="a@b/#%")
+    assert "user:a%40b%2F%23%25@localhost" in settings.get_postgres_dsn()
+
+
+def test_database_url_takes_precedence():
+    url = "postgresql://user:password@db:5432/catalogue"
+    assert Settings(_env_file=None, database_url=url).get_postgres_dsn() == url
+
+
+def test_non_url_database_setting_is_rejected():
+    with pytest.raises(ValueError, match="DATABASE_URL must be a PostgreSQL URL"):
+        Settings(_env_file=None, database_url="Host=localhost;Database=car_rag")
 
 
 @pytest.mark.asyncio

@@ -59,7 +59,7 @@ app.add_middleware(
 
 @app.get("/swagger", include_in_schema=False)
 async def swagger_redirect():
-    """Redirect /swagger to /docs for ASP.NET / C# Swagger parity."""
+    """Redirect the existing Swagger URL to the FastAPI docs."""
     return RedirectResponse(url="/docs")
 
 

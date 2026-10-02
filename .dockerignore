@@ -1,7 +1,6 @@
-**/bin
-**/obj
 **/node_modules
 **/dist
 data
 .git
 .env
+backend/CarRag.Api

@@ -338,7 +338,8 @@ docker compose up -d --build api web
 Backend chính dùng Python 3.12+, FastAPI, Pydantic và asyncpg. Router xử lý HTTP,
 repository giữ SQL có tham số, application layer giữ orchestration chat qua Protocol.
 API giữ `/api` và JSON camelCase cho frontend; `/swagger` chuyển đến `/docs`.
-`DATABASE_URL` là cấu hình ưu tiên; `ConnectionStrings__Postgres` được giữ để tương thích.
+`DATABASE_URL` nhận PostgreSQL URL; nếu không đặt, API dùng các biến `POSTGRES_HOST`,
+`POSTGRES_PORT`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`.
 Dùng `FRONTEND_ORIGIN` cho CORS. File `.env` được đọc theo working directory.
 
 Chạy kiểm tra từ root:
