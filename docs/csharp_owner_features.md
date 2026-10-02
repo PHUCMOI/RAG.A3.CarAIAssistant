@@ -391,6 +391,12 @@ O-01–O-05 đã có service C#, màn hình, migrations và seed; O-06–O-08 ch
 
 Chạy `docker compose up --build -d`, mở http://localhost:5173/login.
 Admin quản lý tại `/admin/orders`, `/admin/customers`; khách xem `/account/orders`.
+Cổng admin đăng nhập tại `/admin/login`; `/admin` chuyển tới `/admin/orders`.
+Admin có layout/menu/footer riêng, không có link sang catalogue hoặc site khách hàng.
+Site khách hàng dùng layout public, không có link quản trị. Tài khoản Admin truy cập
+route khách hàng được chuyển về `/admin/orders`; Customer truy cập `/admin/*` được
+chuyển về `/account/orders`. Chưa đăng nhập vào trang admin được chuyển về `/admin/login`.
+Các route `/admin/data` và `/admin/rag` cũng nằm sau guard Admin; hiện vẫn là placeholder.
 C# health: http://localhost:5090/api/orders-service/health. Python vẫn ở cổng 5080.
 
 Demo: `admin@autowise.test` / `DemoAdmin!2026`; khách `customer1@autowise.test`

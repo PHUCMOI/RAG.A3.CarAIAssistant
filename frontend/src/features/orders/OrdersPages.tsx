@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import type { Car, CarListResponse } from "../../entities/car/model";
 import { formatVnd } from "../../shared/formatting/currency";
 import { formatDate } from "../../shared/formatting/date";
@@ -42,21 +42,22 @@ function Guard({
       <div className="page narrow">
         <div className="state-card">
           <h1>Đăng nhập để xem đơn</h1>
-          <Link className="button" to="/login">
+          <Link className="button" to={admin ? "/admin/login" : "/login"}>
             Đăng nhập
           </Link>
         </div>
       </div>
     );
-  if (admin && user.role !== "Admin")
+  if (user.role !== (admin ? "Admin" : "Customer"))
     return (
-      <div className="page">
-        <ErrorState message="Trang này dành cho quản trị viên." />
-      </div>
+      <Navigate
+        to={user.role === "Admin" ? "/admin/orders" : "/account/orders"}
+        replace
+      />
     );
   return <>{children}</>;
 }
-export function LoginPage() {
+export function LoginPage({ admin = false }: { admin?: boolean }) {
   const { user, refresh } = useOrdersSession();
   const navigate = useNavigate();
   const [error, setError] = useState("");
@@ -82,8 +83,10 @@ export function LoginPage() {
   return (
     <div className="page narrow">
       <div className="content-panel orders-panel">
-        <span className="section-kicker">Đơn mua xe</span>
-        <h1>Đăng nhập</h1>
+        <span className="section-kicker">
+          {admin ? "Cổng quản trị" : "Tài khoản khách hàng"}
+        </span>
+        <h1>{admin ? "Đăng nhập quản trị" : "Đăng nhập"}</h1>
         {user ? (
           <>
             <p>Đang đăng nhập: {user.displayName}</p>
@@ -181,7 +184,10 @@ function OrderList({ admin }: { admin: boolean }) {
         <p>Theo dõi thanh toán, tiến độ và lịch bàn giao.</p>
       </div>
       <div className="orders-toolbar">
-        <Link className="button secondary" to="/login">
+        <Link
+          className="button secondary"
+          to={admin ? "/admin/login" : "/login"}
+        >
           Tài khoản
         </Link>
         {admin && (
@@ -715,12 +721,14 @@ function Detail({ admin }: { admin: boolean }) {
             <dt>Ngày tạo</dt>
             <dd>{formatDate(order.createdAt)}</dd>
           </dl>
-          <Link
-            className="text-link"
-            to={`/cars/${encodeURIComponent(order.carId)}`}
-          >
-            Xem catalogue hiện tại →
-          </Link>
+          {!admin && (
+            <Link
+              className="text-link"
+              to={`/cars/${encodeURIComponent(order.carId)}`}
+            >
+              Xem catalogue hiện tại →
+            </Link>
+          )}
           <p className="orders-help">
             Thông tin trên đơn là snapshot và giá giao dịch đã chốt; catalogue
             có thể thay đổi.
@@ -1016,13 +1024,29 @@ function Detail({ admin }: { admin: boolean }) {
       <section className="content-panel orders-section">
         <h2>Lịch sử cập nhật</h2>
         <ol className="orders-timeline">
-          {[...order.history].sort((a,b)=>new Date(b.at).getTime()-new Date(a.at).getTime()).map((event, index) => (
-            <li key={index}>
-              <time>{new Date(event.at).toLocaleString("vi-VN")}</time>
-              <strong>{({created:"Tạo đơn",status:"Cập nhật trạng thái",delivery:"Cập nhật lịch bàn giao",delivery_actual:"Bàn giao thực tế",payment_created:"Ghi nhận giao dịch",payment_confirmed:"Xác nhận giao dịch",payment_failed:"Giao dịch thất bại",draft_updated:"Cập nhật giá chốt",seed_catalogue_corrected:"Cập nhật dữ liệu demo"} as Record<string,string>)[event.action] || "Cập nhật đơn"}</strong>
-              <p>{event.detail}</p>
-            </li>
-          ))}
+          {[...order.history]
+            .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
+            .map((event, index) => (
+              <li key={index}>
+                <time>{new Date(event.at).toLocaleString("vi-VN")}</time>
+                <strong>
+                  {(
+                    {
+                      created: "Tạo đơn",
+                      status: "Cập nhật trạng thái",
+                      delivery: "Cập nhật lịch bàn giao",
+                      delivery_actual: "Bàn giao thực tế",
+                      payment_created: "Ghi nhận giao dịch",
+                      payment_confirmed: "Xác nhận giao dịch",
+                      payment_failed: "Giao dịch thất bại",
+                      draft_updated: "Cập nhật giá chốt",
+                      seed_catalogue_corrected: "Cập nhật dữ liệu demo",
+                    } as Record<string, string>
+                  )[event.action] || "Cập nhật đơn"}
+                </strong>
+                <p>{event.detail}</p>
+              </li>
+            ))}
         </ol>
       </section>
     </div>
