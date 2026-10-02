@@ -1,6 +1,6 @@
 # Đặc tả features C# do bạn owner
 
-Ngày: 2026-10-02. Trạng thái: thiết kế đề xuất, **chưa triển khai**.
+Ngày: 2026-10-02. Trạng thái: đã triển khai local **O-01 đến O-05**. Chatbot và dashboard là thiết kế cho giai đoạn sau.
 
 ## 1. Hướng sản phẩm
 
@@ -16,8 +16,8 @@ Luồng demo chính:
 
 1. Admin tạo đơn cho khách, chọn xe từ catalogue Python và ghi giá chốt.
 2. Admin xác nhận đơn, ghi nhận thanh toán, cập nhật tiến độ và lịch bàn giao.
-3. Khách đăng nhập, xem đơn của mình và hỏi chatbot về tiến độ/số tiền còn lại.
-4. Admin xem dashboard, hỏi chatbot về số đơn, giá trị đơn và tiền đã thu.
+3. Khách đăng nhập, xem đơn của mình, số tiền còn lại và lịch bàn giao.
+4. Giai đoạn sau: chatbot tra cứu và dashboard thống kê.
 
 ## 2. Ranh giới ownership
 
@@ -45,7 +45,7 @@ Python backend tiếp tục chạy; thêm service C# mới, không khôi phục 
 | O-03 | Khách theo dõi đơn | Xem xe, giá chốt, thanh toán và tiến độ | MVP |
 | O-04 | Ghi nhận thanh toán/hoàn tiền | Theo dõi số tiền đúng theo giao dịch đã xác nhận | MVP |
 | O-05 | Quản lý bàn giao | Lịch dự kiến/thực tế và các đơn chậm bàn giao | MVP |
-| O-06 | Chatbot tra cứu | Hỏi đơn của mình qua ngôn ngữ tự nhiên | MVP |
+| O-06 | Chatbot tra cứu | Hỏi đơn của mình qua ngôn ngữ tự nhiên | Chưa triển khai |
 | O-07 | Dashboard kinh doanh | Thống kê theo thời gian, xe và đại lý | Giai đoạn 2 |
 | O-08 | Chatbot phân tích | Hỏi thống kê qua các tool được kiểm soát | Giai đoạn 2 |
 
@@ -75,7 +75,7 @@ Nếu khách có nhiều đơn, chatbot hiển thị lựa chọn đơn trước
 
 ### 5.1 Tạo đơn
 
-MVP: mỗi đơn chứa một xe, số lượng 1; schema có order items để có thể mở rộng sau.
+MVP: mỗi đơn chứa một xe, số lượng 1; snapshot xe nằm trong aggregate đơn JSONB.
 Admin chọn `carId`/`dealerId` từ Python, nhập giá chốt VND và tiền cọc yêu cầu.
 Không lấy giá catalogue làm giá giao dịch mặc định mà không xác nhận.
 
@@ -85,7 +85,7 @@ Không giữ transaction database mở trong lúc gọi Python.
 
 Đơn lưu snapshot tên xe, hãng, đại lý, tên phiên bản nếu đã được xác nhận,
 giá chốt và nguồn tham khảo tại thời điểm tạo. `carId` chỉ là tham chiếu ngoài,
-không có foreign key xuyên database. Catalogue thay đổi hoặc xóa xe không làm
+không có foreign key tới schema common. Catalogue thay đổi hoặc xóa xe không làm
 mất/sửa lịch sử đơn. Không tự suy ra phiên bản từ dữ liệu cấp model.
 
 Khách hàng/xe/giá chốt chỉ sửa khi đơn còn `pending_confirmation` và chưa có giao
@@ -109,8 +109,8 @@ stateDiagram-v2
 
 - `completed` chỉ khi đã bàn giao và thanh toán đủ số tiền cần thu.
 - `cancelled` và `completed` là trạng thái cuối trong MVP; không quay ngược tùy ý.
-- Hủy đơn có tiền đã thu phải kèm phương án xử lý/hoàn tiền rõ ràng. Số tiền chưa
-  hoàn vẫn hiển thị; hủy không tự sinh giao dịch hoàn tiền hoặc xóa thanh toán.
+- Hủy đơn chỉ được phép sau khi đã hoàn hết tiền (đã thu ròng = 0).
+  Hủy không tự sinh giao dịch hoàn tiền hoặc xóa thanh toán.
 - Mỗi lần đổi trạng thái ghi người thực hiện, thời điểm và lý do.
 - Quy tắc chuyển trạng thái nằm trong domain/application C#, không nằm trong LLM.
 
@@ -135,7 +135,7 @@ Công thức trên đơn:
 - Đơn đã hủy không hiển thị số dư như khoản phải thu bình thường; hiển thị số tiền
   đang giữ và kế hoạch xử lý. MVP chỉ hỗ trợ hủy hoàn toàn, không tính phí hủy.
 
-Chống ghi nhận hai lần bằng unique mã tham chiếu theo nguồn giao dịch và
+Chống ghi nhận hai lần bằng unique mã tham chiếu toàn module và
 idempotency key cho request mutation. Kiểm tra tiền và ghi giao dịch trong cùng
 transaction; dùng concurrency control để hai admin không cùng xác nhận vượt hạn mức.
 
@@ -223,9 +223,17 @@ bằng chứng trạng thái cuối tháng trước.
 
 ## 8. Dữ liệu C# sở hữu
 
-Dùng PostgreSQL database riêng cho module Orders; migrations do EF Core quản lý.
-Có thể dùng chung PostgreSQL instance ở local nhưng tách database và DB account.
-Đề xuất .NET/ASP.NET Core + EF Core; phiên bản framework/package chốt khi triển khai.
+C# và Python dùng chung **database `car_rag`**, cùng DB account ở local.
+C# sở hữu schema `orders_service`; EF Core quản lý migration và bảng
+`orders_service.__EFMigrationsHistory`. Common Python giữ các bảng hiện có;
+C# lấy catalogue qua HTTP API Python. Triển khai dùng ASP.NET Core/.NET 10, EF Core và Npgsql.
+
+Bản MVP hiện có bốn bảng: `users` (Admin/Customer, mật khẩu hash), `orders`
+(id/code/customer/status/version/createdAt và aggregate JSONB), `payment_references`
+(unique toàn module) và `idempotency_requests` (actor/key/hash/response).
+Snapshot xe/đại lý, payments, lịch bàn giao và lịch sử nằm trong JSONB của đơn.
+Mutation dùng transaction, khóa hàng `FOR UPDATE`, version và idempotency.
+Bảng bên dưới là hướng chuẩn hóa/mở rộng khi làm analytics và chatbot, chưa tạo đầy đủ trong MVP.
 
 | Bảng | Các trường/quy tắc chính |
 |---|---|
@@ -242,7 +250,7 @@ Có thể dùng chung PostgreSQL instance ở local nhưng tách database và DB
 
 Số tiền dùng số nguyên VND (`long`/bigint), không dùng floating point. ID transaction
 nội bộ không dựa vào mã đơn dễ đoán để kiểm tra quyền. Snapshot/version được quản lý
-bằng application/domain rules, không có foreign key tới DB Python.
+bằng application/domain rules, không có foreign key tới bảng common Python.
 
 ## 9. API C# đề xuất
 
@@ -264,7 +272,8 @@ Reverse proxy chuyển hai prefix này tới C#, giữ `/api/cars`, `/api/source
 | `PATCH /api/orders-service/admin/orders/{id}` | Admin: sửa draft theo quy tắc, version |
 | `POST /api/orders-service/admin/orders/{id}/transitions` | Admin: đổi trạng thái có version/lý do |
 | `POST /api/orders-service/admin/orders/{id}/payments` | Admin: ghi giao dịch pending/failed |
-| `POST /api/orders-service/admin/payments/{id}/confirm` | Admin: xác nhận receipt/refund, version/idempotency |
+| `POST /api/orders-service/admin/orders/{id}/payments/{paymentId}/confirm` | Admin: xác nhận receipt/refund, version/idempotency |
+| `POST /api/orders-service/admin/orders/{id}/payments/{paymentId}/fail` | Admin: đánh dấu pending thất bại, có lý do |
 | `PUT /api/orders-service/admin/orders/{id}/delivery` | Admin: cập nhật lịch có version/audit |
 | `GET /api/orders-service/admin/analytics/summary` | Admin: KPI với khoảng thời gian |
 | `GET /api/orders-service/admin/analytics/by-car` | Admin: breakdown có metric/filter |
@@ -376,4 +385,56 @@ Không cần chờ RAG để hoàn thành bước 1–6.
 - Provider LLM nếu dùng sau MVP template; chỉ gửi dữ liệu tối thiểu đã được phân quyền.
 - Hợp đồng retrieval common và giới hạn trách nhiệm với hai dev RAG.
 
-Document này chưa tạo service C#, chưa seed thêm dữ liệu và chưa đổi API/common Python.
+O-01–O-05 đã có service C#, màn hình, migrations và seed; O-06–O-08 chưa triển khai.
+
+## 13. Chạy bản đã triển khai
+
+Chạy `docker compose up --build -d`, mở http://localhost:5173/login.
+Admin quản lý tại `/admin/orders`, `/admin/customers`; khách xem `/account/orders`.
+C# health: http://localhost:5090/api/orders-service/health. Python vẫn ở cổng 5080.
+
+Demo: `admin@autowise.test` / `DemoAdmin!2026`; khách `customer1@autowise.test`
+đến `customer6@autowise.test` / `DemoCustomer!2026`.
+Seed gồm 7 tài khoản và 120 đơn giả từ tháng 5–8/2026, 20 đơn/khách:
+draft, confirmed, preparing, ready, completed, cancelled, refund, trễ và receipt failed.
+Snapshot lấy hai xe/hai đại lý qua API Python. ID demo cố định; chạy lại bỏ qua
+bản ghi đã có, giữ nguyên tài khoản/đơn đã chỉnh. Migration áp dụng trên DB hiện có.
+Tạo đơn kiểm tra đại lý có hỗ trợ hãng xe. Seed dùng Honda My Dinh và Mazda Pham Van Dong;
+các snapshot demo chưa từng được admin chỉnh từ bản seed đầu được sửa về đại lý đúng hãng.
+
+`OrdersDatabase` trỏ cùng DB `car_rag`; `PythonApiUrl` trỏ Python.
+`MigrateOnStartup=true` và `SeedDemo=true` chỉ chạy trong Development.
+Production chạy EF migration trước khi start, không seed demo, dùng HTTPS.
+
+```powershell
+cd services/owner-features
+dotnet tool restore
+dotnet ef database update --project src/AutoWise.OwnerFeatures.Infrastructure --startup-project src/AutoWise.OwnerFeatures.Api
+```
+
+Đặt `OrdersDatabase` theo môi trường trước lệnh migration; mặc định local dùng `car_rag`.
+Cookie session HttpOnly/SameSite Strict; mutation cần token từ
+`GET /api/orders-service/auth/csrf` qua header `X-CSRF-TOKEN`.
+Mutation đơn cần thêm `Idempotency-Key` 8–100 ký tự và version mới nhất.
+Không có đăng ký public hoặc tự cấp quyền Admin.
+
+Danh sách đơn có `page`, `pageSize` (1–100), `status`, `query` tìm mã,
+`delayed=true` lọc ngày dự kiến trước hôm nay UTC+7, loại completed/cancelled.
+Chỉ hủy sau khi đã hoàn hết tiền. Đơn completed/cancelled không ghi thêm thanh toán.
+Xác nhận thu tiền không vượt giá chốt; hoàn tiền không vượt receipt gốc.
+Bàn giao thực tế cần trạng thái ready, thanh toán đủ và thời điểm không ở tương lai.
+Giá chốt do admin nhập; cọc nằm trong tổng giá. MVP ghi tiền thủ công.
+
+API confirm thực tế: `POST /api/orders-service/admin/orders/{id}/payments/{paymentId}/confirm`;
+API fail cùng đường dẫn kết thúc `/fail`, cần lý do. Analytics/assistant mới là thiết kế.
+
+```powershell
+dotnet test services/owner-features/AutoWise.OwnerFeatures.sln
+python services/owner-features/tests/smoke_orders.py
+npm --prefix frontend run build
+python -m pytest backend/tests -q
+```
+
+Smoke cần `httpx`, hệ thống local đang chạy; tạo thêm một đơn demo để kiểm tra
+phân quyền, CSRF, idempotency, đồng thời, thanh toán và bàn giao.
+Đặt `ORDERS_URL=http://localhost:5173` để kiểm tra qua proxy frontend.

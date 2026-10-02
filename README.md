@@ -365,3 +365,12 @@ docker compose --profile image up --build -d
 Dịch vụ này dùng cổng 8000 và snapshot/index riêng. Frontend chưa gọi dịch vụ;
 `imageName` trên `/api/chat` chỉ là tên file, không phải upload hoặc nhận diện ảnh.
 Đổi embedding model cần tạo lại index bằng cùng model và preprocessing.
+
+## Module đơn hàng C#
+
+Đã triển khai đăng nhập/phân quyền, admin đơn/khách hàng, khách theo dõi đơn,
+ghi nhận thu/hoàn tiền và quản lý bàn giao. C# cùng Python dùng DB `car_rag`;
+các bảng C# nằm trong schema `orders_service`. Chạy `docker compose up --build -d`
+để chạy migration và seed demo trong Development, mở http://localhost:5173/login.
+Xem [đặc tả và hướng dẫn](docs/csharp_owner_features.md) để lấy tài khoản demo.
+Chatbot/dashboard chưa triển khai.

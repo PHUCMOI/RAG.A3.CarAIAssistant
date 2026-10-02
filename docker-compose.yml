@@ -33,8 +33,31 @@ services:
       FRONTEND_ORIGIN: http://localhost:5173
     ports:
       - "5080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
     depends_on:
       postgres:
+        condition: service_healthy
+
+  orders-api:
+    build:
+      context: .
+      dockerfile: services/owner-features/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      OrdersDatabase: Host=postgres;Database=car_rag;Username=car_rag;Password=car_rag_dev
+      PythonApiUrl: http://api:8080/
+      MigrateOnStartup: "true"
+      SeedDemo: "true"
+    ports:
+      - "127.0.0.1:5090:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      api:
         condition: service_healthy
 
   web:
@@ -45,6 +68,7 @@ services:
       - "5173:80"
     depends_on:
       - api
+      - orders-api
 
   image-service:
     profiles: ["image"]

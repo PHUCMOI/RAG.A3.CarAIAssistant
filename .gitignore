@@ -15,3 +15,8 @@ data/tables_V2.0/
 
 # Exclude local build artifacts left by the previous backend.
 backend/CarRag.Api/
+
+**/bin/
+**/obj/
+
+services/owner-features/.tools/

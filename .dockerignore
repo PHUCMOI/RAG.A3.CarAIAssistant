@@ -4,3 +4,8 @@ data
 .git
 .env
 backend/CarRag.Api
+
+**/bin
+**/obj
+
+services/owner-features/.tools

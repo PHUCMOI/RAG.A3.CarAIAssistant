@@ -1,0 +1,58 @@
+using Microsoft.EntityFrameworkCore;
+namespace AutoWise.OwnerFeatures.Infrastructure;
+
+public sealed class OrdersDb(DbContextOptions<OrdersDb> options) : DbContext(options)
+{
+    public DbSet<UserRecord> Users => Set<UserRecord>();
+    public DbSet<OrderRecord> Orders => Set<OrderRecord>();
+    public DbSet<RequestRecord> Requests => Set<RequestRecord>();
+    public DbSet<PaymentReference> PaymentReferences => Set<PaymentReference>();
+    protected override void OnModelCreating(ModelBuilder b)
+    {
+        b.HasDefaultSchema("orders_service");
+        b.Entity<UserRecord>().ToTable("users", t => t.HasCheckConstraint("CK_users_Role", "\"Role\" IN ('Admin','Customer')"));
+        b.Entity<UserRecord>().HasIndex(x => x.Email).IsUnique();
+        b.Entity<OrderRecord>().ToTable("orders", t => t.HasCheckConstraint("CK_orders_Version", "\"Version\" > 0"));
+        b.Entity<OrderRecord>().HasIndex(x => x.Code).IsUnique();
+        b.Entity<OrderRecord>().HasIndex(x => new { x.CustomerId, x.CreatedAt });
+        b.Entity<OrderRecord>().Property(x => x.Payload).HasColumnType("jsonb");
+        b.Entity<OrderRecord>().Property(x => x.Version).IsConcurrencyToken();
+        b.Entity<OrderRecord>().HasOne<UserRecord>().WithMany().HasForeignKey(x => x.CustomerId).OnDelete(DeleteBehavior.Restrict);
+        b.Entity<RequestRecord>().ToTable("idempotency_requests");
+        b.Entity<RequestRecord>().HasKey(x => x.Key);
+        b.Entity<RequestRecord>().Property(x => x.Response).HasColumnType("jsonb");
+        b.Entity<PaymentReference>().ToTable("payment_references");
+        b.Entity<PaymentReference>().HasKey(x => x.Reference);
+        b.Entity<PaymentReference>().HasOne<OrderRecord>().WithMany().HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
+    }
+}
+public sealed class UserRecord
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public string Email { get; set; } = "";
+    public string DisplayName { get; set; } = "";
+    public string PasswordHash { get; set; } = "";
+    public string Role { get; set; } = "Customer";
+}
+public sealed class OrderRecord
+{
+    public Guid Id { get; set; }
+    public string Code { get; set; } = "";
+    public Guid CustomerId { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public string Status { get; set; } = "pending_confirmation";
+    public long Version { get; set; }
+    public string Payload { get; set; } = "{}";
+}
+public sealed class RequestRecord
+{
+    public string Key { get; set; } = "";
+    public string Hash { get; set; } = "";
+    public string Response { get; set; } = "{}";
+    public DateTimeOffset At { get; set; } = DateTimeOffset.UtcNow;
+}
+public sealed class PaymentReference
+{
+    public string Reference { get; set; } = "";
+    public Guid OrderId { get; set; }
+}
