@@ -1,0 +1,45 @@
+image_id,car_id,view_type,split,raw_path
+92_44$$1484$$1,car_92_44,0,test,images/car_92_44/Toyota$$Yaris$$2003$$Blue$$92_44$$1484$$image_1.jpg
+92_30$$20$$0,car_92_30,0,test,images/car_92_30/Toyota$$Prius$$2007$$Bronze$$92_30$$20$$image_0.jpg
+92_34$$341$$2,car_92_34,0,test,images/car_92_34/Toyota$$RAV4$$2011$$Beige$$92_34$$341$$image_2.jpg
+92_19$$262$$8,car_92_19,0,test,images/car_92_19/Toyota$$Hilux$$2008$$Silver$$92_19$$262$$image_8.jpg
+92_21$$284$$8,car_92_21,0,test,images/car_92_21/Toyota$$Land Cruiser$$2006$$Black$$92_21$$284$$image_8.jpg
+92_11$$45$$0,car_92_11,0,test,images/car_92_11/Toyota$$Corolla$$2003$$Black$$92_11$$45$$image_0.jpg
+92_2$$31$$5,car_92_2,0,test,images/car_92_2/Toyota$$Alphard$$2007$$Black$$92_2$$31$$image_5.jpg
+34_3$$671$$19,car_34_3,0,test,images/car_34_3/Honda$$CR-V$$2007$$Black$$34_3$$671$$image_19.jpg
+34_11$$422$$5,car_34_11,0,test,images/car_34_11/Honda$$Jazz$$2006$$Black$$34_11$$422$$image_5.jpg
+34_2$$740$$6,car_34_2,0,test,images/car_34_2/Honda$$Civic$$2009$$Black$$34_2$$740$$image_6.jpg
+34_8$$417$$0,car_34_8,0,test,images/car_34_8/Honda$$HR-V$$2015$$Black$$34_8$$417$$image_0.jpg
+34_1$$88$$11,car_34_1,0,test,images/car_34_1/Honda$$Accord$$2003$$Blue$$34_1$$88$$image_11.jpg
+57_10$$255$$1,car_57_10,0,test,images/car_57_10/Mazda$$Mazda2$$2007$$Blue$$57_10$$255$$image_1.jpg
+57_11$$1233$$41,car_57_11,0,test,images/car_57_11/Mazda$$Mazda3$$2008$$Black$$57_11$$1233$$image_41.jpg
+57_13$$463$$12,car_57_13,0,test,images/car_57_13/Mazda$$Mazda6$$2006$$Black$$57_13$$463$$image_12.jpg
+57_6$$255$$3,car_57_6,0,test,images/car_57_6/Mazda$$CX-3$$2015$$Black$$57_6$$255$$image_3.jpg
+57_7$$579$$0,car_57_7,0,test,images/car_57_7/Mazda$$CX-5$$2012$$Silver$$57_7$$579$$image_0.jpg
+57_5$$3$$0,car_57_5,0,test,images/car_57_5/Mazda$$BT-50$$2009$$Silver$$57_5$$3$$image_0.jpg
+36_8$$762$$4,car_36_8,0,test,images/car_36_8/Hyundai$$i10$$2009$$Black$$36_8$$762$$image_4.jpg
+36_20$$178$$10,car_36_20,0,test,images/car_36_20/Hyundai$$Santa Fe$$2006$$Black$$36_20$$178$$image_10.jpg
+36_24$$178$$2,car_36_24,0,test,images/car_36_24/Hyundai$$Tucson$$2007$$Blue$$36_24$$178$$image_2.jpg
+43_9$$96$$2,car_43_9,0,test,images/car_43_9/Kia$$Rio$$2006$$Blue$$43_9$$96$$image_2.jpg
+43_7$$445$$5,car_43_7,0,test,images/car_43_7/Kia$$Picanto$$2007$$Blue$$43_7$$445$$image_5.jpg
+43_13$$640$$17,car_43_13,0,test,images/car_43_13/Kia$$Sportage$$2010$$Black$$43_13$$640$$image_17.jpg
+43_11$$365$$9,car_43_11,0,test,images/car_43_11/Kia$$Sorento$$2006$$Black$$43_11$$365$$image_9.jpg
+43_1$$399$$0,car_43_1,0,test,images/car_43_1/Kia$$Carens$$2007$$Black$$43_1$$399$$image_0.jpg
+43_6$$129$$0,car_43_6,0,test,images/car_43_6/Kia$$Optima$$2012$$Silver$$43_6$$129$$image_0.jpg
+43_10$$11$$3,car_43_10,0,test,images/car_43_10/Kia$$Sedona$$2008$$Black$$43_10$$11$$image_3.jpg
+43_3$$13$$1,car_43_3,0,test,images/car_43_3/Kia$$Cerato$$2007$$Silver$$43_3$$13$$image_1.jpg
+29_14$$3787$$0,car_29_14,0,test,images/car_29_14/Ford$$Focus$$2003$$Black$$29_14$$3787$$image_0.jpg
+29_13$$2102$$0,car_29_13,0,test,images/car_29_13/Ford$$Fiesta$$2003$$Black$$29_13$$2102$$image_0.jpg
+29_4$$296$$5,car_29_4,0,test,images/car_29_4/Ford$$EcoSport$$2014$$Black$$29_4$$296$$image_5.jpg
+29_30$$380$$0,car_29_30,0,test,images/car_29_30/Ford$$Ranger$$2007$$Black$$29_30$$380$$image_0.jpg
+29_28$$69$$6,car_29_28,0,test,images/car_29_28/Ford$$Mustang$$2015$$Red$$29_28$$69$$image_6.jpg
+29_5$$199$$0,car_29_5,0,test,images/car_29_5/Ford$$Edge$$2016$$Black$$29_5$$199$$image_0.jpg
+29_9$$3$$1,car_29_9,0,test,images/car_29_9/Ford$$Explorer$$2003$$Silver$$29_9$$3$$image_1.jpg
+62_16$$329$$1,car_62_16,0,test,images/car_62_16/Mitsubishi$$Outlander$$2009$$Black$$62_16$$329$$image_1.jpg
+62_15$$156$$0,car_62_15,0,test,images/car_62_15/Mitsubishi$$Mirage$$2013$$Black$$62_15$$156$$image_0.jpg
+62_20$$6$$0,car_62_20,0,test,images/car_62_20/Mitsubishi$$Shogun Sport$$2006$$Black$$62_20$$6$$image_0.jpg
+64_41$$479$$1,car_64_41,0,test,images/car_64_41/Nissan$$X-Trail$$2007$$Silver$$64_41$$479$$image_1.jpg
+64_20$$1036$$1,car_64_20,0,test,images/car_64_20/Nissan$$Navara$$2009$$Blue$$64_20$$1036$$image_1.jpg
+64_14$$624$$1,car_64_14,0,test,images/car_64_14/Nissan$$Juke$$2011$$Black$$64_14$$624$$image_1.jpg
+64_19$$6$$0,car_64_19,0,test,images/car_64_19/Nissan$$Murano$$2010$$Silver$$64_19$$6$$image_0.jpg
+87_6$$36$$31,car_87_6,0,test,images/car_87_6/Suzuki$$Jimny$$2017$$White$$87_6$$36$$image_31.jpg

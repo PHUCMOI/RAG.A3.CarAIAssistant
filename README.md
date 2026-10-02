@@ -28,7 +28,8 @@ AutoWise là website khám phá và tư vấn ô tô tại Việt Nam, sử dụ
 - Authentication và phân quyền admin.
 - CRUD trên giao diện quản trị.
 - API chi tiết nguồn dữ liệu.
-- Nhận diện hoặc tìm xe tương tự bằng ảnh.
+- Nhận diện hoặc tìm xe tương tự bằng ảnh (Đã hoàn thành bởi Thành viên 3, đóng gói độc lập trong `image_service/`, xem chi tiết tại [image_service/README.md](image_service/README.md)).
+- Text/image embeddings và vector search (Đã hoàn thành FAISS 512-dim cho ảnh tại `image_service/indexes/image.index`).
 
 Các route Admin, RAG Settings và Source Detail hiện mới là placeholder giao diện.
 

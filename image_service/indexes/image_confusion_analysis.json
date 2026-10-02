@@ -1,0 +1,35 @@
+{
+  "valid_count": 44,
+  "recall_at_1": 0.7045,
+  "recall_at_3": 0.8409,
+  "recall_at_5": 0.8636,
+  "mrr": 0.7735,
+  "avg_latency_ms": 65.98,
+  "top_confusion_pairs": [
+    {
+      "ground_truth": "car_92_44",
+      "predicted": "car_43_9",
+      "count": 1
+    },
+    {
+      "ground_truth": "car_92_30",
+      "predicted": "car_43_10",
+      "count": 1
+    },
+    {
+      "ground_truth": "car_92_11",
+      "predicted": "car_92_30",
+      "count": 1
+    },
+    {
+      "ground_truth": "car_57_10",
+      "predicted": "car_57_13",
+      "count": 1
+    },
+    {
+      "ground_truth": "car_57_11",
+      "predicted": "car_57_13",
+      "count": 1
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "manifest_path": "C:\\WorkSpace\\master\\ky4\\04_HTTTTruyHoi\\RAG.A3.CarAIAssistant\\dataset\\images_manifest.csv",
+  "total_manifest_entries": 215,
+  "valid_images": 215,
+  "error_images_count": 0,
+  "total_cars_evaluated": 50,
+  "cars_with_images": 48,
+  "cars_without_images": [
+    "car_87_10",
+    "car_92_9"
+  ],
+  "cars_with_shortage": [
+    {
+      "car_id": "car_29_9",
+      "count": 2
+    },
+    {
+      "car_id": "car_36_1",
+      "count": 1
+    },
+    {
+      "car_id": "car_36_4",
+      "count": 1
+    },
+    {
+      "car_id": "car_43_3",
+      "count": 4
+    },
+    {
+      "car_id": "car_57_5",
+      "count": 4
+    },
+    {
+      "car_id": "car_62_20",
+      "count": 4
+    },
+    {
+      "car_id": "car_62_7",
+      "count": 1
+    },
+    {
+      "car_id": "car_64_19",
+      "count": 4
+    },
+    {
+      "car_id": "car_64_3",
+      "count": 1
+    },
+    {
+      "car_id": "car_87_6",
+      "count": 3
+    }
+  ],
+  "color_modes": {
+    "RGB": 215
+  }
+}

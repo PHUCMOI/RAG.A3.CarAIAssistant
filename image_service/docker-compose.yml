@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+  image-service:
+    build:
+      context: ..
+      dockerfile: image_service/Dockerfile
+    container_name: autowise-image-service
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - INDEXES_DIR=/app/image_service/indexes
+      - DATA_DIR=/app/image_service/data
+      - DATASET_DIR=/app/dataset
+    volumes:
+      - ./indexes:/app/image_service/indexes
+      - ./data:/app/image_service/data:ro
+      - ../dataset:/app/dataset:ro
+    restart: unless-stopped

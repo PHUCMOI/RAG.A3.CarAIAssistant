@@ -1,0 +1,49 @@
+car_id,image_count,status
+car_29_13,5,OK
+car_29_14,5,OK
+car_29_28,5,OK
+car_29_30,5,OK
+car_29_4,5,OK
+car_29_5,5,OK
+car_29_9,2,SHORTAGE (< 5)
+car_34_1,5,OK
+car_34_11,5,OK
+car_34_2,5,OK
+car_34_3,5,OK
+car_34_8,5,OK
+car_36_1,1,SHORTAGE (< 5)
+car_36_20,5,OK
+car_36_24,5,OK
+car_36_4,1,SHORTAGE (< 5)
+car_36_8,5,OK
+car_43_1,5,OK
+car_43_10,5,OK
+car_43_11,5,OK
+car_43_13,5,OK
+car_43_3,4,SHORTAGE (< 5)
+car_43_6,5,OK
+car_43_7,5,OK
+car_43_9,5,OK
+car_57_10,5,OK
+car_57_11,5,OK
+car_57_13,5,OK
+car_57_5,4,SHORTAGE (< 5)
+car_57_6,5,OK
+car_57_7,5,OK
+car_62_15,5,OK
+car_62_16,5,OK
+car_62_20,4,SHORTAGE (< 5)
+car_62_7,1,SHORTAGE (< 5)
+car_64_14,5,OK
+car_64_19,4,SHORTAGE (< 5)
+car_64_20,5,OK
+car_64_3,1,SHORTAGE (< 5)
+car_64_41,5,OK
+car_87_6,3,SHORTAGE (< 5)
+car_92_11,5,OK
+car_92_19,5,OK
+car_92_2,5,OK
+car_92_21,5,OK
+car_92_30,5,OK
+car_92_34,5,OK
+car_92_44,5,OK

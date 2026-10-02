@@ -1,0 +1,45 @@
+image_id,ground_truth_car_id,predicted_top1_car_id,top1_similarity,confidence,margin,uncertain,is_hit_at_1,is_hit_at_3,is_hit_at_5,rank,latency_ms
+92_44$$1484$$1,car_92_44,car_43_9,0.9293,medium,0.003,False,False,False,False,Not found in top 5,272.1
+92_30$$20$$0,car_92_30,car_43_10,0.9179,medium,0.011,False,False,True,True,2,57.86
+92_34$$341$$2,car_92_34,car_92_34,0.9504,high,0.0502,False,True,True,True,1,65.99
+92_19$$262$$8,car_92_19,car_92_19,0.9396,high,0.037,False,True,True,True,1,60.42
+92_21$$284$$8,car_92_21,car_92_21,0.9325,high,0.0355,False,True,True,True,1,60.81
+92_11$$45$$0,car_92_11,car_92_30,0.9523,high,0.0305,False,False,False,False,Not found in top 5,59.38
+92_2$$31$$5,car_92_2,car_92_2,0.9445,high,0.0537,False,True,True,True,1,62.1
+34_3$$671$$19,car_34_3,car_34_3,0.9387,high,0.0353,False,True,True,True,1,66.07
+34_11$$422$$5,car_34_11,car_34_11,0.9438,medium,0.0032,False,True,True,True,1,60.78
+34_2$$740$$6,car_34_2,car_34_2,0.9148,high,0.0324,False,True,True,True,1,60.26
+34_8$$417$$0,car_34_8,car_34_8,0.9157,medium,0.0101,False,True,True,True,1,61.26
+34_1$$88$$11,car_34_1,car_34_1,0.9391,medium,0.0196,False,True,True,True,1,59.09
+57_10$$255$$1,car_57_10,car_57_13,0.947,medium,0.0172,False,False,True,True,2,64.61
+57_11$$1233$$41,car_57_11,car_57_13,0.9379,medium,0.0033,False,False,True,True,2,59.02
+57_13$$463$$12,car_57_13,car_57_13,0.9711,high,0.0706,False,True,True,True,1,62.48
+57_6$$255$$3,car_57_6,car_57_6,0.9375,high,0.0315,False,True,True,True,1,61.64
+57_7$$579$$0,car_57_7,car_57_7,0.9219,medium,0.0058,False,True,True,True,1,60.51
+57_5$$3$$0,car_57_5,car_64_41,0.8831,medium,0.0025,False,False,False,False,Not found in top 5,64.98
+36_8$$762$$4,car_36_8,car_36_8,0.9287,medium,0.0183,False,True,True,True,1,59.3
+36_20$$178$$10,car_36_20,car_43_13,0.8712,medium,0.0019,False,False,False,True,5,59.17
+36_24$$178$$2,car_36_24,car_36_24,0.9251,medium,0.0187,False,True,True,True,1,61.13
+43_9$$96$$2,car_43_9,car_43_9,0.9671,high,0.0303,False,True,True,True,1,68.24
+43_7$$445$$5,car_43_7,car_43_7,0.9296,medium,0.0059,False,True,True,True,1,57.77
+43_13$$640$$17,car_43_13,car_43_6,0.8908,medium,0.0044,False,False,True,True,3,66.46
+43_11$$365$$9,car_43_11,car_43_3,0.8915,medium,0.0032,False,False,False,False,Not found in top 5,61.36
+43_1$$399$$0,car_43_1,car_43_10,0.9473,medium,0.0064,False,False,True,True,2,58.48
+43_6$$129$$0,car_43_6,car_43_6,0.8959,high,0.046,False,True,True,True,1,58.2
+43_10$$11$$3,car_43_10,car_43_10,0.9313,medium,0.0217,False,True,True,True,1,62.86
+43_3$$13$$1,car_43_3,car_43_13,0.9285,medium,0.0024,False,False,False,False,Not found in top 5,61.67
+29_14$$3787$$0,car_29_14,car_29_14,0.9265,medium,0.0277,False,True,True,True,1,59.41
+29_13$$2102$$0,car_29_13,car_29_14,0.9379,medium,0.0037,False,False,False,False,Not found in top 5,60.53
+29_4$$296$$5,car_29_4,car_29_4,0.9377,high,0.0658,False,True,True,True,1,58.89
+29_30$$380$$0,car_29_30,car_29_30,0.9008,high,0.0396,False,True,True,True,1,58.85
+29_28$$69$$6,car_29_28,car_29_28,0.908,high,0.0743,False,True,True,True,1,61.0
+29_5$$199$$0,car_29_5,car_29_5,0.9526,high,0.0857,False,True,True,True,1,63.78
+29_9$$3$$1,car_29_9,car_29_9,0.9184,medium,0.0109,False,True,True,True,1,60.32
+62_16$$329$$1,car_62_16,car_62_16,0.9415,high,0.0341,False,True,True,True,1,59.84
+62_15$$156$$0,car_62_15,car_62_15,0.9471,high,0.0592,False,True,True,True,1,59.92
+62_20$$6$$0,car_62_20,car_62_20,0.9328,high,0.0323,False,True,True,True,1,58.46
+64_41$$479$$1,car_64_41,car_64_20,0.9431,medium,0.009,False,False,True,True,2,57.85
+64_20$$1036$$1,car_64_20,car_64_20,0.9423,high,0.0423,False,True,True,True,1,63.25
+64_14$$624$$1,car_64_14,car_64_14,0.9316,medium,0.0142,False,True,True,True,1,63.42
+64_19$$6$$0,car_64_19,car_64_19,0.9236,medium,0.0189,False,True,True,True,1,60.58
+87_6$$36$$31,car_87_6,car_87_6,0.9546,high,0.0743,False,True,True,True,1,62.81

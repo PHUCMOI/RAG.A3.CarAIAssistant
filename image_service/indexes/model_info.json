@@ -1,0 +1,6 @@
+{
+  "model_name": "openai/clip-vit-base-patch32",
+  "dimension": 512,
+  "total_vectors": 171,
+  "updated_at": "2026-10-02T09:55:21Z"
+}

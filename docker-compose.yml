@@ -47,6 +47,23 @@ services:
     depends_on:
       - api
 
+  image-service:
+    build:
+      context: .
+      dockerfile: image_service/Dockerfile
+    container_name: autowise-image-service
+    ports:
+      - "8000:8000"
+    environment:
+      PORT: 8000
+      INDEXES_DIR: /app/image_service/indexes
+      DATA_DIR: /app/image_service/data
+      DATASET_DIR: /app/dataset
+    volumes:
+      - ./image_service/indexes:/app/image_service/indexes
+      - ./image_service/data:/app/image_service/data:ro
+      - ./dataset:/app/dataset:ro
+
 volumes:
   car-rag-postgres:
 
