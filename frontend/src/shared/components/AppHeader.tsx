@@ -6,8 +6,7 @@ const links = [
   ["/compare", "So sánh"],
   ["/dealers", "Đại lý"],
   ["/chat", "Trợ lý AI"],
-  ["/account/orders", "Đơn hàng"],
-  ["/account/assistant", "Hỗ trợ đơn hàng"],
+  ["/account", "Tài khoản"],
 ];
 
 export function AppHeader() {
@@ -23,8 +22,8 @@ export function AppHeader() {
           </NavLink>
         ))}
       </nav>
-      <NavLink className="header-cta" to="/chat">
-        Hỏi AutoWise <span>→</span>
+      <NavLink className="header-cta" to="/account">
+        Tài khoản <span>→</span>
       </NavLink>
     </header>
   );

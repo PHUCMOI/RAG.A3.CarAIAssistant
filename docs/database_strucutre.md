@@ -232,3 +232,24 @@ Recommended change before production: adopt a versioned migration tool such as A
 5. Select the production migration approach.
 6. Decide whether change history uses generic audit JSON or dedicated price/status history tables.
 
+
+## 11. Customer journey owned by C#
+
+All business tables remain in `orders_service` inside the shared `car_rag` database.
+EF migration `FullCustomerJourney` extends users with nullable Phone, CreatedAt,
+CreatedAtEstimated, ProfileVersion and SecurityVersion. Existing users receive the
+migration timestamp explicitly marked estimated; new users receive the actual timestamp.
+
+| Table | Main constraints |
+|---|---|
+| purchase_requests | unique Code, unique nullable OrderId FK orders, customer/admin FKs, Version concurrency, Payload JSONB |
+| order_change_requests | one pending per OrderId (partial unique), customer/order/reviewer FKs, Version concurrency |
+| notifications | unique UserId/EventKey; owner FK; CreatedAt and nullable ReadAt |
+| appointment_slots | dealer/staff snapshot and UTC interval; API prevents staff overlap |
+| appointments | customer/slot FKs; one active requested/proposed/confirmed per slot (partial unique); Version; JSONB snapshot/history |
+| favorites | composite PK UserId/CarId and user FK; no catalogue duplication |
+
+Business mutations use the existing idempotency_requests table, transaction advisory
+locks, row locks and optimistic versions. Creating an order from a purchase request,
+linking it and emitting the notification commit atomically. Approving a change request
+does not automatically mutate the order or create a refund. Catalogue remains Python-owned.

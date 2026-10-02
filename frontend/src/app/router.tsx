@@ -20,6 +20,24 @@ import {
 import OrderAssistantPage from "../features/orders/OrderAssistantPage";
 import RagSettingsPage from "../pages/RagSettingsPage";
 
+import { AccountLayout } from "../features/account/shared";
+import {
+  AccountHome,
+  ProfilePage,
+  SecurityPage,
+  NotificationsPage,
+} from "../features/account/AccountPages";
+import {
+  PurchaseList,
+  PurchaseDetail,
+  NewPurchasePage,
+} from "../features/account/PurchasePages";
+import {
+  ChangeRequestsPage,
+  AppointmentsPage,
+  FavoritesPage,
+} from "../features/account/JourneyPages";
+
 export function AppRouter() {
   return (
     <BrowserRouter>
@@ -31,6 +49,16 @@ export function AppRouter() {
             <Route path="orders" element={<OrdersPage admin />} />
             <Route path="orders/new" element={<NewOrderPage />} />
             <Route path="orders/:orderId" element={<OrderDetailPage admin />} />
+            <Route path="purchase-requests" element={<PurchaseList admin />} />
+            <Route
+              path="purchase-requests/:id"
+              element={<PurchaseDetail admin />}
+            />
+            <Route
+              path="change-requests"
+              element={<ChangeRequestsPage admin />}
+            />
+            <Route path="appointments" element={<AppointmentsPage admin />} />
             <Route path="customers" element={<CustomersPage />} />
             <Route path="data" element={<AdminDataPage />} />
             <Route path="rag" element={<RagSettingsPage />} />
@@ -44,13 +72,28 @@ export function AppRouter() {
             />
           </Route>
           <Route element={<CustomerLayout />}>
-            <Route path="/account/assistant" element={<OrderAssistantPage />} />
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/account/orders" element={<OrdersPage />} />
-            <Route
-              path="/account/orders/:orderId"
-              element={<OrderDetailPage />}
-            />
+            <Route path="/account" element={<AccountLayout />}>
+              <Route index element={<AccountHome />} />
+              <Route path="profile" element={<ProfilePage />} />
+              <Route path="security" element={<SecurityPage />} />
+              <Route path="orders" element={<OrdersPage />} />
+              <Route path="orders/:orderId" element={<OrderDetailPage />} />
+              <Route path="assistant" element={<OrderAssistantPage />} />
+              <Route path="purchase-requests" element={<PurchaseList />} />
+              <Route
+                path="purchase-requests/new"
+                element={<NewPurchasePage />}
+              />
+              <Route
+                path="purchase-requests/:id"
+                element={<PurchaseDetail />}
+              />
+              <Route path="change-requests" element={<ChangeRequestsPage />} />
+              <Route path="appointments" element={<AppointmentsPage />} />
+              <Route path="favorites" element={<FavoritesPage />} />
+              <Route path="notifications" element={<NotificationsPage />} />
+            </Route>
             <Route path="/" element={<HomePage />} />
             <Route path="/cars" element={<CarCatalogPage />} />
             <Route path="/cars/:carId" element={<CarDetailPage />} />

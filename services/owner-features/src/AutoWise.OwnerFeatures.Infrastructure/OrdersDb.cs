@@ -8,9 +8,16 @@ public sealed class OrdersDb(DbContextOptions<OrdersDb> options) : DbContext(opt
     public DbSet<RequestRecord> Requests => Set<RequestRecord>();
     public DbSet<PaymentReference> PaymentReferences => Set<PaymentReference>();
     public DbSet<ChatSessionRecord> ChatSessions => Set<ChatSessionRecord>();
+    public DbSet<PurchaseRecord> Purchases => Set<PurchaseRecord>();
+    public DbSet<NotificationRecord> Notifications => Set<NotificationRecord>();
+    public DbSet<ChangeRecord> Changes => Set<ChangeRecord>();
+    public DbSet<SlotRecord> Slots => Set<SlotRecord>();
+    public DbSet<AppointmentRecord> Appointments => Set<AppointmentRecord>();
+    public DbSet<FavoriteRecord> Favorites => Set<FavoriteRecord>();
     protected override void OnModelCreating(ModelBuilder b)
     {
         b.HasDefaultSchema("orders_service");
+        JourneyModel.Configure(b);
         b.Entity<ChatSessionRecord>().ToTable("chat_sessions");
         b.Entity<ChatSessionRecord>().Property(x=>x.Payload).HasColumnType("jsonb");
         b.Entity<ChatSessionRecord>().Property(x=>x.Version).IsConcurrencyToken();
@@ -39,6 +46,11 @@ public sealed class UserRecord
     public string DisplayName { get; set; } = "";
     public string PasswordHash { get; set; } = "";
     public string Role { get; set; } = "Customer";
+    public string? Phone {get;set;}
+    public DateTimeOffset CreatedAt {get;set;}=DateTimeOffset.UtcNow;
+    public bool CreatedAtEstimated {get;set;}
+    public long ProfileVersion {get;set;}=1;
+    public long SecurityVersion {get;set;}=1;
 }
 public sealed class OrderRecord
 {

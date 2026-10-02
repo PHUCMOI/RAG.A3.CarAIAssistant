@@ -3,6 +3,7 @@ using System;
 using AutoWise.OwnerFeatures.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AutoWise.OwnerFeatures.Infrastructure.Migrations
 {
     [DbContext(typeof(OrdersDb))]
-    partial class OrdersDbModelSnapshot : ModelSnapshot
+    [Migration("20261002180256_FullCustomerJourney")]
+    partial class FullCustomerJourney
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

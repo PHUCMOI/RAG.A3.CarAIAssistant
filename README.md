@@ -20,15 +20,17 @@ AutoWise là website khám phá và tư vấn ô tô tại Việt Nam, sử dụ
 - API danh sách/chi tiết nguồn và danh sách bảo hành.
 - Màn hình chi tiết nguồn, phạm vi hỗ trợ và bản ghi tham chiếu.
 - Docker Compose cho toàn bộ hệ thống.
+- C# cookie auth/roles, quản lý đơn/thanh toán/bàn giao và trợ lý tra cứu đơn có lịch sử.
+- Customer account: profile, bảo mật, yêu cầu mua xe, lịch hẹn, notification, favorites và đề nghị thay đổi/hủy đơn.
 
 ### Chưa triển khai
 
 - LLM tạo câu trả lời tự nhiên.
 - Text/image embeddings và vector search.
 - Dữ liệu cho bảng `documents`.
-- Lưu lịch sử hội thoại.
-- Authentication và phân quyền admin.
-- CRUD trên giao diện quản trị.
+- Lưu lịch sử hội thoại RAG common (trợ lý đơn hàng C# đã có lịch sử).
+- Authentication cho phần RAG/common ngoài module C# (C# đã có auth và phân quyền).
+- CRUD catalogue/RAG trong giao diện quản trị common (module nghiệp vụ C# đã có màn hình xử lý).
 - Tích hợp nhận diện ảnh vào frontend/API chính. Prototype độc lập nằm tại `image_service/`, cần model runtime tương thích index.
 - Text/image vector search trong API chính; prototype ảnh có FAISS index 512 chiều riêng.
 
@@ -297,7 +299,7 @@ docker compose up -d --build api web
 
 ## Tài liệu thiết kế
 
-- [`docs/csharp_owner_features.md`](docs/csharp_owner_features.md): thiết kế module C# do bạn owner — đơn hàng, thanh toán, bàn giao, chatbot orchestration và phân tích; chưa triển khai.
+- [`docs/csharp_owner_features.md`](docs/csharp_owner_features.md): module C# do bạn owner — đơn hàng, thanh toán, bàn giao, chatbot và customer account đã triển khai; phân tích còn ở đặc tả.
 
 - [`docs/spec.md`](docs/spec.md): phạm vi sản phẩm và release plan.
 - [`docs/database_strucutre.md`](docs/database_strucutre.md): database, ERD và index.
@@ -376,3 +378,8 @@ Xem [đặc tả và hướng dẫn](docs/csharp_owner_features.md) để lấy 
 Customer có chatbot tra cứu đơn tại `/account/assistant`: status, số tiền, lịch bàn giao,
 thông tin xe/bảo hành qua API Python và lịch sử hội thoại. Bản MVP dùng intent/template C#,
 không phụ thuộc RAG/LLM. Dashboard và chatbot phân tích admin chưa triển khai.
+
+Customer account: mở `/account` sau đăng nhập customer. Profile, bảo mật, yêu cầu mua xe,
+đề nghị thay đổi/hủy, thông báo, lịch tư vấn/lái thử và xe yêu thích đã có UI/API C#;
+admin xử lý tại `/admin/purchase-requests`, `/admin/change-requests`, `/admin/appointments`.
+Xem [spec và hướng dẫn kiểm tra](docs/feature_spec_customer_account.md).

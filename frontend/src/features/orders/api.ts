@@ -59,13 +59,18 @@ export class ApiError extends Error {
   }
 }
 const pendingKeys = new Map<string, string>();
+export function clearRequestState() {
+  pendingKeys.clear();
+}
 export async function request<T>(
   path: string,
   method = "GET",
   body?: unknown,
 ): Promise<T> {
   const headers: Record<string, string> = {};
-  const operation = method + path + JSON.stringify(body);
+  const sensitive = path === "/my/password" || path === "/auth/login";
+  const operation =
+    method + path + (sensitive ? crypto.randomUUID() : JSON.stringify(body));
   if (method !== "GET") {
     const csrf = await fetch(root + "/auth/csrf", {
       credentials: "same-origin",
@@ -73,9 +78,11 @@ export async function request<T>(
     if (!csrf.ok) throw new Error("Không thể tạo phiên form. Hãy thử lại.");
     headers["X-CSRF-TOKEN"] = (await csrf.json()).token;
     headers["Content-Type"] = "application/json";
-    if (!pendingKeys.has(operation))
+    if (!sensitive && !pendingKeys.has(operation))
       pendingKeys.set(operation, crypto.randomUUID());
-    headers["Idempotency-Key"] = pendingKeys.get(operation)!;
+    headers["Idempotency-Key"] = sensitive
+      ? crypto.randomUUID()
+      : pendingKeys.get(operation)!;
   }
   const response = await fetch(root + path, {
     method,
@@ -84,6 +91,8 @@ export async function request<T>(
     body: body === undefined ? undefined : JSON.stringify(body),
   });
   if (!response.ok) {
+    if (response.status === 401 && path !== "/auth/login")
+      window.dispatchEvent(new Event("account-session-expired"));
     let detail =
       response.status === 401
         ? "Vui lòng đăng nhập."

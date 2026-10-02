@@ -490,3 +490,15 @@ python -m pytest backend/tests -q
 Smoke cần `httpx`, hệ thống local đang chạy; tạo thêm một đơn demo để kiểm tra
 phân quyền, CSRF, idempotency, đồng thời, thanh toán và bàn giao.
 Đặt `ORDERS_URL=http://localhost:5173` để kiểm tra qua proxy frontend.
+
+## 15. Customer account và hành trình mua xe
+
+C-01–C-11 trong [spec customer account](feature_spec_customer_account.md) đã triển khai:
+profile, đổi mật khẩu/vô hiệu cookie cũ, tổng quan tài khoản, yêu cầu mua xe và admin
+convert thành đơn, đề nghị thay đổi/hủy, notification, lịch tư vấn/lái thử và favorites.
+Đơn hàng và assistant dùng lại O-01–O-06. C# giữ ownership business; chung DB car_rag,
+Python cung cấp xe/đại lý. Admin có `/admin/purchase-requests`, `/admin/change-requests`,
+`/admin/appointments`; customer có menu `/account` riêng.
+Migration FullCustomerJourney và seed mở rộng chạy bằng cơ chế Development đã có.
+Kiểm tra: `python services/owner-features/tests/smoke_customer_journey.py`;
+34 unit tests C# bao gồm chuẩn hóa liên hệ, lifecycle yêu cầu và regression Orders/Assistant.

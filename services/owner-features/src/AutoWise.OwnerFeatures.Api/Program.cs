@@ -15,6 +15,10 @@ var builder = WebApplication.CreateBuilder(args);
 var connection = builder.Configuration["OrdersDatabase"] ?? "Host=localhost;Database=car_rag;Username=car_rag;Password=car_rag_dev";
 builder.Services.AddDbContext<OrdersDb>(o => o.UseNpgsql(connection, np => np.MigrationsHistoryTable("__EFMigrationsHistory", "orders_service")));
 builder.Services.AddScoped<OrderStore>();
+builder.Services.AddScoped<JourneyTransactions>();
+builder.Services.AddScoped<PurchaseStore>();
+builder.Services.AddScoped<CustomerAccountStore>();
+builder.Services.AddScoped<AppointmentStore>();
 builder.Services.AddScoped<IOrderAssistant, OrderAssistant>();
 builder.Services.AddHttpClient<ICommonCatalogue, CommonCatalogue>(c => { c.BaseAddress = new(builder.Configuration["PythonApiUrl"] ?? "http://localhost:5080/"); c.Timeout = TimeSpan.FromSeconds(10); });
 builder.Services.AddAntiforgery(o => { o.HeaderName = "X-CSRF-TOKEN"; o.Cookie.Name = "aw.orders.csrf"; o.Cookie.SameSite = SameSiteMode.Strict; });
@@ -23,11 +27,18 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     o.Cookie.Name = "aw.orders.session"; o.Cookie.HttpOnly = true; o.Cookie.SameSite = SameSiteMode.Strict;
     o.Cookie.SecurePolicy = builder.Environment.IsDevelopment() ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
     o.ExpireTimeSpan = TimeSpan.FromHours(4);
+    o.Events.OnValidatePrincipal = async ctx => {
+        var id=ctx.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
+        var stamp=ctx.Principal?.FindFirstValue("security_version");
+        if(!Guid.TryParse(id,out var userId)){ctx.RejectPrincipal();return;}
+        var user=await ctx.HttpContext.RequestServices.GetRequiredService<OrdersDb>().Users.AsNoTracking().SingleOrDefaultAsync(x=>x.Id==userId,ctx.HttpContext.RequestAborted);
+        if(user==null||stamp!=user.SecurityVersion.ToString()||ctx.Principal?.FindFirstValue(ClaimTypes.Role)!=user.Role){ctx.RejectPrincipal();await ctx.HttpContext.SignOutAsync();}
+    };
     o.Events.OnRedirectToLogin = ctx => { ctx.Response.StatusCode = 401; return Task.CompletedTask; };
     o.Events.OnRedirectToAccessDenied = ctx => { ctx.Response.StatusCode = 403; return Task.CompletedTask; };
 });
 builder.Services.AddAuthorization();
-builder.Services.AddRateLimiter(o => { o.RejectionStatusCode = 429; o.AddPolicy("login", ctx => RateLimitPartition.GetFixedWindowLimiter(ctx.Connection.RemoteIpAddress?.ToString() ?? "local", _ => new FixedWindowRateLimiterOptions { PermitLimit = 10, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 })); });
+builder.Services.AddRateLimiter(o => { o.RejectionStatusCode = 429; o.AddPolicy("password", ctx => RateLimitPartition.GetFixedWindowLimiter(ctx.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "anonymous", _ => new FixedWindowRateLimiterOptions {PermitLimit=5,Window=TimeSpan.FromMinutes(5),QueueLimit=0})); o.AddPolicy("login", ctx => RateLimitPartition.GetFixedWindowLimiter(ctx.Connection.RemoteIpAddress?.ToString() ?? "local", _ => new FixedWindowRateLimiterOptions { PermitLimit = 10, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 })); });
 var app = builder.Build();
 app.Use(async (ctx, next) =>
 {
@@ -49,7 +60,7 @@ app.Use(async (ctx, next) =>
         if (!ctx.Response.HasStarted) await Results.Problem(statusCode: code, detail: detail).ExecuteAsync(ctx);
     }
 });
-app.UseRateLimiter(); app.UseAuthentication(); app.UseAuthorization();
+app.UseAuthentication(); app.UseRateLimiter(); app.UseAuthorization();
 app.Use(async (ctx, next) =>
 {
     if (ctx.Request.Path.StartsWithSegments("/api/orders-service") && ctx.Request.Method is not ("GET" or "HEAD" or "OPTIONS"))
@@ -60,6 +71,7 @@ app.Use(async (ctx, next) =>
     await next();
 });
 var api = app.MapGroup("/api/orders-service");
+api.MapJourney();
 api.MapGet("/health", async (OrdersDb db) => await db.Database.CanConnectAsync() ? Results.Ok(new { status = "ok" }) : Results.StatusCode(503));
 api.MapGet("/auth/csrf", (HttpContext ctx, IAntiforgery anti) => Results.Ok(new { token = anti.GetAndStoreTokens(ctx).RequestToken }));
 api.MapPost("/auth/login", async (LoginRequest input, HttpContext ctx, OrdersDb db, CancellationToken ct) =>
@@ -68,12 +80,12 @@ api.MapPost("/auth/login", async (LoginRequest input, HttpContext ctx, OrdersDb 
     var user = await db.Users.SingleOrDefaultAsync(x => x.Email == input.Email.Trim().ToLowerInvariant(), ct);
     var hasher = new PasswordHasher<UserRecord>();
     if (user == null || hasher.VerifyHashedPassword(user, user.PasswordHash, input.Password) == PasswordVerificationResult.Failed) return Results.Unauthorized();
-    var claims = new[] { new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), new Claim(ClaimTypes.Name, user.DisplayName), new Claim(ClaimTypes.Role, user.Role) };
+    var claims = new[] { new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), new Claim(ClaimTypes.Name, user.DisplayName), new Claim(ClaimTypes.Role, user.Role), new Claim("security_version",user.SecurityVersion.ToString()) };
     await ctx.SignInAsync(new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme)));
     return Results.Ok(new { user.Id, user.Email, user.DisplayName, user.Role });
 }).RequireRateLimiting("login");
 api.MapPost("/auth/logout", async (HttpContext ctx) => { await ctx.SignOutAsync(); return Results.NoContent(); }).RequireAuthorization();
-api.MapGet("/me", (HttpContext ctx) => Results.Ok(new { id = Actor(ctx), displayName = ctx.User.Identity!.Name, role = ctx.User.FindFirstValue(ClaimTypes.Role) })).RequireAuthorization();
+api.MapGet("/me", async (HttpContext ctx,OrdersDb db,CancellationToken ct) => {var userId=Guid.Parse(Actor(ctx));var u=await db.Users.AsNoTracking().SingleAsync(x=>x.Id==userId,ct);return Results.Ok(new{u.Id,u.DisplayName,u.Email,u.Role});}).RequireAuthorization();
 var mine = api.MapGroup("/my").RequireAuthorization(p => p.RequireRole("Customer"));
 mine.MapGet("/orders", (HttpContext ctx, OrderStore store, int? page, int? pageSize, string? status, string? query, bool? delayed, CancellationToken ct) => store.List(Guid.Parse(Actor(ctx)), status, query, page ?? 1, pageSize ?? 20, delayed ?? false, ct));
 mine.MapGet("/orders/{id:guid}", async (Guid id, HttpContext ctx, OrderStore store, CancellationToken ct) => await store.Get(id, Guid.Parse(Actor(ctx)), ct) is { } order ? Results.Ok(order) : Results.NotFound());
@@ -104,7 +116,11 @@ if (app.Environment.IsDevelopment() && app.Configuration.GetValue<bool>("Migrate
 {
     using var scope = app.Services.CreateScope(); var db = scope.ServiceProvider.GetRequiredService<OrdersDb>();
     await db.Database.MigrateAsync();
-    if (app.Configuration.GetValue<bool>("SeedDemo")) await SeedData.Run(db, scope.ServiceProvider.GetRequiredService<ICommonCatalogue>(), CancellationToken.None);
+    if (app.Configuration.GetValue<bool>("SeedDemo")) {
+        var common=scope.ServiceProvider.GetRequiredService<ICommonCatalogue>();
+        await SeedData.Run(db,common,CancellationToken.None);
+        await JourneySeed.Run(db,common,CancellationToken.None);
+    }
 }
 await app.RunAsync();
 static string Actor(HttpContext ctx) => ctx.User.FindFirstValue(ClaimTypes.NameIdentifier)!;

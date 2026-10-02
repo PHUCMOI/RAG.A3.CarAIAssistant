@@ -1,5 +1,11 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
-import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
+import {
+  Link,
+  Navigate,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import type { Car, CarListResponse } from "../../entities/car/model";
 import { formatVnd } from "../../shared/formatting/currency";
 import { formatDate } from "../../shared/formatting/date";
@@ -58,6 +64,12 @@ function Guard({
   return <>{children}</>;
 }
 export function LoginPage({ admin = false }: { admin?: boolean }) {
+  const [params] = useSearchParams();
+  const returnTo = params.get("returnTo") || "";
+  const customerTarget =
+    /^\/account(?:\/|$)/.test(returnTo) && !returnTo.includes("\\")
+      ? returnTo
+      : "/account";
   const { user, refresh } = useOrdersSession();
   const navigate = useNavigate();
   const [error, setError] = useState("");
@@ -73,7 +85,7 @@ export function LoginPage({ admin = false }: { admin?: boolean }) {
         password: form.get("password"),
       });
       await refresh();
-      navigate(result.role === "Admin" ? "/admin/orders" : "/account/orders");
+      navigate(result.role === "Admin" ? "/admin/orders" : customerTarget);
     } catch (err) {
       setError(message(err));
     } finally {
@@ -87,6 +99,11 @@ export function LoginPage({ admin = false }: { admin?: boolean }) {
           {admin ? "Cổng quản trị" : "Tài khoản khách hàng"}
         </span>
         <h1>{admin ? "Đăng nhập quản trị" : "Đăng nhập"}</h1>
+        {params.get("passwordChanged") === "1" && (
+          <p role="status">
+            Đã đổi mật khẩu. Hãy đăng nhập lại bằng mật khẩu mới.
+          </p>
+        )}
         {user ? (
           <>
             <p>Đang đăng nhập: {user.displayName}</p>
@@ -184,7 +201,11 @@ function OrderList({ admin }: { admin: boolean }) {
         <p>Theo dõi thanh toán, tiến độ và lịch bàn giao.</p>
       </div>
       <div className="orders-toolbar">
-        {!admin && <Link className="button" to="/account/assistant">Hỏi về đơn hàng</Link>}
+        {!admin && (
+          <Link className="button" to="/account/assistant">
+            Hỏi về đơn hàng
+          </Link>
+        )}
         <Link
           className="button secondary"
           to={admin ? "/admin/login" : "/login"}
@@ -687,6 +708,14 @@ function Detail({ admin }: { admin: boolean }) {
           Tải lại
         </button>
         <span>Phiên bản {order.version}</span>
+        {!admin && !["completed", "cancelled"].includes(order.status) && (
+          <Link
+            className="button secondary"
+            to={"/account/change-requests?orderId=" + order.id}
+          >
+            Đề nghị thay đổi / hủy đơn
+          </Link>
+        )}
       </div>
       {error && (
         <p role="alert" className="orders-error">

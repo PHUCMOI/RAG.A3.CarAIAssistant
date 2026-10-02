@@ -43,7 +43,7 @@ public sealed class OrderStore(OrdersDb db, ICommonCatalogue common)
             var order = new Order { CustomerId = customer.Id, CustomerName = customer.DisplayName, CarId = car.CarId, CarName = car.DisplayName, Brand = car.Brand, SourceId = car.PriceSourceId, DealerId = dealer.DealerId, DealerName = dealer.Name, TotalVnd = request.TotalVnd, DepositRequiredVnd = request.DepositRequiredVnd, Variant = request.Variant };
             order.Code = "AW-" + order.Id.ToString("N")[..12].ToUpperInvariant();
             order.Record("created", "Đơn mới; giá chốt " + order.TotalVnd, actor);
-            db.Orders.Add(Row(order)); return Task.FromResult(order);
+            db.Orders.Add(Row(order)); Notify(order,"Đơn mua xe mới được tạo"); return Task.FromResult(order);
         }, ct);
     }
     public Task<Order> Mutate<T>(Guid id, long version, T request, string actor, string key, string action, Action<Order> mutation, CancellationToken ct) =>
@@ -52,11 +52,13 @@ public sealed class OrderStore(OrdersDb db, ICommonCatalogue common)
             var row = await db.Orders.FromSqlInterpolated($"SELECT * FROM orders_service.orders WHERE \"Id\" = {id} FOR UPDATE").SingleOrDefaultAsync(ct) ?? throw new KeyNotFoundException();
             var order = Read(row); order.CheckVersion(version); mutation(order);
             row.Payload = JsonSerializer.Serialize(order, Json); row.Status = order.Status; row.Version = order.Version;
+            Notify(order,"Đơn đã cập nhật: "+order.History.Last().Detail);
             foreach (var payment in order.Payments)
                 if (!await db.PaymentReferences.AnyAsync(p => p.Reference == payment.Reference, ct)) db.PaymentReferences.Add(new() { Reference = payment.Reference, OrderId = id });
                 else if (await db.PaymentReferences.AnyAsync(p => p.Reference == payment.Reference && p.OrderId != id, ct)) throw new BusinessRuleException("Mã giao dịch đã dùng trên đơn khác.");
             return order;
         }, ct);
+    void Notify(Order o,string title)=>db.Notifications.Add(new(){UserId=o.CustomerId,EventKey="order:"+o.Id+":"+o.Version,Title=title,DetailUrl="/account/orders/"+o.Id});
     private async Task<Order> Idempotent<T>(string actor, string key, T request, string action, Func<Task<Order>> work, CancellationToken ct)
     {
         if (key.Length < 8 || key.Length > 100) throw new BusinessRuleException("Cần Idempotency-Key dài 8–100 ký tự.");

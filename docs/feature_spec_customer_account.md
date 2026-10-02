@@ -1,7 +1,7 @@
 # Spec: Tài khoản và hành trình mua xe của customer
 
-Ngày: 2026-10-03. Phiên bản: 1.0.
-Trạng thái: đặc tả đề xuất; chưa triển khai các tính năng mới trong tài liệu này.
+Ngày: 2026-10-03. Phiên bản: 1.1.
+Trạng thái: đã triển khai C-01–C-11 trên C# và React, gồm cả các feature giai đoạn 2. C-03 và C-11 tái sử dụng module đơn hàng/trợ lý hiện có.
 Tài liệu nền: [Features C#](csharp_owner_features.md).
 
 ## 1. Mục tiêu và phạm vi
@@ -43,7 +43,7 @@ tích hợp ngân hàng, email/SMS hoặc thay đổi phần RAG.
 
 ## 3. Màn hình và điều hướng
 
-| Route đề xuất | Chức năng |
+| Route | Chức năng |
 |---|---|
 | `/account` | Tổng quan tài khoản; lối vào thông tin, bảo mật, đơn, yêu cầu và trợ lý |
 | `/account/profile` | Thông tin cơ bản, cập nhật tên/số điện thoại, đăng xuất |
@@ -145,9 +145,9 @@ stateDiagram-v2
 Không chuyển ngược trạng thái cuối trong MVP. Customer muốn mua lại tạo yêu cầu mới.
 Event lưu actor, thời điểm UTC, hành động và lý do/phản hồi phù hợp; UI hiển thị theo Việt Nam.
 
-## 6. Dữ liệu và migration dự kiến
+## 6. Dữ liệu và migration
 
-| Thành phần trong `orders_service` | Bổ sung dự kiến |
+| Thành phần trong `orders_service` | Bổ sung |
 |---|---|
 | `users` | Phone nullable, CreatedAt, profile version và security stamp/version; giữ password hash hiện có |
 | `purchase_requests` | Id, Code unique, CustomerId FK users, Status, Version, CreatedAt/UpdatedAt, AssignedAdminId nullable, OrderId nullable unique FK orders, Payload JSONB |
@@ -164,10 +164,9 @@ thời điểm migration nếu ngày tạo ban đầu không tồn tại. Không
 Seed Development thêm yêu cầu ở đủ năm trạng thái; IDs/mã ổn định, chạy lại không
 nhân bản và không reset profile/mật khẩu hoặc yêu cầu đã được người dùng sửa.
 
-## 7. API dự kiến
+## 7. API đã triển khai
 
-Prefix: `/api/orders-service`. Các endpoint dưới đây là **đề xuất mới**, không
-được coi là đã có. User lấy từ cookie principal; POST/PATCH cần CSRF.
+Prefix: `/api/orders-service`. Các endpoint dưới đây đã được triển khai. User lấy từ cookie principal; POST/PATCH cần CSRF.
 
 | Method/path | Quyền và mục đích |
 |---|---|
@@ -194,13 +193,13 @@ tồn tại, 409 version/idempotency conflict, 422 dữ liệu/quy tắc không 
 503 common API chưa sẵn sàng. Đổi mật khẩu hiện tại sai trả lỗi validation chung;
 rate limit trả 429. Không gửi stack trace, password hoặc hash về frontend.
 
-## 8. Feature giai đoạn 2
+## 8. Feature giai đoạn 2 đã triển khai
 
 | Feature | Hướng triển khai và điều kiện |
 |---|---|
-| Yêu cầu thay đổi/hủy đơn | Hồ sơ đề nghị riêng có lý do và trạng thái xử lý; admin duyệt/từ chối. Không tự thay đổi đơn hoặc sinh refund khi khách gửi. Cần chốt quy tắc đơn completed/cancelled trước khi code. |
+| Yêu cầu thay đổi/hủy đơn | Hồ sơ đề nghị riêng có lý do và trạng thái xử lý; admin duyệt/từ chối. Không tự thay đổi đơn hoặc sinh refund khi khách gửi. Chỉ nhận đơn chưa completed/cancelled; mỗi đơn tối đa một đề nghị pending. Duyệt đề nghị không tự đổi đơn hoặc hoàn tiền. |
 | Thông báo trong ứng dụng | Sinh từ event yêu cầu/đơn, chỉ gửi user liên quan; link nội bộ, đã đọc/chưa đọc. Cùng transaction hoặc outbox để tránh thiếu/lặp; email/SMS ngoài phạm vi đầu. |
-| Đặt lịch tư vấn/lái thử | Khách chọn thời gian mong muốn; đại lý xác nhận hoặc đề xuất lại. Cần dữ liệu khung giờ/nhân sự, không coi lịch khách gửi là lịch đã xác nhận. |
+| Đặt lịch tư vấn/lái thử | Khách chọn thời gian mong muốn; đại lý xác nhận hoặc đề xuất lại. Admin mở khung giờ trong tương lai (tối đa 4 giờ) theo đại lý/nhân viên; không mở trùng khung của cùng nhân viên trong đại lý. Requested/proposed/confirmed giữ chỗ; server khóa slot và user để chống đặt trùng. Khách chấp nhận lịch đề xuất mới chuyển confirmed; chỉ hủy trước giờ bắt đầu. |
 | Xe yêu thích | C# lưu userId/carId, unique cặp; thông tin hiện tại lấy Python. Xe mất khỏi catalogue có trạng thái không còn dữ liệu; không sao chép catalogue vào DB C#. |
 
 ## 9. Kiểm thử và thứ tự triển khai
@@ -208,7 +207,7 @@ rate limit trả 429. Không gửi stack trace, password hoặc hash về fronte
 1. Profile và bảo mật: migration/backfill, API, UI, đổi mật khẩu vô hiệu session cũ.
 2. Customer gửi/list/detail/sửa/rút yêu cầu; tích hợp xe/đại lý Python và seed.
 3. Admin tiếp nhận/phản hồi/từ chối/convert; liên kết tới đơn và audit.
-4. Sau MVP: thông báo, đề nghị thay đổi/hủy, lịch hẹn và xe yêu thích theo ưu tiên sản phẩm.
+4. Mở rộng đã triển khai: thông báo, đề nghị thay đổi/hủy, lịch hẹn và xe yêu thích.
 
 Các ca nghiệm thu bắt buộc:
 
@@ -225,3 +224,103 @@ Các ca nghiệm thu bắt buộc:
 
 MVP hoàn thành khi toàn bộ luồng **profile → gửi yêu cầu → admin xử lý → tạo đơn →
 customer theo dõi đơn** chạy trên DB thật, checks phù hợp pass và tài liệu chạy được cập nhật.
+
+## 10. Hợp đồng các feature mở rộng
+
+| Route customer | Route admin |
+|---|---|
+| `/account/change-requests` | `/admin/change-requests` |
+| `/account/appointments` | `/admin/appointments` |
+| `/account/notifications` | Không có inbox customer trong site admin |
+| `/account/favorites` | Không quản lý danh sách yêu thích của khách |
+
+API dưới prefix `/api/orders-service`:
+
+| Method/path | Hành vi |
+|---|---|
+| `GET /my/change-requests` | Danh sách đề nghị của principal, page/pageSize |
+| `POST /my/change-requests` | `{orderId,type:change/cancel,reason}`; idempotency, chỉ đơn còn hoạt động |
+| `GET /admin/change-requests` | Danh sách đề nghị cho admin |
+| `POST /admin/change-requests/{id}/decision` | `{version,decision:approved/rejected,reason}`; không mutate đơn |
+| `GET /my/notifications` | Inbox có phân trang theo user |
+| `GET /my/notifications/unread-count` | Số chưa đọc |
+| `POST /my/notifications/{id}/read` | Đọc lặp không đổi ReadAt; ngoài ownership trả 404 |
+| `GET /my/appointment-slots` | Khung giờ tương lai còn trống; filter dealerId |
+| `GET /admin/appointment-slots` | Các khung giờ tương lai, gồm cả đã giữ chỗ |
+| `POST /admin/appointment-slots` | `{dealerId,staffName,startsAt,endsAt}`; timestamp có timezone, idempotency |
+| `GET /my/appointments`, `GET /admin/appointments` | Lịch có snapshot xe, slot hiện tại, version và timeline; phân trang |
+| `POST /my/appointments` | `{carId,slotId,kind:consultation/test_drive,phone,notes}`; tạo requested |
+| `POST /my/appointments/{id}/actions` | `{version,action:accept/cancel,reason}` |
+| `POST /admin/appointments/{id}/actions` | `{version,action:confirm/propose/reject/cancel,reason,slotId?}` |
+| `GET /my/favorites` | Tối đa 100 xe; tra Python trực tiếp, unavailable nếu mất catalogue/lỗi common |
+| `POST /my/favorites` | `{carId}`; unique user/car, idempotency |
+| `DELETE /my/favorites/{carId}` | Bỏ yêu thích theo principal, gọi lặp an toàn |
+
+POST/PATCH/DELETE đều cần CSRF. Mutation nghiệp vụ có `Idempotency-Key`
+8–100 ký tự; replay action/body khác trả 409. Profile có optimistic version;
+đổi mật khẩu có security version và rate limit 5 lần / 5 phút / user.
+Lịch hẹn luôn lưu UTC và hiển thị giờ địa phương của trình duyệt.
+
+Thông báo yêu cầu, cập nhật đơn, quyết định đề nghị và thao tác lịch của admin
+được ghi cùng transaction với mutation; unique `(UserId,EventKey)` ngăn lặp.
+Thông báo không gửi email/SMS. Yêu cầu/đơn/lịch của khách khác không đọc hoặc mutate được.
+
+Migration `20261002180256_FullCustomerJourney` bổ sung users và các bảng
+`purchase_requests`, `order_change_requests`, `notifications`, `appointment_slots`,
+`appointments`, `favorites` trong schema `orders_service` của DB **car_rag**.
+Tài khoản cũ được backfill CreatedAt tại migration và CreatedAtEstimated=true;
+tài khoản mới ghi ngày thật và false. Profile/security version khởi đầu là 1.
+Bảng common Python giữ nguyên.
+
+Seed development thêm 5 yêu cầu PR-DEMO-0001..0005 ở đủ năm trạng thái,
+đơn AW-REQUEST-DEMO-0001 liên kết yêu cầu converted, 4 slot, một lịch requested,
+một đề nghị pending và một thông báo. IDs ổn định; restart bỏ qua bản ghi đã có,
+không reset password/profile hay thao tác của user. Xe yêu thích do user tự lưu,
+không tự thêm lại khi đã bỏ yêu thích. Slot seed đã qua không tự dời ngày;
+admin mở slot mới nếu cần demo ở ngày sau.
+
+## 11. Chạy và kiểm tra
+
+```powershell
+docker compose up --build -d
+# Chờ /api/orders-service/health trả 200 rồi chạy smoke.
+dotnet test services/owner-features/AutoWise.OwnerFeatures.sln
+python services/owner-features/tests/smoke_customer_journey.py
+python services/owner-features/tests/smoke_orders.py
+python services/owner-features/tests/smoke_assistant.py
+# Chạy cuối, khi không còn browser/client test đang mở: restart và kiểm tra seed.
+python services/owner-features/tests/smoke_seed.py
+cd frontend
+npm run build
+```
+
+Customer: `http://localhost:5173/login`, customer1@autowise.test / DemoCustomer!2026,
+vào `/account`. Admin: `/admin/login`, admin@autowise.test / DemoAdmin!2026.
+Hai site có menu riêng; nhập URL sai vai trò vẫn bị chuyển về site tương ứng.
+Form mua xe có tìm kiếm catalogue và preselect carId từ trang xe.
+Chi tiết xe có nút lưu yêu thích và gửi yêu cầu; đơn đang hoạt động có nút đề nghị thay đổi/hủy.
+
+Smoke journey cần httpx, tạo tài khoản/giao dịch **giả riêng** mỗi lần chạy;
+không đổi mật khẩu tài khoản demo chung. Kiểm tra optimistic conflict, CSRF,
+ownership, snapshot, retry, race sửa/tiếp nhận, convert đồng thời, rollback giá
+không hợp lệ, đề nghị, favorites, race slot, lịch đề xuất/chấp nhận, read notification
+và vô hiệu cookie cũ ở hai client. Chờ ít nhất một phút giữa nhiều bộ smoke
+đăng nhập liên tiếp nếu chạm rate limit login 10 lần/phút theo IP.
+
+Smoke UI: `node services/owner-features/tests/smoke_customer_ui.cjs`, cần Playwright
+trong môi trường Node và Edge; có thể đặt UI_BROWSER_CHANNEL theo browser đã cài.
+Dùng browser profile mới, không dùng session cá nhân. Chạy từ root repo;
+script tạo một yêu cầu và đơn demo, kiểm tra form/route/mobile và chụp ảnh vào docs.
+
+Phạm vi vẫn chưa có đăng ký public, quên mật khẩu, email/SMS, thanh toán online,
+RAG mới hoặc tự động refund/đổi đơn từ việc duyệt đề nghị. Các mục này ngoài spec.
+
+Kết quả xác minh local: 34 unit tests C# pass, frontend production build pass,
+smoke journey/Orders/Assistant pass, EF không còn pending model changes.
+Smoke seed đã xác minh restart không tăng số bản ghi và không reset profile,
+security version, trạng thái yêu cầu hoặc liên kết đơn. Smoke UI xác minh customer/admin
+conversion, returnTo sau login, form lỗi giữ dữ liệu, mobile không tràn ngang và
+không có React runtime error.
+
+Ảnh giao diện: [Customer desktop](customer-account-preview.png),
+[Customer mobile](customer-account-mobile.png), [Admin xử lý yêu cầu](customer-request-admin-preview.png).
