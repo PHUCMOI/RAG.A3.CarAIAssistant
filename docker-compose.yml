@@ -26,9 +26,10 @@ services:
   api:
     build:
       context: .
-      dockerfile: backend/CarRag.Api/Dockerfile
+      dockerfile: backend/Dockerfile
     environment:
-      ASPNETCORE_URLS: http://+:8080
+      PORT: 8080
+      DATABASE_URL: postgresql://car_rag:car_rag_dev@postgres:5432/car_rag
       ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=car_rag;Username=car_rag;Password=car_rag_dev
       FrontendOrigin: http://localhost:5173
     ports:

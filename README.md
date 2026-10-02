@@ -1,6 +1,6 @@
 # AutoWise — Vietnam Car RAG MVP
 
-AutoWise là website khám phá và tư vấn ô tô tại Việt Nam, sử dụng React, ASP.NET Core, PostgreSQL và pgvector. Phiên bản hiện tại đã có website đa trang, dữ liệu 50 mẫu xe, giá VND, bảo hành, đại lý và nguồn tham khảo.
+AutoWise là website khám phá và tư vấn ô tô tại Việt Nam, sử dụng React, FastAPI (Python 3.12), PostgreSQL và pgvector. Phiên bản hiện tại đã có website đa trang, dữ liệu 50 mẫu xe, giá VND, bảo hành, đại lý và nguồn tham khảo.
 
 ![AutoWise website preview](docs/website-preview.png)
 
@@ -37,7 +37,7 @@ Các route Admin, RAG Settings và Source Detail hiện mới là placeholder gi
 | Thành phần | Công nghệ |
 |---|---|
 | Frontend | React, TypeScript, Vite, React Router |
-| Backend | ASP.NET Core Minimal API, .NET 10, C# |
+| Backend | FastAPI, Python 3.12, asyncpg, Uvicorn |
 | Database | PostgreSQL 17, pgvector 0.8.6 |
 | Data pipeline | Python 3, standard library |
 | Web server | Nginx |
@@ -99,7 +99,8 @@ docker compose up -d postgres
 Chạy backend:
 
 ```powershell
-dotnet run --project backend/CarRag.Api
+py backend/run.py
+# hoặc: py -m uvicorn app.main:app --app-dir backend --reload --port 5080
 ```
 
 Chạy frontend trong terminal khác:
@@ -200,17 +201,36 @@ SELECT * FROM sources ORDER BY source_type, source_id;
 ```text
 RAG-A3/
 ├── backend/
-│   ├── CarRag.Api/
-│   │   ├── Application/
-│   │   ├── Configuration/
-│   │   ├── Contracts/
-│   │   ├── Data/
-│   │   ├── Domain/
-│   │   ├── Endpoints/
-│   │   ├── Infrastructure/
-│   │   ├── Middleware/
-│   │   └── Program.cs
-│   └── tests/
+│   ├── app/
+│   │   ├── core/
+│   │   │   ├── config.py
+│   │   │   └── database.py
+│   │   ├── models/
+│   │   │   └── schemas.py
+│   │   ├── repositories/
+│   │   │   ├── car_repository.py
+│   │   │   ├── dealer_repository.py
+│   │   │   ├── source_repository.py
+│   │   │   └── warranty_repository.py
+│   │   ├── routers/
+│   │   │   ├── cars.py
+│   │   │   ├── chat.py
+│   │   │   ├── dealers.py
+│   │   │   ├── health.py
+│   │   │   ├── search.py
+│   │   │   ├── sources.py
+│   │   │   └── warranties.py
+│   │   └── main.py
+│   ├── tests/
+│   │   ├── conftest.py
+│   │   ├── test_cars.py
+│   │   ├── test_chat.py
+│   │   ├── test_dealers.py
+│   │   ├── test_health.py
+│   │   └── test_search.py
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   └── run.py
 ├── database/
 ├── data/
 │   ├── processed/
@@ -257,8 +277,10 @@ First-run database được kiểm tra tự động với expected counts: 50 xe
 ## Build và kiểm tra
 
 ```powershell
-dotnet build backend/CarRag.Api/CarRag.Api.csproj --nologo
+# Chạy bộ test backend (Python / pytest)
+py -m pytest backend/tests -v -p no:asyncio
 
+# Build frontend
 Set-Location frontend
 npm run build
 
