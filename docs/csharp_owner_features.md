@@ -1,5 +1,9 @@
 # Đặc tả features C# do bạn owner
 
+Spec mở rộng tài khoản customer và yêu cầu mua xe:
+[Tài khoản và hành trình mua xe](feature_spec_customer_account.md).
+Đây là thiết kế cho phần mở rộng, chưa phải tính năng đã triển khai.
+
 Ngày: 2026-10-02. Trạng thái: đã triển khai local **O-01 đến O-06**. Dashboard và chatbot phân tích là thiết kế cho giai đoạn sau.
 
 ## 1. Hướng sản phẩm
