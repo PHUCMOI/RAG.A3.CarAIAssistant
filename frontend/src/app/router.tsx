@@ -17,6 +17,7 @@ import {
   CustomersPage,
   OrderDetailPage,
 } from "../features/orders/OrdersPages";
+import OrderAssistantPage from "../features/orders/OrderAssistantPage";
 import RagSettingsPage from "../pages/RagSettingsPage";
 
 export function AppRouter() {
@@ -43,6 +44,7 @@ export function AppRouter() {
             />
           </Route>
           <Route element={<CustomerLayout />}>
+            <Route path="/account/assistant" element={<OrderAssistantPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/account/orders" element={<OrdersPage />} />
             <Route

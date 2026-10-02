@@ -184,6 +184,7 @@ function OrderList({ admin }: { admin: boolean }) {
         <p>Theo dõi thanh toán, tiến độ và lịch bàn giao.</p>
       </div>
       <div className="orders-toolbar">
+        {!admin && <Link className="button" to="/account/assistant">Hỏi về đơn hàng</Link>}
         <Link
           className="button secondary"
           to={admin ? "/admin/login" : "/login"}

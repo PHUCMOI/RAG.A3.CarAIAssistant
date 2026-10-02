@@ -7,6 +7,7 @@ public interface ICommonCatalogue
 {
     Task<CarSnapshot> GetCar(string id, CancellationToken ct);
     Task<DealerSnapshot> GetDealer(long id, CancellationToken ct);
+    Task<WarrantySnapshot?> GetWarranty(string carId, string brand, CancellationToken ct);
 }
 public record CreateOrderRequest(Guid CustomerId, string CarId, long DealerId, long TotalVnd, long DepositRequiredVnd, string? Variant);
 public record TransitionRequest(long Version, string Status, string Reason);

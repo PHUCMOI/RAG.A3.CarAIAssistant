@@ -7,6 +7,7 @@ const links = [
   ["/dealers", "Đại lý"],
   ["/chat", "Trợ lý AI"],
   ["/account/orders", "Đơn hàng"],
+  ["/account/assistant", "Hỗ trợ đơn hàng"],
 ];
 
 export function AppHeader() {

@@ -18,4 +18,4 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
-<ItemGroup><ProjectReference Include="../../src/AutoWise.OwnerFeatures.Domain/AutoWise.OwnerFeatures.Domain.csproj" /></ItemGroup></Project>
+<ItemGroup><ProjectReference Include="../../src/AutoWise.OwnerFeatures.Domain/AutoWise.OwnerFeatures.Domain.csproj" /></ItemGroup><ItemGroup><ProjectReference Include="../../src/AutoWise.OwnerFeatures.Application/AutoWise.OwnerFeatures.Application.csproj" /></ItemGroup></Project>

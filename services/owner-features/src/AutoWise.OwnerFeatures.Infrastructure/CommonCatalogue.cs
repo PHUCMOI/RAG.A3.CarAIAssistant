@@ -18,5 +18,10 @@ public sealed class CommonCatalogue(HttpClient http) : ICommonCatalogue
         var response = await http.GetFromJsonAsync<Dealers>("api/dealers", ct);
         return response!.Items.SingleOrDefault(d => d.DealerId == id) ?? throw new BusinessRuleException("Đại lý không tồn tại.");
     }
+    public async Task<WarrantySnapshot?> GetWarranty(string carId,string brand,CancellationToken ct) {
+        var result=await http.GetFromJsonAsync<WarrantyList>("api/warranties?car_id="+Uri.EscapeDataString(carId)+"&brand="+Uri.EscapeDataString(brand),ct);
+        return result?.Items.FirstOrDefault();
+    }
+    private record WarrantyList(List<WarrantySnapshot> Items);
     private record Dealers(List<DealerSnapshot> Items);
 }

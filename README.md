@@ -373,4 +373,6 @@ ghi nhận thu/hoàn tiền và quản lý bàn giao. C# cùng Python dùng DB `
 các bảng C# nằm trong schema `orders_service`. Chạy `docker compose up --build -d`
 để chạy migration và seed demo trong Development, mở http://localhost:5173/login.
 Xem [đặc tả và hướng dẫn](docs/csharp_owner_features.md) để lấy tài khoản demo.
-Chatbot/dashboard chưa triển khai.
+Customer có chatbot tra cứu đơn tại `/account/assistant`: status, số tiền, lịch bàn giao,
+thông tin xe/bảo hành qua API Python và lịch sử hội thoại. Bản MVP dùng intent/template C#,
+không phụ thuộc RAG/LLM. Dashboard và chatbot phân tích admin chưa triển khai.

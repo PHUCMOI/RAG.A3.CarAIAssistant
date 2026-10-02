@@ -21,3 +21,5 @@
 .admin-header{border-top:4px solid #153f36}.admin-header .logo small{font-size:13px;margin-left:8px;color:#537268}.admin-user{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.admin-footer{padding:24px;text-align:center;color:#626f7c;border-top:1px solid #e7ebef}
 
 .admin-header{flex-wrap:wrap}.admin-header .main-nav{display:flex;flex-wrap:wrap}
+
+.order-chat-layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:24px}.order-chat-session{display:block;width:100%;text-align:left;margin:10px 0}.order-chat-session[aria-pressed=true]{background:#deebe6}.order-chat-messages{max-height:550px;overflow:auto;margin:20px 0}.order-chat-message{padding:16px;margin:12px 0;border-radius:12px;background:#f2f6f4;overflow-wrap:anywhere}.order-chat-message.user{background:#e4eeeb;margin-left:36px}.order-chat-message p{white-space:pre-wrap}.order-chat-message small,.order-chat-message a{display:block;margin-top:8px}.orders-form textarea{padding:12px;border:1px solid #d9dfe6;border-radius:8px;font:inherit;resize:vertical}@media(max-width:700px){.order-chat-layout{grid-template-columns:1fr}}

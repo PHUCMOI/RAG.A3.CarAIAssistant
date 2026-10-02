@@ -7,9 +7,15 @@ public sealed class OrdersDb(DbContextOptions<OrdersDb> options) : DbContext(opt
     public DbSet<OrderRecord> Orders => Set<OrderRecord>();
     public DbSet<RequestRecord> Requests => Set<RequestRecord>();
     public DbSet<PaymentReference> PaymentReferences => Set<PaymentReference>();
+    public DbSet<ChatSessionRecord> ChatSessions => Set<ChatSessionRecord>();
     protected override void OnModelCreating(ModelBuilder b)
     {
         b.HasDefaultSchema("orders_service");
+        b.Entity<ChatSessionRecord>().ToTable("chat_sessions");
+        b.Entity<ChatSessionRecord>().Property(x=>x.Payload).HasColumnType("jsonb");
+        b.Entity<ChatSessionRecord>().Property(x=>x.Version).IsConcurrencyToken();
+        b.Entity<ChatSessionRecord>().HasIndex(x=>new{x.UserId,x.UpdatedAt});
+        b.Entity<ChatSessionRecord>().HasOne<UserRecord>().WithMany().HasForeignKey(x=>x.UserId).OnDelete(DeleteBehavior.Restrict);
         b.Entity<UserRecord>().ToTable("users", t => t.HasCheckConstraint("CK_users_Role", "\"Role\" IN ('Admin','Customer')"));
         b.Entity<UserRecord>().HasIndex(x => x.Email).IsUnique();
         b.Entity<OrderRecord>().ToTable("orders", t => t.HasCheckConstraint("CK_orders_Version", "\"Version\" > 0"));
@@ -55,4 +61,14 @@ public sealed class PaymentReference
 {
     public string Reference { get; set; } = "";
     public Guid OrderId { get; set; }
+}
+
+public sealed class ChatSessionRecord {
+    public Guid Id {get;set;}=Guid.NewGuid();
+    public Guid UserId {get;set;}
+    public Guid? SelectedOrderId {get;set;}
+    public long Version {get;set;}=1;
+    public string Payload {get;set;}="[]";
+    public DateTimeOffset CreatedAt {get;set;}=DateTimeOffset.UtcNow;
+    public DateTimeOffset UpdatedAt {get;set;}=DateTimeOffset.UtcNow;
 }

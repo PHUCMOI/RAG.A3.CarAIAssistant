@@ -1,6 +1,6 @@
 # Đặc tả features C# do bạn owner
 
-Ngày: 2026-10-02. Trạng thái: đã triển khai local **O-01 đến O-05**. Chatbot và dashboard là thiết kế cho giai đoạn sau.
+Ngày: 2026-10-02. Trạng thái: đã triển khai local **O-01 đến O-06**. Dashboard và chatbot phân tích là thiết kế cho giai đoạn sau.
 
 ## 1. Hướng sản phẩm
 
@@ -45,7 +45,7 @@ Python backend tiếp tục chạy; thêm service C# mới, không khôi phục 
 | O-03 | Khách theo dõi đơn | Xem xe, giá chốt, thanh toán và tiến độ | MVP |
 | O-04 | Ghi nhận thanh toán/hoàn tiền | Theo dõi số tiền đúng theo giao dịch đã xác nhận | MVP |
 | O-05 | Quản lý bàn giao | Lịch dự kiến/thực tế và các đơn chậm bàn giao | MVP |
-| O-06 | Chatbot tra cứu | Hỏi đơn của mình qua ngôn ngữ tự nhiên | Chưa triển khai |
+| O-06 | Chatbot tra cứu | Hỏi đơn của mình qua ngôn ngữ tự nhiên | Đã triển khai MVP intent/template |
 | O-07 | Dashboard kinh doanh | Thống kê theo thời gian, xe và đại lý | Giai đoạn 2 |
 | O-08 | Chatbot phân tích | Hỏi thống kê qua các tool được kiểm soát | Giai đoạn 2 |
 
@@ -228,10 +228,12 @@ C# sở hữu schema `orders_service`; EF Core quản lý migration và bảng
 `orders_service.__EFMigrationsHistory`. Common Python giữ các bảng hiện có;
 C# lấy catalogue qua HTTP API Python. Triển khai dùng ASP.NET Core/.NET 10, EF Core và Npgsql.
 
-Bản MVP hiện có bốn bảng: `users` (Admin/Customer, mật khẩu hash), `orders`
+Bản MVP hiện có các bảng: `users` (Admin/Customer, mật khẩu hash), `orders`
 (id/code/customer/status/version/createdAt và aggregate JSONB), `payment_references`
 (unique toàn module) và `idempotency_requests` (actor/key/hash/response).
 Snapshot xe/đại lý, payments, lịch bàn giao và lịch sử nằm trong JSONB của đơn.
+`chat_sessions` lưu user, context đơn, version, thời gian và JSONB các lượt hội thoại.
+Mỗi lượt có requestId/hash, tin khách và phản hồi kèm thời điểm/tool/mã đơn/link chi tiết.
 Mutation dùng transaction, khóa hàng `FOR UPDATE`, version và idempotency.
 Bảng bên dưới là hướng chuẩn hóa/mở rộng khi làm analytics và chatbot, chưa tạo đầy đủ trong MVP.
 
@@ -385,7 +387,7 @@ Không cần chờ RAG để hoàn thành bước 1–6.
 - Provider LLM nếu dùng sau MVP template; chỉ gửi dữ liệu tối thiểu đã được phân quyền.
 - Hợp đồng retrieval common và giới hạn trách nhiệm với hai dev RAG.
 
-O-01–O-05 đã có service C#, màn hình, migrations và seed; O-06–O-08 chưa triển khai.
+O-01–O-06 đã có service C#, màn hình, migrations và seed; O-07–O-08 chưa triển khai.
 
 ## 13. Chạy bản đã triển khai
 
@@ -432,7 +434,47 @@ Bàn giao thực tế cần trạng thái ready, thanh toán đủ và thời đ
 Giá chốt do admin nhập; cọc nằm trong tổng giá. MVP ghi tiền thủ công.
 
 API confirm thực tế: `POST /api/orders-service/admin/orders/{id}/payments/{paymentId}/confirm`;
-API fail cùng đường dẫn kết thúc `/fail`, cần lý do. Analytics/assistant mới là thiết kế.
+API fail cùng đường dẫn kết thúc `/fail`, cần lý do. Analytics mới là thiết kế.
+
+## 16. Chatbot đơn hàng đã triển khai
+
+Customer mở `/account/assistant`, hoặc nút **Hỏi về đơn hàng** từ danh sách đơn.
+Màn hình chat catalogue `/chat` của Python vẫn thuộc nhóm RAG; không thay thế bằng chat đơn hàng.
+Admin không truy cập route chat customer; chatbot phân tích admin chưa triển khai.
+
+Các API thực tế cùng prefix proxy C# `/api/orders-service/assistant`:
+
+| Route | Chức năng |
+|---|---|
+| `GET /sessions` | Tối đa 50 hội thoại thuộc user đang đăng nhập |
+| `POST /sessions` | Body `{id: UUID}`; tạo hoặc mở lại cùng ID của user, chống tạo trùng khi retry |
+| `GET /sessions/{id}` | Lịch sử và context; session người khác trả 404 |
+| `POST /sessions/{id}/messages` | Body `requestId`, `version`, `content`, `orderId` tùy chọn |
+
+Tất cả API chat yêu cầu role Customer và CSRF cho POST. User lấy từ principal;
+không nhận customerId hoặc role từ body. RequestId được kiểm tra với hash body;
+gửi lại cùng request không tạo thêm lượt. Version và khóa transaction theo session
+chống hai tab ghi đè context. HTTP gọi Python nằm ngoài transaction DB.
+
+Intent/template hiện hỗ trợ: danh sách tối đa 20 đơn mới nhất, trạng thái, số tiền,
+lịch dự kiến/thực tế, tên xe hiện tại từ catalogue và bảo hành từ API Python.
+Kết quả tiền dùng aggregate C# và số nguyên VND, không dùng LLM tính tiền.
+Chưa có LLM, retrieval, compare tool hoặc thống kê kinh doanh trong chatbot này.
+
+Ví dụ: “Tôi đang có những đơn nào?”, “Đơn AW-DEMO-0001 đến đâu rồi?”,
+“Tôi còn phải trả bao nhiêu?”, “Khi nào nhận xe?”, “Xe trong đơn bảo hành thế nào?”.
+Chọn đơn hoặc nhập mã để tra chi tiết. Context “đơn đó” chỉ nằm trong session của user.
+Nhiều mã đơn trong một câu sẽ hỏi lại; mã không thuộc tài khoản không tiết lộ dữ liệu.
+Yêu cầu sửa/hủy đơn hoặc chuyển trạng thái chỉ được hướng dẫn liên hệ đại lý.
+Intent ngoài tập hỗ trợ trả hướng dẫn, không giả vờ hiểu mọi câu hỏi tự do.
+
+Giới hạn demo: 50 hội thoại/user, 100 lượt/hội thoại, 1000 ký tự/câu hỏi.
+Lịch sử ghi thời điểm tra cứu, không tự cập nhật câu trả lời cũ; hỏi lại để lấy dữ liệu mới.
+Python lỗi trả thông báo chưa xác minh, không dùng dữ liệu cũ để thay thế.
+
+Kiểm thử thêm: `python services/owner-features/tests/smoke_assistant.py`.
+Test tạo hai hội thoại giả; kiểm tra roles/ownership/context, số tiền, bảo hành Python,
+không mutation, request replay, câu mơ hồ, concurrency và tải lại lịch sử.
 
 ```powershell
 dotnet test services/owner-features/AutoWise.OwnerFeatures.sln

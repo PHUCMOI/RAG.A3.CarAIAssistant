@@ -15,6 +15,7 @@ var builder = WebApplication.CreateBuilder(args);
 var connection = builder.Configuration["OrdersDatabase"] ?? "Host=localhost;Database=car_rag;Username=car_rag;Password=car_rag_dev";
 builder.Services.AddDbContext<OrdersDb>(o => o.UseNpgsql(connection, np => np.MigrationsHistoryTable("__EFMigrationsHistory", "orders_service")));
 builder.Services.AddScoped<OrderStore>();
+builder.Services.AddScoped<IOrderAssistant, OrderAssistant>();
 builder.Services.AddHttpClient<ICommonCatalogue, CommonCatalogue>(c => { c.BaseAddress = new(builder.Configuration["PythonApiUrl"] ?? "http://localhost:5080/"); c.Timeout = TimeSpan.FromSeconds(10); });
 builder.Services.AddAntiforgery(o => { o.HeaderName = "X-CSRF-TOKEN"; o.Cookie.Name = "aw.orders.csrf"; o.Cookie.SameSite = SameSiteMode.Strict; });
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(o =>
@@ -76,6 +77,11 @@ api.MapGet("/me", (HttpContext ctx) => Results.Ok(new { id = Actor(ctx), display
 var mine = api.MapGroup("/my").RequireAuthorization(p => p.RequireRole("Customer"));
 mine.MapGet("/orders", (HttpContext ctx, OrderStore store, int? page, int? pageSize, string? status, string? query, bool? delayed, CancellationToken ct) => store.List(Guid.Parse(Actor(ctx)), status, query, page ?? 1, pageSize ?? 20, delayed ?? false, ct));
 mine.MapGet("/orders/{id:guid}", async (Guid id, HttpContext ctx, OrderStore store, CancellationToken ct) => await store.Get(id, Guid.Parse(Actor(ctx)), ct) is { } order ? Results.Ok(order) : Results.NotFound());
+var assistant=api.MapGroup("/assistant").RequireAuthorization(p=>p.RequireRole("Customer"));
+assistant.MapGet("/sessions",(HttpContext ctx,IOrderAssistant service,CancellationToken ct)=>service.List(Guid.Parse(Actor(ctx)),ct));
+assistant.MapPost("/sessions",(CreateChatSessionRequest input,HttpContext ctx,IOrderAssistant service,CancellationToken ct)=>service.Create(Guid.Parse(Actor(ctx)),input.Id,ct));
+assistant.MapGet("/sessions/{id:guid}",(Guid id,HttpContext ctx,IOrderAssistant service,CancellationToken ct)=>service.Get(id,Guid.Parse(Actor(ctx)),ct));
+assistant.MapPost("/sessions/{id:guid}/messages",(Guid id,ChatInput input,HttpContext ctx,IOrderAssistant service,CancellationToken ct)=>service.Send(id,Guid.Parse(Actor(ctx)),input,ct));
 var admin = api.MapGroup("/admin").RequireAuthorization(p => p.RequireRole("Admin"));
 admin.MapGet("/customers", async (OrdersDb db, CancellationToken ct) => Results.Ok(await db.Users.Where(x => x.Role == "Customer").OrderBy(x => x.DisplayName).Select(x => new { x.Id, x.DisplayName, x.Email }).ToListAsync(ct)));
 admin.MapPost("/customers", async (CustomerRequest input, OrdersDb db, CancellationToken ct) =>
