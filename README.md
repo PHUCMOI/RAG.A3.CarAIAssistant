@@ -17,6 +17,7 @@ AutoWise là website khám phá và tư vấn ô tô tại Việt Nam, sử dụ
 - Chatbot structured retrieval từ PostgreSQL.
 - Responsive cho desktop, tablet và mobile.
 - Swagger/OpenAPI cho backend.
+- API danh sách/chi tiết nguồn và danh sách bảo hành (giao diện nguồn vẫn placeholder).
 - Docker Compose cho toàn bộ hệ thống.
 
 ### Chưa triển khai
@@ -27,9 +28,8 @@ AutoWise là website khám phá và tư vấn ô tô tại Việt Nam, sử dụ
 - Lưu lịch sử hội thoại.
 - Authentication và phân quyền admin.
 - CRUD trên giao diện quản trị.
-- API chi tiết nguồn dữ liệu.
-- Nhận diện hoặc tìm xe tương tự bằng ảnh (Đã hoàn thành bởi Thành viên 3, đóng gói độc lập trong `image_service/`, xem chi tiết tại [image_service/README.md](image_service/README.md)).
-- Text/image embeddings và vector search (Đã hoàn thành FAISS 512-dim cho ảnh tại `image_service/indexes/image.index`).
+- Tích hợp nhận diện ảnh vào frontend/API chính. Prototype độc lập nằm tại `image_service/`, cần model runtime tương thích index.
+- Text/image vector search trong API chính; prototype ảnh có FAISS index 512 chiều riêng.
 
 Các route Admin, RAG Settings và Source Detail hiện mới là placeholder giao diện.
 
@@ -143,6 +143,9 @@ GET  /api/health
 GET  /api/cars?query=&brand=&bodyType=&seats=&maxPrice=&limit=
 GET  /api/cars/{carId}
 GET  /api/dealers?brand=&city=
+GET  /api/sources
+GET  /api/sources/{sourceId}
+GET  /api/warranties?brand=&car_id=
 POST /api/search/text
 POST /api/chat
 ```
@@ -213,6 +216,7 @@ RAG-A3/
 │   │   │   ├── dealer_repository.py
 │   │   │   ├── source_repository.py
 │   │   │   └── warranty_repository.py
+│   │   ├── application/
 │   │   ├── routers/
 │   │   │   ├── cars.py
 │   │   │   ├── chat.py
@@ -328,3 +332,31 @@ docker compose up -d --build api web
 7. Thêm authentication và trang admin CRUD.
 8. Tạo image embeddings `vector(512)` cho tìm kiếm ảnh.
 
+
+## Python migration và image prototype
+
+Backend chính dùng Python 3.12+, FastAPI, Pydantic và asyncpg. Router xử lý HTTP,
+repository giữ SQL có tham số, application layer giữ orchestration chat qua Protocol.
+API giữ `/api` và JSON camelCase cho frontend; `/swagger` chuyển đến `/docs`.
+`DATABASE_URL` là cấu hình ưu tiên; `ConnectionStrings__Postgres` được giữ để tương thích.
+Dùng `FRONTEND_ORIGIN` cho CORS. File `.env` được đọc theo working directory.
+
+Chạy kiểm tra từ root:
+
+```powershell
+python -m pip install -r backend/requirements.txt
+python -m pytest backend/tests -q
+```
+
+Tests mặc định dùng database giả, không xác minh SQL với PostgreSQL thực.
+Xem `docs/python_migration_review.md` để biết kết quả review và giới hạn kiểm chứng.
+
+Image service trên nhánh dev được giữ như prototype tùy chọn:
+
+```powershell
+docker compose --profile image up --build -d
+```
+
+Dịch vụ này dùng cổng 8000 và snapshot/index riêng. Frontend chưa gọi dịch vụ;
+`imageName` trên `/api/chat` chỉ là tên file, không phải upload hoặc nhận diện ảnh.
+Đổi embedding model cần tạo lại index bằng cùng model và preprocessing.

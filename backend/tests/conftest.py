@@ -1,4 +1,5 @@
 import sys
+from unittest.mock import AsyncMock, patch
 from datetime import date
 from pathlib import Path
 import pytest
@@ -94,6 +95,9 @@ def client(mock_db):
         yield mock_db
 
     app.dependency_overrides[get_db_connection] = override_get_db
-    with TestClient(app) as test_client:
-        yield test_client
-    app.dependency_overrides.clear()
+    try:
+        with patch("app.main.init_db_pool", new_callable=AsyncMock), patch("app.main.close_db_pool", new_callable=AsyncMock):
+            with TestClient(app) as test_client:
+                yield test_client
+    finally:
+        app.dependency_overrides.clear()

@@ -1,3 +1,5 @@
+> Review 2026-10-02: service này là prototype tùy chọn (`docker compose --profile image up --build -d`), chưa nối frontend/API chính. Index hiện khai báo CLIP; requirements mặc định chưa cài torch/transformers hoặc weights. Cần chuẩn bị đúng model hoặc rebuild toàn bộ index bằng extractor đã chọn. Runtime sẽ từ chối query nếu không tải được model của index, tránh trả kết quả từ hai không gian embedding không tương thích. Xem [migration review](../docs/python_migration_review.md).
+
 # AutoWise — Image Retrieval & Multimodal Microservice (Thành viên 3)
 
 Toàn bộ nghiệp vụ và tài nguyên của **Thành viên 3 (Image Retrieval và Backend API)** đã được cô lập hoàn toàn vào thư mục `image_service/` và đóng gói thành **1 Docker Container độc lập** (không phụ thuộc PostgreSQL, chạy được tức thì).

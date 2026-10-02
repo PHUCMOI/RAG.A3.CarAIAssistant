@@ -18,7 +18,13 @@ _retriever: ImageRetriever | None = None
 def get_retriever() -> ImageRetriever:
     global _retriever
     if _retriever is None:
-        _retriever = ImageRetriever()
+        try:
+            _retriever = ImageRetriever()
+        except RuntimeError as exc:
+            raise HTTPException(
+                status_code=503,
+                detail="Image model is unavailable or incompatible with the index",
+            ) from exc
     return _retriever
 
 

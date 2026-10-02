@@ -72,7 +72,7 @@ class TextSearchResponse(CamelModel):
 
 
 class ChatRequest(CamelModel):
-    question: str
+    question: str = Field(min_length=1, max_length=4000)
     image_name: Optional[str] = Field(None, alias="imageName")
 
 

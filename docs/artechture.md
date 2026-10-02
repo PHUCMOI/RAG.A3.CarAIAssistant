@@ -3,10 +3,10 @@
 ## 1. Document information
 
 - Product: AutoWise Vietnam Car RAG
-- Reviewed: 2026-10-01
+- Reviewed: 2026-10-02
 - Current style: Dockerized three-service modular monolith
 - Target style: Layered modular monolith with asynchronous RAG jobs
-- Backend: ASP.NET Core on .NET 10
+- Backend: Python 3.12 + FastAPI + asyncpg
 - Frontend: React + TypeScript + Vite
 - Data: PostgreSQL 17 + pgvector
 
@@ -23,22 +23,22 @@
 
 ## 3. Current runtime architecture
 
-![Current AutoWise runtime architecture](./diagrams/current-runtime.png)
+![Current AutoWise runtime architecture](./diagrams/current-runtime.svg)
 
 ### Current components
 
 #### React frontend
 
-- One `App.tsx` chatbot screen.
+- React Router with home, catalogue, details, comparison, dealers and chat pages.
 - Local in-memory conversation state.
-- Calls `/api/health` and `/api/chat`.
-- No router, server-state library, authentication or persisted sessions yet.
+- Calls the existing `/api` catalogue, dealer, search and chat endpoints.
+- Authentication and persisted chat sessions are not implemented.
 
-#### ASP.NET Core API
+#### FastAPI API
 
-- Minimal API endpoints in `Program.cs`.
-- Direct `CarRepository` registration.
-- Raw parameterized SQL through Npgsql.
+- HTTP routers in `backend/app/routers/`; composition and lifespan in `app/main.py`.
+- Repositories handle SQL; chat orchestration lives in `app/application/chat.py` behind a catalogue Protocol.
+- Raw parameterized SQL through asyncpg.
 - Swagger and CORS enabled.
 - Chat endpoint performs structured retrieval and returns template text; no LLM is connected.
 
@@ -56,13 +56,13 @@
 
 ## 4. Current request flow
 
-![Current chatbot request sequence](./diagrams/current-request-flow.png)
+![Current chatbot request sequence](./diagrams/current-request-flow.svg)
 
 This is safe as a retrieval prototype but is not yet a complete RAG flow because there is no document ingestion, vector retrieval, prompt construction, LLM generation or citation validation.
 
 ## 5. Target logical architecture
 
-![Target logical architecture](./diagrams/target-logical-architecture.png)
+![Target logical architecture](./diagrams/target-logical-architecture.svg)
 
 ## 6. Recommended backend layers
 
@@ -100,7 +100,7 @@ Contains stable rules:
 - Comparison-selection limits.
 - Recommendation eligibility.
 
-The domain layer must not depend on ASP.NET, Npgsql or a model-provider SDK.
+The domain layer must not depend on FastAPI, asyncpg or a model-provider SDK.
 
 ### Infrastructure layer
 
@@ -116,34 +116,32 @@ Provider interfaces keep the application testable and avoid locking business log
 
 ```text
 backend/
-  AutoWise.sln
-  AutoWise.Api/
-    Endpoints/
-    Middleware/
-    Program.cs
-  AutoWise.Application/
-    Cars/
-    Dealers/
-    Chat/
-    Admin/
-    RAG/
-  AutoWise.Domain/
-    Cars/
-    Dealers/
-    Warranties/
-    Sources/
-  AutoWise.Infrastructure/
-    Persistence/
-    Search/
-    AI/
-    Jobs/
-    Media/
-  AutoWise.Contracts/
-  AutoWise.Tests.Unit/
-  AutoWise.Tests.Integration/
+  app/
+    main.py                 # composition, CORS, lifespan
+    routers/                # HTTP contracts and dependencies
+    application/            # use cases; chat catalogue Protocol
+    models/schemas.py       # Pydantic request/response contracts
+    repositories/           # asyncpg SQL and catalogue adapter
+    core/                   # settings and pool lifecycle
+  tests/
+  requirements.txt
+  run.py
+  Dockerfile
 ```
 
-For the MVP, these may remain folders inside one API project. Split into projects when boundaries become stable; do not create microservices yet.
+Create domain modules when stable rules need them; do not add empty placeholder layers.
+Simple catalogue reads currently call repositories directly. Future multi-step use cases
+must move to application services. Application services must not import FastAPI or asyncpg.
+
+The optional `image_service/` is an experimental inference service enabled with the
+Compose `image` profile. It owns a snapshot/FAISS index, not canonical business data.
+Its `/chat` and `/cars` APIs are standalone demonstrations; the web app uses the main
+API and does not call them. Main API `/api/chat` accepts only an image filename and
+performs no image recognition. Integrating image retrieval must resolve returned car IDs
+against PostgreSQL and validate embedding model/version compatibility.
+
+
+Keep the main API as a modular monolith. The optional inference process is isolated for experimentation and is not required for catalogue requests.
 
 ## 8. Recommended frontend architecture
 
@@ -182,7 +180,7 @@ frontend/src/
 
 Recommended frontend decisions:
 
-- Add React Router for route-driven screens.
+- Keep React Router for route-driven screens.
 - Use generated TypeScript API contracts from OpenAPI or a shared schema.
 - Use a server-state library only when caching/pagination complexity warrants it.
 - Keep filter state in the URL.
@@ -229,7 +227,7 @@ Design rules:
 - Version public contracts before production use.
 - Use Problem Details with stable application error codes.
 - Use consistent pagination envelopes.
-- Pass `CancellationToken` through all async operations.
+- Propagate asyncio cancellation and configure database/provider timeouts.
 - Keep SQL parameterized.
 - Validate request size and file type before reading uploads.
 - Generate OpenAPI in CI and detect breaking changes.
@@ -269,7 +267,7 @@ Current Docker Compose remains suitable:
 
 ### Production recommendation
 
-![Recommended production deployment](./diagrams/production-deployment.png)
+![Recommended production deployment](./diagrams/production-deployment.svg)
 
 - Keep database on a private network.
 - Run migrations as a controlled release step.
@@ -360,11 +358,11 @@ No raw prompt/message logging by default.
 ## 17. Architecture decisions requested
 
 1. Approve a modular monolith instead of microservices for the MVP.
-2. Approve raw Npgsql repositories or choose EF Core for mutation-heavy admin features.
+2. Approve raw asyncpg repositories or choose SQLAlchemy for mutation-heavy admin features.
 3. Choose the text embedding provider/model compatible with 768 dimensions.
 4. Choose the LLM provider abstraction and initial implementation.
 5. Choose authentication strategy for administrators.
-6. Choose background job technology: hosted service, Hangfire, Quartz or external worker.
+6. Choose background job technology: an asyncio worker, Celery/RQ or external worker.
 7. Choose media storage for production.
 8. Decide whether model variants are required before comparison goes live.
 

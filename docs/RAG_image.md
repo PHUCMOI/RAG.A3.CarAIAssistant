@@ -1,3 +1,5 @@
+> Backend runtime đã chuyển sang Python/FastAPI (2026-10-02). Các cấu trúc RAG bên dưới là mục tiêu; hiện API chính chỉ structured retrieval. Image service là prototype tùy chọn, chưa tích hợp frontend hoặc pgvector.
+
 # AutoWise Image RAG — Business logic và implementation specification
 
 ## 1. Mục tiêu và phạm vi
@@ -119,18 +121,16 @@ Hash không được dùng như public URL.
 
 Interface đề xuất:
 
-```csharp
-public interface IImageEmbeddingProvider
-{
-    string Model { get; }
-    string Version { get; }
-    string PreprocessingVersion { get; }
-    int Dimension { get; }
+```python
+from typing import Protocol, Sequence
 
-    Task<IReadOnlyList<ReadOnlyMemory<float>>> EmbedAsync(
-        IReadOnlyList<ImageInput> images,
-        CancellationToken cancellationToken);
-}
+class ImageEmbeddingProvider(Protocol):
+    model: str
+    version: str
+    dimension: int
+    preprocessing_version: str
+
+    async def embed(self, inputs: Sequence[bytes]) -> list[list[float]]: ...
 ```
 
 Rules:
@@ -417,32 +417,32 @@ Không lưu upload vào repo, `wwwroot` công khai hoặc database bytea trong M
 ## 17. Backend structure
 
 ```text
-backend/CarRag.Api/
-  Application/
-    Rag/
-      SearchByImage.cs
-      FuseMultimodalResults.cs
-      ReindexImages.cs
-  Domain/
-    Rag/
-      ImageEvidence.cs
-      ImageMatch.cs
-      MultimodalResult.cs
-  Infrastructure/
-    AI/
-      ImageEmbeddingProvider.cs
-    Media/
-      ImageDecoder.cs
-      TemporaryImageStore.cs
-    Search/
-      ImageSearchService.cs
-      ImageResultAggregator.cs
-    Jobs/
-      ImageIndexingWorker.cs
-  Endpoints/
-    ImageSearchEndpoints.cs
-  Configuration/
-    ImageRagOptions.cs
+backend/app/
+  application/
+    rag/
+      search_by_image.py
+      fuse_multimodal_results.py
+      reindex_images.py
+  domain/
+    rag/
+      image_evidence.py
+      image_match.py
+      multimodal_result.py
+  infrastructure/
+    ai/
+      image_embedding_provider.py
+    media/
+      image_decoder.py
+      temporary_image_store.py
+    search/
+      image_search_service.py
+      image_result_aggregator.py
+    jobs/
+      image_indexing_worker.py
+  routers/
+    image_search_endpoints.py
+  core/
+    image_rag_options.py
 
 scripts/
   generate_image_embeddings.py

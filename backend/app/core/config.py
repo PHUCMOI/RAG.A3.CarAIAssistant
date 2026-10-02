@@ -1,6 +1,8 @@
 import os
 from functools import lru_cache
 from typing import Optional
+from urllib.parse import quote
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -25,7 +27,7 @@ def parse_ado_connection_string(conn_str: str) -> str:
     username = parts.get("username") or parts.get("user id", "car_rag")
     password = parts.get("password", "car_rag_dev")
 
-    return f"postgresql://{username}:{password}@{host}:{port}/{database}"
+    return f"postgresql://{quote(username, safe='')}:{quote(password, safe='')}@{host}:{port}/{database}"
 
 
 class Settings(BaseSettings):
@@ -48,7 +50,7 @@ class Settings(BaseSettings):
     postgres_user: str = "car_rag"
     postgres_password: str = "car_rag_dev"
 
-    frontend_origin: str = "http://localhost:5173"
+    frontend_origin: str = Field("http://localhost:5173", validation_alias=AliasChoices("FRONTEND_ORIGIN", "FrontendOrigin"))
     db_pool_min_size: int = 1
     db_pool_max_size: int = 10
 
@@ -70,7 +72,7 @@ class Settings(BaseSettings):
             return parse_ado_connection_string(conn_str)
 
         return (
-            f"postgresql://{self.postgres_user}:{self.postgres_password}@"
+            f"postgresql://{quote(self.postgres_user, safe='')}:{quote(self.postgres_password, safe='')}@"
             f"{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
         )
 

@@ -212,7 +212,7 @@ The final two scripts make all image records use the committed `dataset/images` 
 
 These initialization files run automatically only when PostgreSQL creates a new empty data volume. Existing volumes require an explicit migration command.
 
-Recommended change before production: adopt a versioned migration tool such as FluentMigrator, DbUp or EF Core migrations instead of relying on Docker initialization order.
+Recommended change before production: adopt a versioned migration tool such as Alembic (with SQLAlchemy) or a versioned SQL migration runner instead of relying on Docker initialization order.
 
 ## 9. Backup and data integrity
 

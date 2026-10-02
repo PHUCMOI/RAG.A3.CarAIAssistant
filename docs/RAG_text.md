@@ -1,3 +1,5 @@
+> Backend runtime đã chuyển sang Python/FastAPI (2026-10-02). Các cấu trúc RAG bên dưới là mục tiêu; hiện API chính chỉ structured retrieval. Image service là prototype tùy chọn, chưa tích hợp frontend hoặc pgvector.
+
 # AutoWise Text RAG — Business logic và implementation specification
 
 ## 1. Mục tiêu và phạm vi
@@ -231,19 +233,17 @@ Không giữ transaction mở trong lúc gọi external embedding API.
 
 ## 9. Embedding contract
 
-Interface C# đề xuất:
+Python Protocol đề xuất (chưa triển khai):
 
-```csharp
-public interface ITextEmbeddingProvider
-{
-    string Model { get; }
-    string Version { get; }
-    int Dimension { get; }
+```python
+from typing import Protocol, Sequence
 
-    Task<IReadOnlyList<ReadOnlyMemory<float>>> EmbedAsync(
-        IReadOnlyList<string> inputs,
-        CancellationToken cancellationToken);
-}
+class TextEmbeddingProvider(Protocol):
+    model: str
+    version: str
+    dimension: int
+
+    async def embed(self, inputs: Sequence[str]) -> list[list[float]]: ...
 ```
 
 Rules:
@@ -452,19 +452,19 @@ Không chỉ kiểm tra “citation ID tồn tại”; phải kiểm tra citatio
 
 | File/module | Trách nhiệm |
 |---|---|
-| `Application/Rag/ReindexDocuments.cs` | Use case tạo job/reindex |
-| `Application/Rag/TestRetrieval.cs` | Retrieval test không generation |
-| `Domain/Rag/RagDocument.cs` | Domain representation/invariants |
-| `Infrastructure/AI/EmbeddingProvider.cs` | Provider adapter |
-| `Infrastructure/AI/LlmProvider.cs` | Structured generation adapter |
-| `Infrastructure/Search/FullTextSearchService.cs` | PostgreSQL FTS |
-| `Infrastructure/Search/VectorSearchService.cs` | pgvector query |
-| `Infrastructure/Search/HybridSearchService.cs` | RRF/dedupe/diversity |
-| `Infrastructure/Jobs/RagIndexingWorker.cs` | Background ingestion |
-| `Endpoints/RagEndpoints.cs` | Admin/test HTTP mapping |
-| `Configuration/RagOptions.cs` | Validated retrieval config |
+| `application/rag/reindex_documents.py` | Use case tạo job/reindex |
+| `application/rag/test_retrieval.py` | Retrieval test không generation |
+| `domain/rag/rag_document.py` | Domain representation/invariants |
+| `infrastructure/ai/embedding_provider.py` | Provider adapter |
+| `infrastructure/ai/llm_provider.py` | Structured generation adapter |
+| `infrastructure/search/full_text_search_service.py` | PostgreSQL FTS |
+| `infrastructure/search/vector_search_service.py` | pgvector query |
+| `infrastructure/search/hybrid_search_service.py` | RRF/dedupe/diversity |
+| `infrastructure/jobs/rag_indexing_worker.py` | Background ingestion |
+| `routers/rag_endpoints.py` | Admin/test HTTP mapping |
+| `core/rag_options.py` | Validated retrieval config |
 
-Interface boundaries nên dùng domain/contracts, không trả trực tiếp `NpgsqlDataReader` hoặc provider SDK types.
+Interface boundaries nên dùng domain/contracts, không trả trực tiếp `asyncpg.Record` hoặc provider SDK types.
 
 ## 17. Pseudocode query orchestration
 

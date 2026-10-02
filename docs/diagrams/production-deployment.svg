@@ -6,7 +6,7 @@
   <g transform="translate(245 175)"><rect class="public" width="200" height="115" rx="12"/><text class="t" x="34" y="39">Reverse proxy</text><text class="s" x="49" y="68">TLS + routing</text><text class="s" x="34" y="92">Rate limits / headers</text></g>
   <path class="a" d="M180 232H245"/>
   <g transform="translate(500 55)"><rect class="app" width="220" height="100" rx="12"/><text class="t" x="34" y="40">Static React assets</text><text class="s" x="51" y="68">CDN or web host</text></g>
-  <g transform="translate(500 215)"><rect class="app" width="220" height="100" rx="12"/><text class="t" x="38" y="40">ASP.NET API replicas</text><text class="s" x="55" y="68">Stateless runtime</text></g>
+  <g transform="translate(500 215)"><rect class="app" width="220" height="100" rx="12"/><text class="t" x="38" y="40">FastAPI API replicas</text><text class="s" x="55" y="68">Stateless runtime</text></g>
   <g transform="translate(500 375)"><rect class="app" width="220" height="100" rx="12"/><text class="t" x="34" y="40">Background worker</text><text class="s" x="43" y="68">Embedding + ingestion</text></g>
   <path class="a" d="M445 215C470 215 470 105 500 105"/><path class="a" d="M445 250H500"/>
   <rect class="group" x="790" y="25" width="380" height="465" rx="16"/><text class="t" x="815" y="58">Private infrastructure / providers</text>

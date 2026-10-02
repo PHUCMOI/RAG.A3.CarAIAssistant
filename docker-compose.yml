@@ -30,8 +30,7 @@ services:
     environment:
       PORT: 8080
       DATABASE_URL: postgresql://car_rag:car_rag_dev@postgres:5432/car_rag
-      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=car_rag;Username=car_rag;Password=car_rag_dev
-      FrontendOrigin: http://localhost:5173
+      FRONTEND_ORIGIN: http://localhost:5173
     ports:
       - "5080:8080"
     depends_on:
@@ -48,6 +47,7 @@ services:
       - api
 
   image-service:
+    profiles: ["image"]
     build:
       context: .
       dockerfile: image_service/Dockerfile

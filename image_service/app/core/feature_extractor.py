@@ -200,6 +200,6 @@ def get_feature_extractor(use_clip: Optional[bool] = None) -> BaseFeatureExtract
             if "clip" in model_name.lower():
                 return CLIPFeatureExtractor(model_name=model_name or settings.clip_model_name)
         except Exception as e:
-            logger.debug("Không đọc được model_info.json: %s", e)
+            raise RuntimeError("Cannot initialize the extractor declared by model_info.json; refusing incompatible query embeddings") from e
 
     return StandaloneFeatureExtractor(dim=settings.embedding_dim)

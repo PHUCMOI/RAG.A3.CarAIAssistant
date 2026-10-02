@@ -5,7 +5,7 @@
 - Product: AutoWise Vietnam Car RAG
 - Version: 1.0
 - Updated: 2026-10-01
-- Backend: ASP.NET Core / C#
+- Backend: Python 3.12 / FastAPI / asyncpg
 - Frontend: React / TypeScript
 - Database: PostgreSQL with pgvector
 - UI language: Vietnamese

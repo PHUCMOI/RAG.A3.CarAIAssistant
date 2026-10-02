@@ -1,3 +1,5 @@
+> Backend runtime đã chuyển sang Python/FastAPI (2026-10-02). Các cấu trúc RAG bên dưới là mục tiêu; hiện API chính chỉ structured retrieval. Image service là prototype tùy chọn, chưa tích hợp frontend hoặc pgvector.
+
 # AutoWise RAG — Tài liệu tổng thể
 
 ## 1. Mục đích tài liệu
@@ -340,44 +342,44 @@ Chi tiết migration xem hai tài liệu chuyên sâu. Các thay đổi này là
 ## 12. Cấu trúc code mục tiêu
 
 ```text
-backend/CarRag.Api/
-  Application/
-    Chat/
-      AskAssistant.cs
-      QueryClassifier.cs
-      ContextBuilder.cs
-      CitationValidator.cs
-    Rag/
-      ReindexDocuments.cs
-      TestRetrieval.cs
-  Configuration/
-    RagOptions.cs
-    AiProviderOptions.cs
-  Contracts/
-    Chat/
-    Rag/
-  Domain/
-    Rag/
-      RagDocument.cs
-      Evidence.cs
-      RetrievalResult.cs
-  Infrastructure/
-    AI/
-      LlmProvider.cs
-      EmbeddingProvider.cs
-    Search/
-      StructuredSearchService.cs
-      FullTextSearchService.cs
-      VectorSearchService.cs
-      HybridSearchService.cs
-      ImageSearchService.cs
-    Jobs/
-      RagIndexingWorker.cs
-    Persistence/
-      RagRepository.cs
-  Endpoints/
-    ChatEndpoints.cs
-    RagEndpoints.cs
+backend/app/
+  application/
+    chat/
+      ask_assistant.py
+      query_classifier.py
+      context_builder.py
+      citation_validator.py
+    rag/
+      reindex_documents.py
+      test_retrieval.py
+  core/
+    rag_options.py
+    ai_provider_options.py
+  models/
+    chat/
+    rag/
+  domain/
+    rag/
+      rag_document.py
+      evidence.py
+      retrieval_result.py
+  infrastructure/
+    ai/
+      llm_provider.py
+      embedding_provider.py
+    search/
+      structured_search_service.py
+      full_text_search_service.py
+      vector_search_service.py
+      hybrid_search_service.py
+      image_search_service.py
+    jobs/
+      rag_indexing_worker.py
+    persistence/
+      rag_repository.py
+  routers/
+    chat_endpoints.py
+    rag_endpoints.py
 
 scripts/
   ingest_documents.py
@@ -386,7 +388,7 @@ scripts/
   validate_rag_index.py
 ```
 
-Python scripts phù hợp cho offline ingestion/experimentation. Runtime query orchestration nằm trong C# để giữ một business contract. Không nhân đôi business rules giữa Python và C#; document template/version phải được quản lý rõ ràng.
+Python scripts phù hợp cho offline ingestion/experimentation. Runtime query orchestration nằm trong application layer Python của API chính. Image service chỉ cung cấp inference/retrieval; không nhân đôi business rules giữa API và inference service; document template/version phải được quản lý rõ ràng.
 
 ## 13. Configuration contract
 

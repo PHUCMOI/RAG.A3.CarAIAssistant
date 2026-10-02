@@ -13,3 +13,6 @@ frontend/dist/
 data/Confirmed_fronts/
 data/tables_V2.0/
 
+
+.venv/
+.pytest_cache/

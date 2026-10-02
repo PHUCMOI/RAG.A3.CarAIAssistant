@@ -23,7 +23,7 @@ def test_chat_no_results(client):
         response = client.post("/api/chat", json={"question": "Xe bay 2099"})
         assert response.status_code == 200
         data = response.json()
-        assert data["grounded"] is True
+        assert data["grounded"] is False
         assert len(data["contexts"]) == 0
         assert "Chưa tìm thấy dữ liệu phù hợp" in data["answer"]
     finally:
@@ -35,4 +35,4 @@ def test_chat_with_image(client):
     assert response.status_code == 200
     data = response.json()
     assert data["grounded"] is True
-    assert "Ảnh đã được đính kèm thành công" in data["answer"]
+    assert "Giao diện đã nhận tên ảnh" in data["answer"]

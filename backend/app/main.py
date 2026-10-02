@@ -19,10 +19,11 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("AutoWise API starting up...")
     await init_db_pool()
-    yield
-    # Shutdown
-    logger.info("AutoWise API shutting down...")
-    await close_db_pool()
+    try:
+        yield
+    finally:
+        logger.info("AutoWise API shutting down...")
+        await close_db_pool()
 
 
 app = FastAPI(
