@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import type { Car } from "../../entities/car/model";
-import { apiGet } from "../../shared/api/client";
+import { apiGet, PublicApiError } from "../../shared/api/client";
 import { formatVnd } from "../../shared/formatting/currency";
 import { formatDate } from "../../shared/formatting/date";
 import { LoadingSkeleton } from "../../shared/components/LoadingSkeleton";
@@ -32,17 +32,20 @@ export default function CarDetailPage() {
   }
   const { carId } = useParams();
   const [car, setCar] = useState<Car | null>(null);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState("");
+  const [retry, setRetry] = useState(0);
   useEffect(() => {
-    if (carId)
-      apiGet<Car>(`/api/cars/${carId}`)
-        .then(setCar)
-        .catch(() => setError(true));
-  }, [carId]);
+    const controller = new AbortController();
+    setCar(null); setError(""); setFavoriteMessage("");
+    if (carId) apiGet<Car>(`/api/cars/${encodeURIComponent(carId)}`, controller.signal)
+      .then(value => { if (!controller.signal.aborted) setCar(value); })
+      .catch(e => { if (!controller.signal.aborted) setError(e instanceof PublicApiError && e.status === 404 ? "Không tìm thấy mẫu xe này." : "Không kết nối được dữ liệu xe. Vui lòng thử lại."); });
+    return () => controller.abort();
+  }, [carId, retry]);
   if (error)
     return (
       <div className="page narrow">
-        <ErrorState message="Không tìm thấy mẫu xe này." />
+        <ErrorState message={error} onRetry={() => setRetry(x => x + 1)} />
       </div>
     );
   if (!car)

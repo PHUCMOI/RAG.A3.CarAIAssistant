@@ -54,3 +54,5 @@
   .account-nav-group { position: static; }
   .account-nav-dropdown { top: calc(100% - 4px); left: 16px; right: 16px; min-width: 0; }
 }
+
+.mobile-menu-button{display:none}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #347c68;outline-offset:3px}@media(max-width:900px){.mobile-menu-button{display:inline-flex;margin-left:auto}.site-header .main-nav.mobile-open{display:flex;position:absolute;top:72px;left:0;right:0;padding:20px;flex-direction:column;background:#f8f9f6;border-bottom:1px solid #cfd5d1;max-height:calc(100dvh - 72px);overflow:auto}.main-nav.mobile-open a.active:after{display:none}.site-header{gap:12px;padding-inline:16px}.site-header>.header-cta{margin-left:0}}

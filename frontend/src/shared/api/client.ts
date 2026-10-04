@@ -1,6 +1,9 @@
+export class PublicApiError extends Error {
+  constructor(public status: number) { super(`Không thể tải dữ liệu (${status}). Vui lòng thử lại.`) }
+}
 export async function apiGet<T>(path: string, signal?: AbortSignal): Promise<T> {
   const response = await fetch(path, { signal })
-  if (!response.ok) throw new Error(`API request failed (${response.status})`)
+  if (!response.ok) throw new PublicApiError(response.status)
   return response.json() as Promise<T>
 }
 
@@ -10,6 +13,6 @@ export async function apiPost<TResponse, TBody>(path: string, body: TBody): Prom
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
-  if (!response.ok) throw new Error(`API request failed (${response.status})`)
+  if (!response.ok) throw new PublicApiError(response.status)
   return response.json() as Promise<TResponse>
 }
