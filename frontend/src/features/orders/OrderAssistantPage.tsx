@@ -1,3 +1,4 @@
+import { useCarQuestion } from "../chat/useCarQuestion";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { useOrdersSession } from "./Session";
@@ -45,6 +46,8 @@ type Session = {
 };
 type SessionItem = { id: string; updatedAt: string };
 export function UnifiedAssistantChat() {
+  const carQuestion = useCarQuestion();
+  useEffect(() => { if (carQuestion) setText(current => current || carQuestion); }, [carQuestion]);
   const [mode, setMode] = useState("auto");
   const [orderContext, setOrderContext] = useState(false);
   const [searchParams] = useSearchParams();
@@ -53,7 +56,7 @@ export function UnifiedAssistantChat() {
   const [session, setSession] = useState<Session | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [selected, setSelected] = useState("");
-  const [text, setText] = useState(() => sessionStorage.getItem("assistant-pending-question") || (searchParams.get("car") ? `Hãy tư vấn cho tôi về xe ${searchParams.get("car")}` : ""));
+  const [text, setText] = useState(() => sessionStorage.getItem("assistant-pending-question") || "");
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

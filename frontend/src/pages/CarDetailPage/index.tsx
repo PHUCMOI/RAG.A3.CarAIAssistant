@@ -9,6 +9,7 @@ import { ErrorState } from "../../shared/components/ErrorState";
 import { request } from "../../features/orders/api";
 import { useOrdersSession } from "../../features/orders/Session";
 import { useNavigate } from "react-router-dom";
+import { CarWarranty, CarDealers } from "../../features/car-search/CarRelatedInfo";
 
 export default function CarDetailPage() {
   const { user } = useOrdersSession();
@@ -60,7 +61,9 @@ export default function CarDetailPage() {
     ["Hộp số", car.transmission],
     ["Số ghế", car.seats ? `${car.seats}` : null],
     ["Động cơ", car.engine],
-    ["Số ảnh", `${car.imageCount}`],
+    ["Công suất", car.enginePowerHp != null ? `${car.enginePowerHp} mã lực` : null],
+    ["Dài × rộng × cao", [car.lengthMm, car.widthMm, car.heightMm].every(x => x != null) ? `${car.lengthMm} × ${car.widthMm} × ${car.heightMm} mm` : null],
+    ["Chiều dài cơ sở", car.wheelbaseMm != null ? `${car.wheelbaseMm} mm` : null],
   ];
   return (
     <div className="page">
@@ -80,16 +83,11 @@ export default function CarDetailPage() {
           <h1>{car.displayName}</h1>
           <p>{car.description}</p>
           <strong className="detail-price">
-            {formatVnd(car.priceVndFrom)}
+            {car.priceVndFrom != null ? `Giá tham khảo từ ${formatVnd(car.priceVndFrom)}` : "Chưa có giá tham khảo"}
           </strong>
           <small>
             Cập nhật: {formatDate(car.priceAsOf)} · Nguồn:{" "}
-            <Link
-              className="text-link"
-              to={`/sources/${encodeURIComponent(car.priceSourceId || car.presenceSourceId)}`}
-            >
-              {car.priceSourceId || car.presenceSourceId}
-            </Link>
+            {car.priceSourceId ? <Link className="text-link" to={`/sources/${encodeURIComponent(car.priceSourceId)}`}>{car.priceSourceId}</Link> : "Chưa có nguồn giá"}
           </small>
           <div className="detail-actions">
             <Link
@@ -112,7 +110,7 @@ export default function CarDetailPage() {
             >
               So sánh xe này
             </Link>
-            <Link className="button" to={`/chat?car=${car.carId}`}>
+            <Link className="button" to={`/chat?car=${encodeURIComponent(car.carId)}&carName=${encodeURIComponent(car.displayName)}`}>
               Hỏi về xe này
             </Link>
             <Link
@@ -137,23 +135,9 @@ export default function CarDetailPage() {
             ))}
           </div>
         </section>
-        <aside className="content-panel warranty-panel">
-          <span className="section-kicker">Bảo hành</span>
-          <h2>
-            {car.warrantyMonths
-              ? `${car.warrantyMonths} tháng`
-              : "Chưa có dữ liệu"}
-          </h2>
-          <p>
-            {car.warrantyDistanceKm
-              ? `Hoặc ${new Intl.NumberFormat("vi-VN").format(car.warrantyDistanceKm)} km, tùy điều kiện nào đến trước.`
-              : "Hãy xác nhận chính sách theo VIN và ngày bán."}
-          </p>
-          <Link className="text-link" to={`/sources/${car.presenceSourceId}`}>
-            Xem nguồn dữ liệu →
-          </Link>
-        </aside>
+        <CarWarranty key={car.carId} car={car} />
       </div>
+      <CarDealers key={car.carId} car={car} />
     </div>
   );
 }

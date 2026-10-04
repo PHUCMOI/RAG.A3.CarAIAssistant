@@ -1,4 +1,5 @@
-import { FormEvent, useState } from 'react'
+import { useCarQuestion } from "../../features/chat/useCarQuestion";
+import { FormEvent, useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { apiPost } from '../../shared/api/client'
 
@@ -11,7 +12,9 @@ type Context = { carId: string; displayName: string; description: string; presen
 type Message = { role: 'user' | 'assistant'; content: string; contexts?: Context[] }
 
 function GuestChat() {
-  const [params] = useSearchParams(); const [question, setQuestion] = useState(params.get('car') ? `Hãy tư vấn cho tôi về xe ${params.get('car')}` : ''); const [sending, setSending] = useState(false)
+  const carQuestion = useCarQuestion();
+  useEffect(() => { if (carQuestion) setQuestion(current => current || carQuestion); }, [carQuestion]);
+  const [params] = useSearchParams(); const [question, setQuestion] = useState(''); const [sending, setSending] = useState(false)
   const [messages, setMessages] = useState<Message[]>([{ role: 'assistant', content: 'Xin chào! Hãy cho mình biết ngân sách, số ghế hoặc mẫu xe bạn đang quan tâm.' }])
   async function submit(event: FormEvent) { event.preventDefault(); const text = question.trim(); if (!text || sending) return; setMessages(x => [...x, { role: 'user', content: text }]); setQuestion(''); setSending(true); try { if (isOrderQuestion(text)) { sessionStorage.setItem('assistant-pending-question', text); setMessages(x => [...x, { role: 'assistant', content: 'Bạn cần đăng nhập để tra cứu và xử lý đơn hàng của mình.' }]); return; } const result = await apiPost<{ answer: string; contexts: Context[] }, { question: string } >('/api/chat', { question: text }); setMessages(x => [...x, { role: 'assistant', content: result.answer, contexts: result.contexts }]) } catch { setMessages(x => [...x, { role: 'assistant', content: 'Không kết nối được với API. Vui lòng thử lại.' }]) } finally { setSending(false) } }
   const prompts = ['SUV 5 chỗ dưới 1 tỷ', 'So sánh Honda CR-V và Mazda CX-5', 'Đại lý Toyota tại Hà Nội']
