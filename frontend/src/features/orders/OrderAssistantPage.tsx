@@ -231,7 +231,7 @@ function Chat() {
                       </small>
                     )}
                     {m.detailUrl && (
-                      <Link to={m.detailUrl}>Xem đơn {m.orderCode} →</Link>
+                      <Link to={m.detailUrl}>{m.orderCode ? `Xem đơn ${m.orderCode}` : "Mở trang tài khoản"} →</Link>
                     )}
                   </article>
                 ))}
