@@ -19,7 +19,7 @@ Chỉ triển khai code C#, không sửa image_service hoặc thêm thay đổi 
 | 5. Hội thoại dài | Live AWS summary thành công và hỏi tiếp payment/previous; unit test summary failure giữ summary cũ và ID đã xác minh. |
 | 6. CSRF/replay/race | HTTP thiếu CSRF bị 400; DB replay/body conflict, hai DbContext cùng version chỉ một commit, lỗi SaveChanges rollback toàn bộ; regression orders pass. |
 | 7. Tương thích | Context={} phục hồi SelectedOrderId/topic; giới hạn 100 lượt; HTTP session mới rỗng và logout trả 401; browser mở lại session phục hồi lịch sử/đơn. Source UI giữ draft khi lỗi/conflict, unmount khi logout. |
-| 8. Build/test/docs | 58/58 pass không skip, Docker build, EF check, regression DB, tài liệu runtime trong docs/bedrock-csharp.md. |
+| 8. Build/test/docs | 58/58 pass không skip, Docker build, EF check, regression DB, tài liệu runtime trong docs/features/order-assistant/bedrock-csharp.md. |
 
 ## Request ID từ Docker sau rebuild cuối
 

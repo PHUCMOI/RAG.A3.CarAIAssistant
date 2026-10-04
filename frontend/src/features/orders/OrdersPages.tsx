@@ -13,6 +13,7 @@ import { ErrorState } from "../../shared/components/ErrorState";
 import { LoadingSkeleton } from "../../shared/components/LoadingSkeleton";
 import { request, statuses, type Order, type Page, type User } from "./api";
 import { useOrdersSession } from "./Session";
+import { OrderEvidencePanel } from "./OrderEvidenceCards";
 
 function message(err: unknown) {
   return err instanceof Error ? err.message : "Không thể xử lý yêu cầu.";
@@ -595,6 +596,7 @@ export function CustomersPage() {
   );
 }
 function Detail({ admin }: { admin: boolean }) {
+  const [paymentPage, setPaymentPage] = useState(1);
   const { orderId } = useParams();
   const [order, setOrder] = useState<Order | null>(null);
   const [error, setError] = useState("");
@@ -659,6 +661,7 @@ function Detail({ admin }: { admin: boolean }) {
         actualHandoverAt: actual ? new Date(actual).toISOString() : null,
         location: form.get("location"),
         reason: form.get("reason"),
+        confirmed: form.get("confirmed") === "on",
       },
       "PUT",
     );
@@ -770,6 +773,7 @@ function Detail({ admin }: { admin: boolean }) {
             Dự kiến: <strong>{formatDate(order.plannedDate)}</strong>
           </p>
           <p>Địa điểm: {order.deliveryLocation || "Chưa có thông tin"}</p>
+          <p>{order.deliveryScheduleConfirmed && order.deliveryConfirmedAt ? "Lịch đã được đại lý xác nhận" : "Lịch chưa được đại lý xác nhận"}</p>
           <p>
             Thực tế:{" "}
             {order.actualHandoverAt
@@ -823,6 +827,11 @@ function Detail({ admin }: { admin: boolean }) {
                 Lý do cập nhật
                 <input name="reason" maxLength={500} required />
               </label>
+              <label>
+                <input name="confirmed" type="checkbox" />
+                Đại lý xác nhận lịch bàn giao này
+              </label>
+              <p className="orders-help">Chọn xác nhận cho mỗi lần lưu lịch. Nếu không chọn, lịch được lưu là dự kiến.</p>
               <button className="button" disabled={busy}>
                 Lưu lịch bàn giao
               </button>
@@ -830,6 +839,25 @@ function Detail({ admin }: { admin: boolean }) {
           )}
         </section>
       </div>
+      {admin && !ended && (
+        <section className="content-panel orders-section">
+          <h2>Thông tin chờ dành cho khách</h2>
+          <form className="orders-form" key={"progress-note" + order.version} onSubmit={(event) => {
+            event.preventDefault();
+            const form = new FormData(event.currentTarget);
+            void mutate("/progress-note", { version: order.version, customerWaitingReason: form.get("customerWaitingReason") || null, reason: form.get("reason") }, "PUT");
+          }}>
+            <label>Thông tin chờ hiển thị cho khách (tùy chọn)
+              <textarea name="customerWaitingReason" maxLength={500} rows={3} defaultValue={order.customerWaitingReason || ""} />
+            </label>
+            <p className="orders-help">Chỉ nhập nội dung được phép gửi cho khách. Để trống để xóa; nội dung được xóa khi chuyển trạng thái.</p>
+            <label>Lý do cập nhật thông tin chờ (ghi nhận nội bộ)
+              <input name="reason" maxLength={500} required />
+            </label>
+            <button className="button" disabled={busy}>Lưu thông tin chờ</button>
+          </form>
+        </section>
+      )}
       {admin && !ended && (
         <section className="content-panel orders-section">
           <h2>Cập nhật trạng thái</h2>
@@ -930,6 +958,7 @@ function Detail({ admin }: { admin: boolean }) {
             </form>
           </section>
         )}
+      <OrderEvidencePanel orderId={order.id} admin={admin} version={order.version} />
       <section className="content-panel orders-section">
         <h2>Giao dịch thanh toán</h2>
         <p className="orders-help">
@@ -948,7 +977,7 @@ function Detail({ admin }: { admin: boolean }) {
               </tr>
             </thead>
             <tbody>
-              {order.payments.map((payment) => (
+              {order.payments.slice((paymentPage - 1) * 20, paymentPage * 20).map((payment) => (
                 <tr key={payment.id}>
                   <td>{payment.reference}</td>
                   <td>
@@ -1003,6 +1032,7 @@ function Detail({ admin }: { admin: boolean }) {
           </table>
         </div>
         {!order.payments.length && <p>Chưa có giao dịch.</p>}
+        {order.payments.length > 20 && <div className="orders-toolbar"><button className="mini-button" disabled={paymentPage === 1} onClick={() => setPaymentPage(p => p - 1)}>Trang trước</button><span>Trang {paymentPage}</span><button className="mini-button" disabled={paymentPage * 20 >= order.payments.length} onClick={() => setPaymentPage(p => p + 1)}>Trang sau</button></div>}
         {admin && !ended && (
           <form
             className="orders-form orders-inline-form"

@@ -299,6 +299,8 @@ docker compose up -d --build api web
 
 ## Tài liệu thiết kế
 
+- [Order Assistant: tài liệu nền và 6 User Story triển khai tuần tự](docs/features/order-assistant/README.md).
+
 - [`docs/csharp_owner_features.md`](docs/csharp_owner_features.md): module C# do bạn owner — đơn hàng, thanh toán, bàn giao, chatbot và customer account đã triển khai; phân tích còn ở đặc tả.
 
 - [`docs/spec.md`](docs/spec.md): phạm vi sản phẩm và release plan.

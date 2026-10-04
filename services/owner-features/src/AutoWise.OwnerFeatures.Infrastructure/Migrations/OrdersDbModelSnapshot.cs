@@ -151,6 +151,53 @@ namespace AutoWise.OwnerFeatures.Infrastructure.Migrations
                     b.ToTable("chat_sessions", "orders_service");
                 });
 
+            modelBuilder.Entity("AutoWise.OwnerFeatures.Infrastructure.DocumentRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CustomerNote")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Required")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UpdatedBy");
+
+                    b.HasIndex("OrderId", "Name");
+
+                    b.ToTable("order_document_checklist", "orders_service", t =>
+                        {
+                            t.HasCheckConstraint("CK_document_status", "\"Status\" IN ('missing','pending','valid','needs_changes')");
+                        });
+                });
+
             modelBuilder.Entity("AutoWise.OwnerFeatures.Infrastructure.FavoriteRecord", b =>
                 {
                     b.Property<Guid>("UserId")
@@ -167,11 +214,76 @@ namespace AutoWise.OwnerFeatures.Infrastructure.Migrations
                     b.ToTable("favorites", "orders_service");
                 });
 
+            modelBuilder.Entity("AutoWise.OwnerFeatures.Infrastructure.NotificationEventRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Attempts")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DetailUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("DueAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ErrorCode")
+                        .HasColumnType("text");
+
+                    b.Property<string>("EventKey")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("OrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly?>("PlannedDate")
+                        .HasColumnType("date");
+
+                    b.Property<long?>("ScheduleVersion")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("Status", "DueAt");
+
+                    b.HasIndex("UserId", "EventKey", "Type")
+                        .IsUnique();
+
+                    b.ToTable("notification_outbox", "orders_service");
+                });
+
             modelBuilder.Entity("AutoWise.OwnerFeatures.Infrastructure.NotificationRecord", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<string>("ChatUrl")
+                        .HasColumnType("text");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -191,6 +303,12 @@ namespace AutoWise.OwnerFeatures.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("business");
+
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
@@ -198,7 +316,7 @@ namespace AutoWise.OwnerFeatures.Infrastructure.Migrations
 
                     b.HasIndex("UserId", "CreatedAt");
 
-                    b.HasIndex("UserId", "EventKey")
+                    b.HasIndex("UserId", "EventKey", "Type")
                         .IsUnique();
 
                     b.ToTable("notifications", "orders_service");
@@ -365,6 +483,150 @@ namespace AutoWise.OwnerFeatures.Infrastructure.Migrations
                     b.ToTable("appointment_slots", "orders_service");
                 });
 
+            modelBuilder.Entity("AutoWise.OwnerFeatures.Infrastructure.SupportAuditRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("ActorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("At")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("TicketId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("Version")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActorId");
+
+                    b.HasIndex("TicketId", "Version");
+
+                    b.ToTable("support_audits", "orders_service");
+                });
+
+            modelBuilder.Entity("AutoWise.OwnerFeatures.Infrastructure.SupportReplyRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("At")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("AuthorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AuthorRole")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<bool>("Internal")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("TicketId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorId");
+
+                    b.HasIndex("TicketId", "At");
+
+                    b.ToTable("support_replies", "orders_service");
+                });
+
+            modelBuilder.Entity("AutoWise.OwnerFeatures.Infrastructure.SupportTicketRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("AssignedTo")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ChangeRequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("OrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("PaymentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SessionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Snapshot")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<string>("Summary")
+                        .IsRequired()
+                        .HasMaxLength(800)
+                        .HasColumnType("character varying(800)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssignedTo");
+
+                    b.HasIndex("ChangeRequestId");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("SessionId");
+
+                    b.HasIndex("CustomerId", "UpdatedAt");
+
+                    b.ToTable("support_tickets", "orders_service", t =>
+                        {
+                            t.HasCheckConstraint("CK_support_status", "\"Status\" IN ('new','in_progress','resolved','closed')");
+                        });
+                });
+
             modelBuilder.Entity("AutoWise.OwnerFeatures.Infrastructure.UserRecord", b =>
                 {
                     b.Property<Guid>("Id")
@@ -376,6 +638,11 @@ namespace AutoWise.OwnerFeatures.Infrastructure.Migrations
 
                     b.Property<bool>("CreatedAtEstimated")
                         .HasColumnType("boolean");
+
+                    b.Property<bool>("DeliveryRemindersEnabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
 
                     b.Property<string>("DisplayName")
                         .IsRequired()
@@ -459,12 +726,36 @@ namespace AutoWise.OwnerFeatures.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("AutoWise.OwnerFeatures.Infrastructure.DocumentRecord", b =>
+                {
+                    b.HasOne("AutoWise.OwnerFeatures.Infrastructure.OrderRecord", null)
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("AutoWise.OwnerFeatures.Infrastructure.UserRecord", null)
+                        .WithMany()
+                        .HasForeignKey("UpdatedBy")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("AutoWise.OwnerFeatures.Infrastructure.FavoriteRecord", b =>
                 {
                     b.HasOne("AutoWise.OwnerFeatures.Infrastructure.UserRecord", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("AutoWise.OwnerFeatures.Infrastructure.NotificationEventRecord", b =>
+                {
+                    b.HasOne("AutoWise.OwnerFeatures.Infrastructure.UserRecord", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
@@ -512,6 +803,66 @@ namespace AutoWise.OwnerFeatures.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("AutoWise.OwnerFeatures.Infrastructure.SupportAuditRecord", b =>
+                {
+                    b.HasOne("AutoWise.OwnerFeatures.Infrastructure.UserRecord", null)
+                        .WithMany()
+                        .HasForeignKey("ActorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("AutoWise.OwnerFeatures.Infrastructure.SupportTicketRecord", null)
+                        .WithMany()
+                        .HasForeignKey("TicketId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("AutoWise.OwnerFeatures.Infrastructure.SupportReplyRecord", b =>
+                {
+                    b.HasOne("AutoWise.OwnerFeatures.Infrastructure.UserRecord", null)
+                        .WithMany()
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("AutoWise.OwnerFeatures.Infrastructure.SupportTicketRecord", null)
+                        .WithMany()
+                        .HasForeignKey("TicketId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("AutoWise.OwnerFeatures.Infrastructure.SupportTicketRecord", b =>
+                {
+                    b.HasOne("AutoWise.OwnerFeatures.Infrastructure.UserRecord", null)
+                        .WithMany()
+                        .HasForeignKey("AssignedTo")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("AutoWise.OwnerFeatures.Infrastructure.ChangeRecord", null)
+                        .WithMany()
+                        .HasForeignKey("ChangeRequestId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("AutoWise.OwnerFeatures.Infrastructure.UserRecord", null)
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("AutoWise.OwnerFeatures.Infrastructure.OrderRecord", null)
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("AutoWise.OwnerFeatures.Infrastructure.ChatSessionRecord", null)
+                        .WithMany()
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

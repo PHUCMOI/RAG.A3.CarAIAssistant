@@ -10,6 +10,12 @@ public sealed class OrderStore(OrdersDb db, ICommonCatalogue common)
 {
     public static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
     public static Order Read(OrderRecord row) => JsonSerializer.Deserialize<Order>(row.Payload, Json)!;
+    static Order CustomerView(Order order)
+    {
+        foreach(var entry in order.History.Where(e=>e.Action=="progress_note"))
+        {entry.Detail="Thông tin chờ đã được cập nhật.";entry.Actor="";}
+        return order;
+    }
     public static OrderRecord Row(Order order) => new() { Id = order.Id, Code = order.Code, CustomerId = order.CustomerId, CreatedAt = order.CreatedAt, Status = order.Status, Version = order.Version, Payload = JsonSerializer.Serialize(order, Json) };
     public async Task<Page<Order>> List(Guid? customer, string? status, string? query, int page, int pageSize, bool delayed, CancellationToken ct)
     {
@@ -23,12 +29,12 @@ public sealed class OrderStore(OrdersDb db, ICommonCatalogue common)
         if (!string.IsNullOrWhiteSpace(query)) rows = rows.Where(x => x.Code.Contains(query));
         var count = await rows.CountAsync(ct);
         var data = await rows.OrderByDescending(x => x.CreatedAt).ThenBy(x => x.Id).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
-        return new(data.Select(Read).ToList(), page, pageSize, count);
+        return new(data.Select(row=>customer == null ? Read(row) : CustomerView(Read(row))).ToList(), page, pageSize, count);
     }
     public async Task<Order?> Get(Guid id, Guid? customer, CancellationToken ct)
     {
         var row = await db.Orders.AsNoTracking().SingleOrDefaultAsync(x => x.Id == id && (customer == null || x.CustomerId == customer), ct);
-        return row == null ? null : Read(row);
+        return row == null ? null : customer == null ? Read(row) : CustomerView(Read(row));
     }
     public async Task<Order> Create(CreateOrderRequest request, string actor, string key, CancellationToken ct)
     {
@@ -50,15 +56,29 @@ public sealed class OrderStore(OrdersDb db, ICommonCatalogue common)
         Idempotent(actor, key, request, action + ":" + id, async () =>
         {
             var row = await db.Orders.FromSqlInterpolated($"SELECT * FROM orders_service.orders WHERE \"Id\" = {id} FOR UPDATE").SingleOrDefaultAsync(ct) ?? throw new KeyNotFoundException();
-            var order = Read(row); order.CheckVersion(version); mutation(order);
+            var order = Read(row); order.CheckVersion(version); var before = order.Version; mutation(order);
             row.Payload = JsonSerializer.Serialize(order, Json); row.Status = order.Status; row.Version = order.Version;
-            Notify(order,"Đơn đã cập nhật: "+order.History.Last().Detail);
+            if (order.Version != before)
+            {
+                var kind = order.History.Last().Action;
+                if (kind == "status") Notify(order, "Trạng thái đơn: " + StatusLabel(order.Status), "order_status");
+                if (kind == "delivery")
+                {
+                    Notify(order, $"Lịch giao {order.PlannedDate:dd/MM/yyyy}: " + (order.DeliveryScheduleConfirmed ? "đã xác nhận" : "chưa xác nhận"), "delivery_schedule");
+                    await NotificationEvents.Schedule(db, order, DateTimeOffset.UtcNow, ct);
+                }
+                if (kind == "payment_confirmed") Notify(order, "Giao dịch " + order.History.Last().Detail + " đã xác nhận", "payment_confirmed");
+                if (order.Status is "completed" or "cancelled")
+                    await db.NotificationEvents.Where(x => x.OrderId == id && x.Type == "delivery_reminder" && x.Status == "pending")
+                        .ExecuteUpdateAsync(x => x.SetProperty(e => e.Status, "cancelled"), ct);
+            }
             foreach (var payment in order.Payments)
                 if (!await db.PaymentReferences.AnyAsync(p => p.Reference == payment.Reference, ct)) db.PaymentReferences.Add(new() { Reference = payment.Reference, OrderId = id });
                 else if (await db.PaymentReferences.AnyAsync(p => p.Reference == payment.Reference && p.OrderId != id, ct)) throw new BusinessRuleException("Mã giao dịch đã dùng trên đơn khác.");
             return order;
         }, ct);
-    void Notify(Order o,string title)=>db.Notifications.Add(new(){UserId=o.CustomerId,EventKey="order:"+o.Id+":"+o.Version,Title=title,DetailUrl="/account/orders/"+o.Id});
+    void Notify(Order o,string title,string type="order_created") => NotificationEvents.Add(db,o.CustomerId,"order:"+o.Id+":"+o.Version,o.Code+": "+title,"/account/orders/"+o.Id,type,o.Id);
+    static string StatusLabel(string status) => status switch { "pending_confirmation" => "chờ xác nhận", "confirmed" => "đã xác nhận", "preparing_vehicle" => "đang chuẩn bị xe", "ready_for_handover" => "sẵn sàng bàn giao", "completed" => "hoàn tất", "cancelled" => "đã hủy", _ => status };
     private async Task<Order> Idempotent<T>(string actor, string key, T request, string action, Func<Task<Order>> work, CancellationToken ct)
     {
         if (key.Length < 8 || key.Length > 100) throw new BusinessRuleException("Cần Idempotency-Key dài 8–100 ký tự.");

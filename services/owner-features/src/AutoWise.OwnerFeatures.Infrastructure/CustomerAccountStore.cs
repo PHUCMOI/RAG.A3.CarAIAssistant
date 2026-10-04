@@ -43,18 +43,21 @@ public sealed class CustomerAccountStore(OrdersDb db, ICommonCatalogue common, J
         var row = await db.Notifications.AsNoTracking().SingleOrDefaultAsync(x => x.Id == id && x.UserId == user, ct) ?? throw new KeyNotFoundException();
         return row;
     }
-    public async Task<Page<ChangeRecord>> Changes(Guid? user, int page, int size, CancellationToken ct)
+    public async Task<Page<ChangeRecord>> Changes(Guid? user, int page, int size, CancellationToken ct, Guid? requestId = null)
     {
         JourneyQueries.Paging(page, size);
         var q = db.Changes.AsNoTracking().AsQueryable();
+        if (requestId != null) q = q.Where(x => x.Id == requestId);
         if (user != null)
             q = q.Where(x => x.CustomerId == user);
         return new(await q.OrderByDescending(x => x.CreatedAt).ThenBy(x => x.Id).Skip((page - 1) * size).Take(size).ToListAsync(ct), page, size, await q.CountAsync(ct));
     }
-    public Task<ChangeRecord> Change(Guid user, ChangeInput input, string key, CancellationToken ct) => tx.Run(user, key, "change:create", input, async () =>
+    public Task<ChangeRecord> Change(Guid user, ChangeInput input, string key, CancellationToken ct) => tx.Run(user, key, "change:create", input, () => CreateChangeInTransaction(user, input, ct), ct);
+    internal async Task<ChangeRecord> CreateChangeInTransaction(Guid user, ChangeInput input, CancellationToken ct, long? expectedVersion = null)
     {
         var row = await db.Orders.FromSqlInterpolated($"SELECT * FROM orders_service.orders WHERE \"Id\"={input.OrderId} FOR UPDATE").SingleOrDefaultAsync(x => x.CustomerId == user, ct) ?? throw new KeyNotFoundException();
         CustomerRules.ActiveOrder(OrderStore.Read(row));
+        if (expectedVersion != null) CustomerRules.Version(row.Version, expectedVersion.Value);
         if (input.Type is not ("change" or "cancel"))
             throw new BusinessRuleException("Loại đề nghị không hợp lệ.");
         if (await db.Changes.AnyAsync(x => x.OrderId == input.OrderId && x.Status == "pending", ct))
@@ -62,8 +65,8 @@ public sealed class CustomerAccountStore(OrdersDb db, ICommonCatalogue common, J
         var item = new ChangeRecord { CustomerId = user, OrderId = input.OrderId, Type = input.Type, Reason = CustomerRules.Text(input.Reason) };
         db.Changes.Add(item);
         return item;
-    }, ct);
-    public Task<ChangeRecord> Decide(Guid id, Guid actor, DecisionInput input, string key, CancellationToken ct) => tx.Run(actor, key, "change:decide:" + id, input, async () => { var row = await db.Changes.FromSqlInterpolated($"SELECT * FROM orders_service.order_change_requests WHERE \"Id\"={id} FOR UPDATE").SingleOrDefaultAsync(ct) ?? throw new KeyNotFoundException(); CustomerRules.Version(row.Version, input.Version); if (row.Status != "pending" || input.Decision is not ("approved" or "rejected")) throw new BusinessRuleException("Quyết định không hợp lệ."); row.Response = CustomerRules.Text(input.Reason); row.Status = input.Decision; row.ReviewedBy = actor; row.ReviewedAt = DateTimeOffset.UtcNow; row.Version++; tx.Notify(row.CustomerId, "change:" + id + ":" + row.Version, "Đề nghị đã được phản hồi: " + row.Response, "/account/change-requests"); return row; }, ct);
+    }
+    public Task<ChangeRecord> Decide(Guid id, Guid actor, DecisionInput input, string key, CancellationToken ct) => tx.Run(actor, key, "change:decide:" + id, input, async () => { var row = await db.Changes.FromSqlInterpolated($"SELECT * FROM orders_service.order_change_requests WHERE \"Id\"={id} FOR UPDATE").SingleOrDefaultAsync(ct) ?? throw new KeyNotFoundException(); CustomerRules.Version(row.Version, input.Version); if (row.Status != "pending" || input.Decision is not ("approved" or "rejected")) throw new BusinessRuleException("Quyết định không hợp lệ."); row.Response = CustomerRules.Text(input.Reason); row.Status = input.Decision; row.ReviewedBy = actor; row.ReviewedAt = DateTimeOffset.UtcNow; row.Version++; tx.Notify(row.CustomerId, "change:" + id + ":" + row.Version, row.Code + (row.Status == "approved" ? ": đề nghị đã được duyệt" : ": đề nghị bị từ chối"), "/account/change-requests?requestId=" + row.Id, "change_decision", row.OrderId); return row; }, ct);
     public async Task<object> Favorites(Guid user, CancellationToken ct)
     {
         var rows = await db.Favorites.AsNoTracking().Where(x => x.UserId == user).OrderByDescending(x => x.CreatedAt).Take(100).ToListAsync(ct);

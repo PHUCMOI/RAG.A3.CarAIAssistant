@@ -12,6 +12,7 @@ public class ContextHttpSmokeTests
     [ContextHttpFact]
     public async Task CustomerDialogueAndSessionIsolationOverHttp()
     {
+        await using var fixture=await HttpCustomerFixture.Create();
         using var client=new HttpClient(new HttpClientHandler {CookieContainer=new CookieContainer()})
         {BaseAddress=new Uri("http://localhost:5173/api/orders-service/"),Timeout=TimeSpan.FromSeconds(60)};
         async Task<JsonElement> Post(string path,object body)
@@ -22,7 +23,7 @@ public class ContextHttpSmokeTests
             using var response=await client.SendAsync(request);response.EnsureSuccessStatusCode();
             return (await response.Content.ReadFromJsonAsync<JsonElement>()).Clone();
         }
-        await Post("auth/login",new {email="customer1@autowise.test",password="DemoCustomer!2026"});
+        await Post("auth/login",new {email=fixture.User.Email,password="DemoCustomer!2026"});
         var session=await Post("assistant/sessions",new{id=Guid.NewGuid()});
         var id=session.GetProperty("id").GetString();
         var path=$"assistant/sessions/{id}/messages";
@@ -32,11 +33,11 @@ public class ContextHttpSmokeTests
             return session.GetProperty("messages").EnumerateArray().Last();
         }
         foreach(var item in new[]{
-            ("Đơn AW-DEMO-0001 đang đến đâu?","GetMyOrderStatus","AW-DEMO-0001"),
-            ("Còn phải trả bao nhiêu?","GetMyOrderPaymentSummary","AW-DEMO-0001"),
-            ("Khi nào nhận xe?","GetMyDeliverySchedule","AW-DEMO-0001"),
-            ("Còn đơn AW-DEMO-0007 thì sao?","GetMyDeliverySchedule","AW-DEMO-0007"),
-            ("Đơn trước còn nợ bao nhiêu?","GetMyOrderPaymentSummary","AW-DEMO-0001")})
+            ($"Đơn {fixture.Codes[0]} đang đến đâu?","GetMyOrderProgress",fixture.Codes[0]),
+            ("Còn phải trả bao nhiêu?","GetMyOrderPaymentSummary",fixture.Codes[0]),
+            ("Khi nào nhận xe?","GetMyDeliverySchedule",fixture.Codes[0]),
+            ($"Còn đơn {fixture.Codes[1]} thì sao?","GetMyDeliverySchedule",fixture.Codes[1]),
+            ("Đơn trước còn nợ bao nhiêu?","GetMyOrderPaymentSummary",fixture.Codes[0])})
         {
             var reply=await Send(item.Item1);
             Assert.Equal(item.Item2,reply.GetProperty("tool").GetString());Assert.Equal(item.Item3,reply.GetProperty("orderCode").GetString());

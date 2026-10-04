@@ -68,7 +68,7 @@ liệu giao dịch; đo token usage thực tế và số lời gọi bổ sung.
 - [x] Session mới/logout xóa context UI; reload/mở session cũ phục hồi từ server.
 - [x] Giữ draft khi conflict/error; tải lại không gửi lặp mutation.
 - [x] Log request ID, latency, usage, context version và fallback, không prompt.
-- [x] Cập nhật docs/bedrock-csharp.md và hợp đồng assistant hiện có.
+- [x] Cập nhật docs/features/order-assistant/bedrock-csharp.md và hợp đồng assistant hiện có.
 
 ## 7. Kiểm thử nghiệm thu
 

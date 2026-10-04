@@ -32,6 +32,10 @@ public static class CustomerJourneyEndpoints
             return Results.NoContent();
         }).RequireRateLimiting("password");
         mine.MapGet("/notifications", (int? page, int? pageSize, HttpContext c, CustomerAccountStore s, CancellationToken ct) => s.Notifications(User(c), page ?? 1, pageSize ?? 20, ct));
+        mine.MapGet("/notification-preferences", (HttpContext c, NotificationDelivery s, CancellationToken ct) => s.Preferences(User(c), ct));
+        mine.MapPut("/notification-preferences", (NotificationPreferences i, HttpContext c, NotificationDelivery s, CancellationToken ct) => s.SetPreferences(User(c), i.DeliveryRemindersEnabled, ct));
+        admin.MapGet("/notification-outbox/failures", async (OrdersDb db, CancellationToken ct) => await db.NotificationEvents.AsNoTracking().Where(x=>x.Status=="failed").OrderBy(x=>x.CreatedAt).Take(100).Select(x=>new{x.Id,x.Type,x.Attempts,x.ErrorCode,x.CreatedAt}).ToListAsync(ct));
+        admin.MapPost("/notification-outbox/{id:guid}/retry", async (Guid id, NotificationDelivery s, CancellationToken ct) => { await s.Retry(id,ct);return Results.NoContent(); });
         mine.MapGet("/notifications/unread-count", async (HttpContext c, OrdersDb db, CancellationToken ct) => new { count = await db.Notifications.CountAsync(x => x.UserId == User(c) && x.ReadAt == null, ct) });
         mine.MapPost("/notifications/{id:guid}/read", (Guid id, HttpContext c, CustomerAccountStore s, CancellationToken ct) => s.MarkRead(User(c), id, ct));
         mine.MapGet("/purchase-requests", (int? page, int? pageSize, string? status, string? query, HttpContext c, PurchaseStore s, CancellationToken ct) => s.List(User(c), status, query, page ?? 1, pageSize ?? 20, ct));
@@ -46,7 +50,7 @@ public static class CustomerJourneyEndpoints
             var action = route == "responses" ? "response" : route;
             admin.MapPost("/purchase-requests/{id:guid}/" + route, (Guid id, JourneyAction i, HttpContext c, PurchaseStore s, CancellationToken ct) => s.Act(id, User(c), true, action, i, Key(c), ct));
         }
-        mine.MapGet("/change-requests", (int? page, int? pageSize, HttpContext c, CustomerAccountStore s, CancellationToken ct) => s.Changes(User(c), page ?? 1, pageSize ?? 20, ct));
+        mine.MapGet("/change-requests", (int? page, int? pageSize, Guid? requestId, HttpContext c, CustomerAccountStore s, CancellationToken ct) => s.Changes(User(c), page ?? 1, pageSize ?? 20, ct, requestId));
         mine.MapPost("/change-requests", (ChangeInput i, HttpContext c, CustomerAccountStore s, CancellationToken ct) => s.Change(User(c), i, Key(c), ct));
         admin.MapGet("/change-requests", (int? page, int? pageSize, CustomerAccountStore s, CancellationToken ct) => s.Changes(null, page ?? 1, pageSize ?? 20, ct));
         admin.MapPost("/change-requests/{id:guid}/decision", (Guid id, DecisionInput i, HttpContext c, CustomerAccountStore s, CancellationToken ct) => s.Decide(id, User(c), i, Key(c), ct));
@@ -63,3 +67,4 @@ public static class CustomerJourneyEndpoints
         admin.MapPost("/appointments/{id:guid}/actions", (Guid id, AppointmentAction i, HttpContext c, AppointmentStore s, CancellationToken ct) => s.Act(id, User(c), true, i, Key(c), ct));
     }
 }
+public sealed record NotificationPreferences(bool DeliveryRemindersEnabled);

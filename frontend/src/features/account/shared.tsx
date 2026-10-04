@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Navigate, NavLink, Outlet, useLocation } from "react-router-dom";
 import { request } from "../orders/api";
 import { useOrdersSession } from "../orders/Session";
@@ -42,8 +42,57 @@ export const links = [
   ["/account/appointments", "Lịch hẹn"],
   ["/account/favorites", "Xe yêu thích"],
   ["/account/notifications", "Thông báo"],
-  ["/account/assistant", "Trợ lý đơn hàng"],
+  ["/account/support-tickets", "Phiếu hỗ trợ"],
 ];
+const navigationGroups = [
+  { name: "Tài khoản", paths: ["/account/profile", "/account/security"] },
+  { name: "Mua xe & đơn hàng", paths: ["/account/orders", "/account/purchase-requests", "/account/change-requests", "/account/appointments", "/account/favorites"] },
+  { name: "Thông báo & hỗ trợ", paths: ["/account/notifications", "/account/support-tickets"] },
+];
+function AccountNavigation() {
+  const { pathname } = useLocation();
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const navRef = useRef<HTMLElement>(null);
+  useEffect(() => setOpenGroup(null), [pathname]);
+  useEffect(() => {
+    function closeOutside(event: PointerEvent) {
+      if (!navRef.current?.contains(event.target as Node)) setOpenGroup(null);
+    }
+    document.addEventListener("pointerdown", closeOutside);
+    return () => document.removeEventListener("pointerdown", closeOutside);
+  }, []);
+  return (
+    <nav ref={navRef} className="account-nav" aria-label="Tài khoản khách hàng"
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setOpenGroup(null);
+      }}>
+      <NavLink to="/account" end>Tổng quan</NavLink>
+      {navigationGroups.map((group, index) => {
+        const active = group.paths.some((path) => pathname === path || pathname.startsWith(path + "/"));
+        const open = openGroup === group.name;
+        return (
+          <div className="account-nav-group" key={group.name} onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              setOpenGroup(null);
+              event.currentTarget.querySelector("button")?.focus();
+            }
+          }}>
+            <button type="button" className={`account-nav-trigger${active ? " active" : ""}`}
+              aria-expanded={open} aria-controls={`account-nav-group-${index}`}
+              onClick={() => setOpenGroup(open ? null : group.name)}>
+              {group.name}<span className={`account-nav-chevron${open ? " open" : ""}`} aria-hidden="true">⌄</span>
+            </button>
+            <div id={`account-nav-group-${index}`} className="account-nav-dropdown" hidden={!open}>
+              {links.filter(([to]) => group.paths.includes(to)).map(([to, name]) => (
+                <NavLink key={to} to={to} onClick={() => setOpenGroup(null)}>{name}</NavLink>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </nav>
+  );
+}
 export function AccountLayout() {
   const { user, loading, error, refresh } = useOrdersSession();
   const location = useLocation();
@@ -67,13 +116,7 @@ export function AccountLayout() {
   if (user.role !== "Customer") return <Navigate to="/admin/orders" replace />;
   return (
     <>
-      <nav className="account-nav" aria-label="Tài khoản khách hàng">
-        {links.map(([to, name]) => (
-          <NavLink key={to} to={to} end={to === "/account"}>
-            {name}
-          </NavLink>
-        ))}
-      </nav>
+      <AccountNavigation />
       <Outlet />
     </>
   );

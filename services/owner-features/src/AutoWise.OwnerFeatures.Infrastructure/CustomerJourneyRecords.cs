@@ -19,6 +19,8 @@ public sealed class PurchaseRecord
 }
 public sealed class NotificationRecord
 {
+    public string Type { get; set; } = "business";
+    public string? ChatUrl { get; set; }
     public Guid Id { get; set; } = Guid.NewGuid(); public Guid UserId
     {
         get; set;
@@ -30,6 +32,8 @@ public sealed class NotificationRecord
 }
 public sealed class ChangeRecord
 {
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    public string Code => "CR-" + Id.ToString("N")[..12].ToUpperInvariant();
     public Guid Id { get; set; } = Guid.NewGuid(); public Guid CustomerId
     {
         get; set;
@@ -106,7 +110,6 @@ public static class JourneyModel
         p.HasOne<OrderRecord>().WithMany().HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
         var n = b.Entity<NotificationRecord>();
         n.ToTable("notifications");
-        n.HasIndex(x => new { x.UserId, x.EventKey }).IsUnique();
         n.HasIndex(x => new { x.UserId, x.CreatedAt });
         n.HasOne<UserRecord>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
         var c = b.Entity<ChangeRecord>();

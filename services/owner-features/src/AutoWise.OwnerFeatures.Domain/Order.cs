@@ -25,6 +25,10 @@ public sealed class Order
     public DateOnly? PlannedDate { get; set; }
     public DateTimeOffset? ActualHandoverAt { get; set; }
     public string? DeliveryLocation { get; set; }
+    public bool DeliveryScheduleConfirmed { get; set; }
+    public long DeliveryScheduleVersion { get; set; }
+    public DateTimeOffset? DeliveryConfirmedAt { get; set; }
+    public string? CustomerWaitingReason { get; set; }
     public long NetReceived => Payments.Where(p => p.Status == "confirmed").Sum(p => p.Type == "receipt" ? p.AmountVnd : -p.AmountVnd);
     public long RemainingVnd => Status == "cancelled" ? 0 : Math.Max(TotalVnd - NetReceived, 0);
     public void CheckVersion(long version) { if (Version != version) throw new VersionConflictException(); }
@@ -38,6 +42,8 @@ public sealed class Order
         if (target == "completed" && (RemainingVnd != 0 || ActualHandoverAt == null)) throw new BusinessRuleException("Chỉ hoàn thành khi đã thanh toán đủ và ghi nhận bàn giao.");
         if (target == "cancelled" && NetReceived > 0) throw new BusinessRuleException("Hoàn lại tiền đã thu trước khi hủy đơn trong MVP.");
         var previous = Status; Status = target; Record("status", previous + " → " + target + ": " + reason, actor);
+        History.Last().FromStatus = previous; History.Last().ToStatus = target;
+        CustomerWaitingReason = null;
     }
     public void AddPayment(string type, long amount, string reference, Guid? receiptId, string actor)
     {
@@ -45,7 +51,7 @@ public sealed class Order
         if (type is not ("receipt" or "refund") || amount <= 0 || amount > 100_000_000_000L || string.IsNullOrWhiteSpace(reference) || reference.Length > 100) throw new BusinessRuleException("Loại, số tiền hoặc mã giao dịch không hợp lệ.");
         if (Payments.Any(p => p.Reference == reference.Trim())) throw new BusinessRuleException("Mã giao dịch đã tồn tại trên đơn.");
         if (type == "refund" && !Payments.Any(p => p.Id == receiptId && p.Type == "receipt" && p.Status == "confirmed")) throw new BusinessRuleException("Hoàn tiền cần receipt gốc đã xác nhận.");
-        Payments.Add(new() { Type = type, AmountVnd = amount, Reference = reference.Trim(), OriginalReceiptId = receiptId });
+        Payments.Add(new() { Type = type, AmountVnd = amount, Reference = reference.Trim(), OriginalReceiptId = receiptId, CreatedAt = DateTimeOffset.UtcNow });
         Record("payment_created", type + " / " + amount + " VND / " + reference.Trim(), actor);
     }
     public void ConfirmPayment(Guid paymentId, string actor)
@@ -67,15 +73,30 @@ public sealed class Order
     {
         var payment = Payments.SingleOrDefault(p => p.Id == paymentId) ?? throw new BusinessRuleException("Không tìm thấy giao dịch.");
         if (payment.Status != "pending" || string.IsNullOrWhiteSpace(reason) || reason.Length > 500) throw new BusinessRuleException("Cần giao dịch pending và lý do.");
-        payment.Status = "failed"; Record("payment_failed", payment.Reference + ": " + reason, actor);
+        payment.Status = "failed"; payment.FailureReason = reason.Trim(); Record("payment_failed", payment.Reference + ": " + reason, actor);
     }
-    public void Schedule(DateOnly? planned, DateTimeOffset? actual, string location, string reason, string actor)
+    public void Schedule(DateOnly? planned, DateTimeOffset? actual, string location, string reason, string actor, bool confirmed = false)
     {
         if (Status is "cancelled" or "completed") throw new BusinessRuleException("Không sửa lịch đơn đã kết thúc.");
         if (planned == null || string.IsNullOrWhiteSpace(location) || location.Length > 200 || string.IsNullOrWhiteSpace(reason) || reason.Length > 500) throw new BusinessRuleException("Cần ngày, địa điểm và lý do.");
         if (actual != null && (Status != "ready_for_handover" || actual > DateTimeOffset.UtcNow || RemainingVnd > 0)) throw new BusinessRuleException("Bàn giao thực tế cần đơn sẵn sàng, thanh toán đủ, thời điểm không ở tương lai.");
+        if (PlannedDate == planned && ActualHandoverAt == actual?.ToUniversalTime() && DeliveryLocation == location && DeliveryScheduleConfirmed == confirmed) return;
+        DeliveryScheduleVersion++;
         Record("delivery", $"{PlannedDate} → {planned}; địa điểm {location}; thực tế {actual}; {reason}", actor);
         PlannedDate = planned; ActualHandoverAt = actual?.ToUniversalTime(); DeliveryLocation = location;
+        DeliveryScheduleConfirmed = confirmed;
+        DeliveryConfirmedAt = confirmed ? DateTimeOffset.UtcNow : null;
+        var entry = History.Last();
+        entry.PlannedDate = planned; entry.ActualHandoverAt = ActualHandoverAt;
+        entry.DeliveryScheduleConfirmed = confirmed;
+    }
+    public void UpdateCustomerWaitingReason(string? waitingReason, string reason, string actor)
+    {
+        if (Status is "completed" or "cancelled") throw new BusinessRuleException("Không cập nhật thông tin chờ cho đơn đã kết thúc.");
+        if (waitingReason?.Length > 500 || string.IsNullOrWhiteSpace(reason) || reason.Length > 500)
+            throw new BusinessRuleException("Thông tin chờ tối đa 500 ký tự và cần lý do cập nhật.");
+        CustomerWaitingReason = string.IsNullOrWhiteSpace(waitingReason) ? null : waitingReason.Trim();
+        Record("progress_note", reason, actor);
     }
     public void EditDraft(long total, long deposit, string? variant, string reason, string actor)
     {
@@ -91,6 +112,8 @@ public sealed class Order
 }
 public sealed class Payment
 {
+    public DateTimeOffset? CreatedAt { get; set; }
+    public string? FailureReason { get; set; }
     public Guid Id { get; set; } = Guid.NewGuid();
     public string Type { get; set; } = "receipt";
     public string Status { get; set; } = "pending";
@@ -105,4 +128,9 @@ public sealed class OrderEvent
     public string Action { get; set; } = "";
     public string Detail { get; set; } = "";
     public string Actor { get; set; } = "";
+    public string? FromStatus { get; set; }
+    public string? ToStatus { get; set; }
+    public DateOnly? PlannedDate { get; set; }
+    public DateTimeOffset? ActualHandoverAt { get; set; }
+    public bool? DeliveryScheduleConfirmed { get; set; }
 }

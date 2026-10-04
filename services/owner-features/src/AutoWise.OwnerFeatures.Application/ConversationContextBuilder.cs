@@ -20,13 +20,15 @@ public static class ConversationContextBuilder
                 // Never re-use financial/status text as model truth. Successful tools
                 // are sufficient to reconstruct topic transitions.
                 text = m.Role == "user" ? m.Content : null,
-                tool = m.Role == "assistant" ? m.Tool : null
+                tool = m.Role == "assistant" ? m.Tool : null,
+                topics = m.Role == "assistant" ? m.Sections?.Where(s => s.ResultStatus == "success").Select(s => s.Topic).ToArray() : null
             }).ToArray() }).ToList();
         var summary = context.Summary.Length <= 800 ? context.Summary : context.Summary[..800];
         string Serialize() => JsonSerializer.Serialize(new
         {
             memory = new { hasCurrentOrder = context.CurrentOrderId != null, hasPreviousOrder = context.PreviousOrderId != null,
-                lastBusinessIntent = context.LastBusinessIntent, pendingClarification = context.PendingClarification, pendingIntent=context.PendingIntent },
+                lastBusinessIntent = context.LastBusinessIntent, lastBusinessIntents = context.LastBusinessIntents,
+                pendingClarification = context.PendingClarification, pendingIntent=context.PendingIntent, pendingIntents=context.PendingIntents },
             summary, history, question
         },new JsonSerializerOptions {Encoder=JavaScriptEncoder.UnsafeRelaxedJsonEscaping});
         var result = Serialize();

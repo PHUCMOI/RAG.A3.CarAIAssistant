@@ -17,7 +17,9 @@ import {
   CustomersPage,
   OrderDetailPage,
 } from "../features/orders/OrdersPages";
-import OrderAssistantPage from "../features/orders/OrderAssistantPage";
+import { useLocation } from "react-router-dom";
+function AssistantRedirect() { const location = useLocation(); return <Navigate to={"/chat" + location.search} replace />; }
+import { SupportList, SupportDetail } from "../features/account/SupportPages";
 import RagSettingsPage from "../pages/RagSettingsPage";
 
 import { AccountLayout } from "../features/account/shared";
@@ -60,6 +62,8 @@ export function AppRouter() {
             />
             <Route path="appointments" element={<AppointmentsPage admin />} />
             <Route path="customers" element={<CustomersPage />} />
+            <Route path="support-tickets" element={<SupportList admin />} />
+            <Route path="support-tickets/:id" element={<SupportDetail admin />} />
             <Route path="data" element={<AdminDataPage />} />
             <Route path="rag" element={<RagSettingsPage />} />
             <Route
@@ -79,7 +83,7 @@ export function AppRouter() {
               <Route path="security" element={<SecurityPage />} />
               <Route path="orders" element={<OrdersPage />} />
               <Route path="orders/:orderId" element={<OrderDetailPage />} />
-              <Route path="assistant" element={<OrderAssistantPage />} />
+              <Route path="assistant" element={<AssistantRedirect />} />
               <Route path="purchase-requests" element={<PurchaseList />} />
               <Route
                 path="purchase-requests/new"
@@ -93,6 +97,8 @@ export function AppRouter() {
               <Route path="appointments" element={<AppointmentsPage />} />
               <Route path="favorites" element={<FavoritesPage />} />
               <Route path="notifications" element={<NotificationsPage />} />
+              <Route path="support-tickets" element={<SupportList />} />
+              <Route path="support-tickets/:id" element={<SupportDetail />} />
             </Route>
             <Route path="/" element={<HomePage />} />
             <Route path="/cars" element={<CarCatalogPage />} />

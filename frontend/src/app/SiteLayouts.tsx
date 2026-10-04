@@ -74,6 +74,7 @@ export function AdminLayout() {
               <NavLink to="/admin/change-requests">Đề nghị thay đổi</NavLink>
               <NavLink to="/admin/appointments">Lịch hẹn</NavLink>
               <NavLink to="/admin/customers">Khách hàng</NavLink>
+              <NavLink to="/admin/support-tickets">Phiếu hỗ trợ</NavLink>
               <NavLink to="/admin/data">Dữ liệu</NavLink>
               <NavLink to="/admin/rag">Cấu hình RAG</NavLink>
             </nav>

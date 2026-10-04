@@ -38,7 +38,8 @@ assert s["selectedOrderId"] is None
 assert send("Don do den dau?")["tool"] is None
 assert send("don AW-DEMO-0001 va AW-DEMO-0007")["tool"] is None
 before=call(a,"GET","/my/orders/30000000-0000-0000-0000-000000000001")
-assert send("Hay huy don AW-DEMO-0001")["tool"] is None
+assert send("Hay huy don AW-DEMO-0001")["tool"] == "PrepareChangeDraft"
+assert s["draft"]["status"] == "draft" and not s["draft"]["ready"]
 assert call(a,"GET","/my/orders/30000000-0000-0000-0000-000000000001")==before
 call(a,"POST",path+"/messages",{"requestId":str(uuid.uuid4()),"version":s["version"],"content":"x"*1001},status=422)
 csrf=a.get("/auth/csrf").json()["token"]

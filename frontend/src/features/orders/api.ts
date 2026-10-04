@@ -13,6 +13,8 @@ export type Payment = {
   reference: string;
   originalReceiptId: string | null;
   confirmedAt: string | null;
+  createdAt?: string | null;
+  failureReason?: string | null;
 };
 export type Order = {
   id: string;
@@ -34,6 +36,9 @@ export type Order = {
   plannedDate: string | null;
   actualHandoverAt: string | null;
   deliveryLocation: string | null;
+  deliveryScheduleConfirmed?: boolean;
+  deliveryConfirmedAt?: string | null;
+  customerWaitingReason?: string | null;
   payments: Payment[];
   history: { at: string; action: string; detail: string; actor: string }[];
 };

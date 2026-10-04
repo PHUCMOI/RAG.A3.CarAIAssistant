@@ -17,6 +17,7 @@ import type { CarListResponse } from "../../entities/car/model";
 
 type Change = {
   id: string;
+  code: string;
   orderId: string;
   type: string;
   reason: string;
@@ -26,16 +27,16 @@ type Change = {
   createdAt: string;
 };
 export function ChangeRequestsPage({ admin = false }: { admin?: boolean }) {
+  const [params] = useSearchParams();
   const [page, setPage] = useState(1);
   const state = useData<Page<Change>>(
-    (admin ? "/admin" : "/my") + "/change-requests?page=" + page,
+    (admin ? "/admin" : "/my") + "/change-requests?page=" + page + (!admin && params.get("requestId") ? "&requestId=" + encodeURIComponent(params.get("requestId")!) : ""),
   );
   const orders = useData<Page<Order>>(
     admin ? "/admin/orders?pageSize=100" : "/my/orders?pageSize=100",
   );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [params] = useSearchParams();
   async function mutate(path: string, body: unknown) {
     setBusy(true);
     setError("");
@@ -130,7 +131,7 @@ export function ChangeRequestsPage({ admin = false }: { admin?: boolean }) {
                 Mở đơn liên quan →
               </Link>
               <strong>
-                {r.type === "cancel" ? "Đề nghị hủy" : "Đề nghị thay đổi"} ·{" "}
+                {r.code} · {r.type === "cancel" ? "Đề nghị hủy" : "Đề nghị thay đổi"} ·{" "}
                 {labels[r.status]}
               </strong>
               <small>{time(r.createdAt)}</small>

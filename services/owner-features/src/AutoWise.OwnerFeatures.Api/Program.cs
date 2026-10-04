@@ -16,8 +16,14 @@ var connection = builder.Configuration["OrdersDatabase"] ?? "Host=localhost;Data
 builder.Services.AddDbContext<OrdersDb>(o => o.UseNpgsql(connection, np => np.MigrationsHistoryTable("__EFMigrationsHistory", "orders_service")));
 builder.Services.AddScoped<OrderStore>();
 builder.Services.AddScoped<JourneyTransactions>();
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddScoped<NotificationDelivery>();
+builder.Services.AddHostedService<NotificationWorker>();
 builder.Services.AddScoped<PurchaseStore>();
 builder.Services.AddScoped<CustomerAccountStore>();
+builder.Services.AddScoped<AssistantDraftActions>();
+builder.Services.AddScoped<OrderEvidenceStore>();
+builder.Services.AddScoped<SupportStore>();
 builder.Services.AddScoped<AppointmentStore>();
 builder.Services.AddScoped<IOrderAssistant, OrderAssistant>();
 var bedrockOptions = new BedrockOptions();
@@ -102,11 +108,18 @@ api.MapGet("/me", async (HttpContext ctx,OrdersDb db,CancellationToken ct) => {v
 var mine = api.MapGroup("/my").RequireAuthorization(p => p.RequireRole("Customer"));
 mine.MapGet("/orders", (HttpContext ctx, OrderStore store, int? page, int? pageSize, string? status, string? query, bool? delayed, CancellationToken ct) => store.List(Guid.Parse(Actor(ctx)), status, query, page ?? 1, pageSize ?? 20, delayed ?? false, ct));
 mine.MapGet("/orders/{id:guid}", async (Guid id, HttpContext ctx, OrderStore store, CancellationToken ct) => await store.Get(id, Guid.Parse(Actor(ctx)), ct) is { } order ? Results.Ok(order) : Results.NotFound());
+mine.MapGet("/orders/{id:guid}/payment-details",(Guid id,int? page,int? pageSize,string? reference,DateOnly? date,HttpContext ctx,OrderEvidenceStore store,CancellationToken ct)=>store.Payments(id,Guid.Parse(Actor(ctx)),page??1,pageSize??10,reference,date,ct));
+mine.MapGet("/orders/{id:guid}/payments/{paymentId:guid}",(Guid id,Guid paymentId,HttpContext ctx,OrderEvidenceStore store,CancellationToken ct)=>store.Payment(id,paymentId,Guid.Parse(Actor(ctx)),ct));
+mine.MapGet("/orders/{id:guid}/documents",(Guid id,int? page,int? pageSize,HttpContext ctx,OrderEvidenceStore store,CancellationToken ct)=>store.Documents(id,Guid.Parse(Actor(ctx)),page??1,pageSize??10,ct));
+mine.MapGet("/support-tickets",(int? page,int? pageSize,HttpContext ctx,SupportStore store,CancellationToken ct)=>store.List(Guid.Parse(Actor(ctx)),page??1,pageSize??20,ct));
+mine.MapGet("/support-tickets/{id:guid}",(Guid id,int? page,HttpContext ctx,SupportStore store,CancellationToken ct)=>store.Get(id,Guid.Parse(Actor(ctx)),page??1,20,ct));
+mine.MapPost("/support-tickets/{id:guid}/replies",(Guid id,TicketReplyInput input,HttpContext ctx,SupportStore store,CancellationToken ct)=>store.Reply(id,Guid.Parse(Actor(ctx)),false,input,Key(ctx),ct));
 var assistant=api.MapGroup("/assistant").RequireAuthorization(p=>p.RequireRole("Customer"));
 assistant.MapGet("/sessions",(HttpContext ctx,IOrderAssistant service,CancellationToken ct)=>service.List(Guid.Parse(Actor(ctx)),ct));
 assistant.MapPost("/sessions",(CreateChatSessionRequest input,HttpContext ctx,IOrderAssistant service,CancellationToken ct)=>service.Create(Guid.Parse(Actor(ctx)),input.Id,ct));
 assistant.MapGet("/sessions/{id:guid}",(Guid id,HttpContext ctx,IOrderAssistant service,CancellationToken ct)=>service.Get(id,Guid.Parse(Actor(ctx)),ct));
 assistant.MapPost("/sessions/{id:guid}/messages",(Guid id,ChatInput input,HttpContext ctx,IOrderAssistant service,CancellationToken ct)=>service.Send(id,Guid.Parse(Actor(ctx)),input,ct));
+assistant.MapPost("/sessions/{id:guid}/draft-actions",(Guid id,DraftAction input,HttpContext ctx,AssistantDraftActions service,CancellationToken ct)=>service.Act(id,Guid.Parse(Actor(ctx)),input,ct));
 var admin = api.MapGroup("/admin").RequireAuthorization(p => p.RequireRole("Admin"));
 admin.MapGet("/customers", async (OrdersDb db, CancellationToken ct) => Results.Ok(await db.Users.Where(x => x.Role == "Customer").OrderBy(x => x.DisplayName).Select(x => new { x.Id, x.DisplayName, x.Email }).ToListAsync(ct)));
 admin.MapPost("/customers", async (CustomerRequest input, OrdersDb db, CancellationToken ct) =>
@@ -118,13 +131,21 @@ admin.MapPost("/customers", async (CustomerRequest input, OrdersDb db, Cancellat
 });
 admin.MapGet("/orders", (OrderStore store, int? page, int? pageSize, string? status, string? query, bool? delayed, CancellationToken ct) => store.List(null, status, query, page ?? 1, pageSize ?? 20, delayed ?? false, ct));
 admin.MapGet("/orders/{id:guid}", async (Guid id, OrderStore store, CancellationToken ct) => await store.Get(id, null, ct) is { } order ? Results.Ok(order) : Results.NotFound());
+admin.MapGet("/orders/{id:guid}/payment-details",(Guid id,int? page,int? pageSize,string? reference,DateOnly? date,OrderEvidenceStore store,CancellationToken ct)=>store.Payments(id,null,page??1,pageSize??10,reference,date,ct));
+admin.MapGet("/orders/{id:guid}/documents",(Guid id,int? page,int? pageSize,OrderEvidenceStore store,CancellationToken ct)=>store.Documents(id,null,page??1,pageSize??10,ct));
+admin.MapGet("/support-tickets",(int? page,int? pageSize,SupportStore store,CancellationToken ct)=>store.List(null,page??1,pageSize??20,ct));
+admin.MapGet("/support-tickets/{id:guid}",(Guid id,int? page,SupportStore store,CancellationToken ct)=>store.Get(id,null,page??1,20,ct));
+admin.MapPost("/support-tickets/{id:guid}/replies",(Guid id,TicketReplyInput input,HttpContext ctx,SupportStore store,CancellationToken ct)=>store.Reply(id,Guid.Parse(Actor(ctx)),true,input,Key(ctx),ct));
+admin.MapPost("/support-tickets/{id:guid}/actions",(Guid id,TicketActionInput input,HttpContext ctx,SupportStore store,CancellationToken ct)=>store.Act(id,Guid.Parse(Actor(ctx)),input,Key(ctx),ct));
+admin.MapPut("/orders/{id:guid}/documents/{itemId:guid}",(Guid id,Guid itemId,DocumentInput input,HttpContext ctx,OrderEvidenceStore store,CancellationToken ct)=>store.Save(id,itemId,Guid.Parse(Actor(ctx)),input,Key(ctx),ct));
 admin.MapPost("/orders", (CreateOrderRequest input, HttpContext ctx, OrderStore store, CancellationToken ct) => store.Create(input, Actor(ctx), Key(ctx), ct));
 admin.MapPatch("/orders/{id:guid}", (Guid id, DraftRequest input, HttpContext ctx, OrderStore store, CancellationToken ct) => store.Mutate(id, input.Version, input, Actor(ctx), Key(ctx), "draft", o => o.EditDraft(input.TotalVnd, input.DepositRequiredVnd, input.Variant, input.Reason, Actor(ctx)), ct));
 admin.MapPost("/orders/{id:guid}/transitions", (Guid id, TransitionRequest input, HttpContext ctx, OrderStore store, CancellationToken ct) => store.Mutate(id, input.Version, input, Actor(ctx), Key(ctx), "status", o => o.Transition(input.Status, input.Reason, Actor(ctx)), ct));
 admin.MapPost("/orders/{id:guid}/payments", (Guid id, PaymentRequest input, HttpContext ctx, OrderStore store, CancellationToken ct) => store.Mutate(id, input.Version, input, Actor(ctx), Key(ctx), "payment", o => o.AddPayment(input.Type, input.AmountVnd, input.Reference, input.OriginalReceiptId, Actor(ctx)), ct));
 admin.MapPost("/orders/{id:guid}/payments/{paymentId:guid}/confirm", (Guid id, Guid paymentId, ConfirmRequest input, HttpContext ctx, OrderStore store, CancellationToken ct) => store.Mutate(id, input.Version, input, Actor(ctx), Key(ctx), "confirm:" + paymentId, o => o.ConfirmPayment(paymentId, Actor(ctx)), ct));
 admin.MapPost("/orders/{id:guid}/payments/{paymentId:guid}/fail", (Guid id, Guid paymentId, FailRequest input, HttpContext ctx, OrderStore store, CancellationToken ct) => store.Mutate(id, input.Version, input, Actor(ctx), Key(ctx), "fail:" + paymentId, o => o.FailPayment(paymentId, input.Reason, Actor(ctx)), ct));
-admin.MapPut("/orders/{id:guid}/delivery", (Guid id, DeliveryRequest input, HttpContext ctx, OrderStore store, CancellationToken ct) => store.Mutate(id, input.Version, input, Actor(ctx), Key(ctx), "delivery", o => o.Schedule(input.PlannedDate, input.ActualHandoverAt, input.Location, input.Reason, Actor(ctx)), ct));
+admin.MapPut("/orders/{id:guid}/delivery", (Guid id, DeliveryRequest input, HttpContext ctx, OrderStore store, CancellationToken ct) => store.Mutate(id, input.Version, input, Actor(ctx), Key(ctx), "delivery", o => o.Schedule(input.PlannedDate, input.ActualHandoverAt, input.Location, input.Reason, Actor(ctx), input.Confirmed), ct));
+admin.MapPut("/orders/{id:guid}/progress-note", (Guid id, ProgressNoteRequest input, HttpContext ctx, OrderStore store, CancellationToken ct) => store.Mutate(id, input.Version, input, Actor(ctx), Key(ctx), "progress-note", o => o.UpdateCustomerWaitingReason(input.CustomerWaitingReason, input.Reason, Actor(ctx)), ct));
 if (app.Environment.IsDevelopment() && app.Configuration.GetValue<bool>("MigrateOnStartup"))
 {
     using var scope = app.Services.CreateScope(); var db = scope.ServiceProvider.GetRequiredService<OrdersDb>();

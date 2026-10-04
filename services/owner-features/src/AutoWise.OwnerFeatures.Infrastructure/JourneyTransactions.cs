@@ -36,5 +36,6 @@ public sealed class JourneyTransactions(OrdersDb db)
     public Task Lock(string key, CancellationToken ct) => db.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock(hashtextextended({key},0))", ct);
     public static string Pack<T>(T value) => JsonSerializer.Serialize(value, OrderStore.Json);
     public static T Unpack<T>(string value) => JsonSerializer.Deserialize<T>(value, OrderStore.Json)!;
-    public void Notify(Guid user, string eventKey, string title, string url) => db.Notifications.Add(new() { UserId = user, EventKey = eventKey, Title = title, DetailUrl = url });
+    public void Notify(Guid user, string eventKey, string title, string url, string type = "business", Guid? orderId = null)
+        => NotificationEvents.Add(db, user, eventKey, title, url, type, orderId);
 }

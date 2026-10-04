@@ -211,6 +211,7 @@ type Notice = {
   id: string;
   title: string;
   detailUrl: string;
+  chatUrl: string | null;
   createdAt: string;
   readAt: string | null;
 };
@@ -218,6 +219,16 @@ export function NotificationsPage() {
   const [page, setPage] = useState(1);
   const state = useData<Page<Notice>>("/my/notifications?page=" + page);
   const [busy, setBusy] = useState("");
+  const preferences = useData<{deliveryRemindersEnabled: boolean}>("/my/notification-preferences");
+  async function toggleReminders() {
+    if (!preferences.data) return;
+    setBusy("preferences");
+    try {
+      await request("/my/notification-preferences", "PUT", {deliveryRemindersEnabled: !preferences.data.deliveryRemindersEnabled});
+      preferences.reload();
+    } catch (e) { state.setError(failure(e)); }
+    finally { setBusy(""); }
+  }
   async function read(id: string) {
     setBusy(id);
     try {
@@ -232,6 +243,14 @@ export function NotificationsPage() {
   return (
     <div className="page">
       <h1>Thông báo</h1>
+      <section className="content-panel">
+        <h2>Nhắc lịch giao xe</h2>
+        <p>Nhắc lúc 08:00 ngày trước ngày giao theo giờ Việt Nam. Lịch phải được xác nhận. Các thông báo nghiệp vụ vẫn được gửi khi tắt nhắc lịch.</p>
+        {preferences.data ? <button className="mini-button" disabled={!!busy} onClick={() => void toggleReminders()} aria-pressed={preferences.data.deliveryRemindersEnabled}>
+          {preferences.data.deliveryRemindersEnabled ? "Tắt nhắc lịch" : "Bật nhắc lịch"}
+        </button> : <Load error={preferences.error} retry={preferences.reload} />}
+        <button className="mini-button" onClick={state.reload}>Làm mới thông báo</button>
+      </section>
       {state.error && state.data && <p role="alert">{state.error}</p>}
       {!state.data ? (
         <Load error={state.error} retry={state.reload} />
@@ -242,9 +261,10 @@ export function NotificationsPage() {
             <section className="content-panel account-list-row" key={n.id}>
               <strong>{n.title}</strong>
               <small>
-                {time(n.createdAt)} · {n.readAt ? "Đã đọc" : "Chưa đọc"}
+                {new Date(n.createdAt).toLocaleString("vi-VN", {timeZone: "Asia/Ho_Chi_Minh"})} · {n.readAt ? "Đã đọc" : "Chưa đọc"}
               </small>
               <Link to={n.detailUrl}>Xem chi tiết →</Link>
+              {n.chatUrl && <Link to={n.chatUrl}>Hỏi trợ lý về đơn này →</Link>}
               {!n.readAt && (
                 <button
                   className="mini-button"

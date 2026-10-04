@@ -1,10 +1,28 @@
 # Bedrock cho trợ lý C#
 
+## US-02: tiến độ và bước tiếp theo
+
+Intent/topic status hiện gọi GetMyOrderProgress. Backend dựng progress từ trạng thái và lịch sử đơn đã kiểm tra quyền, gồm timeline, bước tiếp theo theo customer/dealer, lịch dự kiến/xác nhận và thông tin chờ dành cho khách. Model không dựng timeline, tự đoán lý do chờ hoặc ngày giao. Phiên cũ vẫn hỗ trợ tool GetMyOrderStatus và sections không có progress.
+
+Admin xác nhận lịch bằng trường confirmed trong endpoint delivery; mỗi lần đổi lịch cần xác nhận lại. Thông tin chờ nhập riêng qua progress-note, không lấy từ Detail/Actor nội bộ. Xem [plan US-02](us-02/plan.md) và [nghiệm thu](us-02/verification.md).
+
+## US-01: nhiều chủ đề trong một lượt
+
+Hợp đồng classifier mới trả `intents` (1–5 nhãn), `orderReference`, `needsClarification` và `clarificationKind`. Parser vẫn đọc hợp đồng `intent` đơn cũ. Chỉ các chủ đề status/payment/delivery/car/warranty được kết hợp; navigation/list/readonly phải đứng riêng. JSON sai hoặc provider lỗi dùng rule fallback.
+
+Tin nhắn assistant thêm `sections` tùy chọn với topic, content, resultStatus (success/missing/error), retrievedAt và detailUrl. Content vẫn có câu trả lời đầy đủ. Context thêm LastBusinessIntents/PendingIntents trong JSONB hiện có, không cần migration.
+
+Chủ đề rõ ràng trong câu hỏi được ưu tiên; câu đổi đơn “còn đơn ... thì sao?” kế thừa danh sách chủ đề của lượt thành công gần nhất. Phần tra cứu lỗi không ghi thành chủ đề thành công. Nhiều mã đơn khác nhau yêu cầu chọn một đơn và giữ đủ các chủ đề đang chờ.
+
+Multi-intent và pending topics hoạt động khi ContextEnabled=false. Cờ này tiếp tục điều khiển lịch sử/summary và tham chiếu đơn trước; không còn tắt khả năng trả lời nhiều chủ đề. Khi Enabled=false, không gọi AWS. Điều hướng tài khoản có rule fallback để hoạt động khi AWS lỗi/throttling.
+
+Xem [kế hoạch US-01](us-01/plan.md) và [nghiệm thu](us-01/verification.md).
+
 ## Ngữ cảnh hội thoại (feature context)
 
 Bật `Bedrock__ContextEnabled=true` để dùng lịch sử, bộ nhớ đơn hiện tại/đơn
 trước, chủ đề và câu hỏi đang cần làm rõ. Mặc định false để rollback về luồng
-trước. Khi Bedrock tắt/lỗi, resolver context dùng rule và bộ nhớ đã kiểm tra quyền.
+trước về lịch sử/summary và tham chiếu đơn trước. Khi Bedrock tắt/lỗi, resolver context dùng rule và bộ nhớ đã kiểm tra quyền.
 Messages và SelectedOrderId giữ hợp đồng cũ; mở lại session trong UI hiện có
 phục hồi đơn được chọn. Không có thay đổi frontend/image_service trong feature.
 
@@ -42,7 +60,7 @@ dotnet test services/owner-features/AutoWise.OwnerFeatures.sln
 HTTP smoke dùng tài khoản demo, thêm hội thoại giả, cần container bật context và
 Bedrock. Database test tạo user/đơn riêng rồi cleanup. Live test sử dụng một số
 request tính phí để xác minh summary/context, không chạy khi thiếu opt-in.
-Chi tiết bằng chứng: docs/features/assistant-context/verification.md.
+Chi tiết bằng chứng: docs/features/order-assistant/context/verification.md.
 
 Region: `us-east-1`. Inference profile: `us.anthropic.claude-haiku-4-5-20251001-v1:0`.
 
@@ -107,3 +125,11 @@ Credentials không nằm trong repository; key từng chia sẻ trong chat cần
 và thay thế sau kiểm thử.
 
 Cập nhật 2026-10-04: quyền Anthropic đã hoạt động; 58/58 test pass với PostgreSQL, HTTP Docker và Bedrock thật (không skip). Xem verification.md cho request ID và phạm vi nghiệm thu.
+
+US-03 bổ sung draft đổi lịch/hủy đơn và action xác nhận riêng, độc lập với provider. Model không được gửi đề nghị từ câu đồng ý; confirm chạy validation/transaction C# và không gọi Bedrock. Draft lưu trong Context JSONB, không đưa trường draft vào context prompt. Xem [nghiệm thu US-03](us-03/verification.md).
+
+US-04 bổ sung documents intent vào allowlist và hỗ trợ section payment/documents cùng lượt. Dữ liệu giao dịch/checklist lấy từ C# theo owner; số tổng do Order tính, không dùng summary/model làm nguồn tiền hoặc hồ sơ. Xem [nghiệm thu US-04](us-04/verification.md), gồm migration và giới hạn nguồn chứng từ.
+
+US-05 nhận yêu cầu nhân viên bằng quy tắc local và tạo draft support; chỉ action xác nhận mới gửi ticket. Snapshot metadata dựng trong C#, notes/replies nội bộ không đưa vào context model. Xem [nghiệm thu US-05](us-05/verification.md).
+
+US-06 dùng transactional outbox và worker C# để tạo thông báo in-app/nhắc lịch, không gọi model để quyết định phát thông báo. Link chat chỉ mang orderId, xác minh owner và đọc lại dữ liệu mỗi lượt. Apply migration ProactiveNotifications trước khi chạy API mới; xem [nghiệm thu US-06](us-06/verification.md) cho mốc nhắc, retry và API quản trị lỗi.
