@@ -1,4 +1,4 @@
-> Backend runtime đã chuyển sang Python/FastAPI (2026-10-02). Các cấu trúc RAG bên dưới là mục tiêu; hiện API chính chỉ structured retrieval. Image service là prototype tùy chọn, chưa tích hợp frontend hoặc pgvector.
+> Backend Python/FastAPI có module text RAG (2026-10-03): documents tiếng Việt, E5 768 chiều, pgvector và Ollama. Chạy indexing và cấu hình provider trước khi dùng vector/LLM; API fallback structured/template khi chưa sẵn sàng. Xem `backend/app/application/rag/README.md`. Các phần history/admin/jobs/image fusion trong tài liệu vẫn là mục tiêu.
 
 # AutoWise RAG — Tài liệu tổng thể
 
@@ -18,18 +18,23 @@ Hai tài liệu chuyên sâu đi kèm:
 - PostgreSQL và extension `pgvector`.
 - 50 xe, 215 ảnh, 22 đại lý, 9 chính sách bảo hành và 61 nguồn.
 - `documents.text_embedding vector(768)` và `car_images.image_embedding vector(512)` đã được khai báo.
-- `POST /api/chat` tìm xe bằng PostgreSQL rồi tạo câu trả lời theo template.
+- Text RAG tại `backend/app/application/rag/`: intent/entities, document tiếng Việt,
+  lexical/pgvector retrieval, Ollama structured output và template fallback.
+- API hiện tại là `POST /api/chat` và `POST /api/search/text`. Các `/api/v1` và
+  session/admin payload bên dưới là thiết kế tương lai ngoài phạm vi MVP này.
 - Dữ liệu nghiệp vụ trong database được lưu bằng tiếng Anh; giao diện và câu trả lời cho người dùng là tiếng Việt.
 
 ### 2.2 Chưa có
 
-- Chưa có bản ghi trong `documents`.
-- Chưa sinh text/image embedding.
-- Chưa có hybrid retrieval, reranker hoặc LLM provider.
+- Database seed vẫn để `documents` rỗng; cần chạy text indexing CLI sau seed.
+- Text pipeline cần index hợp lệ và model providers sẵn sàng trên môi trường chạy; xác nhận bằng live smoke.
+- Image embeddings chưa tích hợp vào API chính; reranker chưa triển khai.
 - Chưa lưu chat session/message.
-- Chưa có citation validator và bộ đánh giá RAG.
+- Citation/statement validator và runner text đã có; faithfulness/completeness và
+  cross-review ground truth vẫn chờ đánh giá thật.
 
-Vì vậy, hệ thống hiện tại là **structured retrieval prototype**, chưa phải complete RAG.
+MVP có code text RAG với fallback; nghiệm thu runtime yêu cầu PostgreSQL, E5 và
+Ollama thật. Xem `docs/RAG_STATUS.md` để biết bằng chứng và giới hạn.
 
 ### 2.3 Mục tiêu
 
@@ -555,4 +560,3 @@ Một RAG feature chỉ được coi là hoàn tất khi:
 6. Dùng fake providers trong unit/integration tests.
 7. Chạy retrieval evaluation trước khi bật LLM.
 8. Kiểm tra citations và fallback trước khi bật feature flag cho UI.
-

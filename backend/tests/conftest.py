@@ -2,6 +2,7 @@ import sys
 from unittest.mock import AsyncMock, patch
 from datetime import date
 from pathlib import Path
+from contextlib import asynccontextmanager
 import pytest
 from fastapi.testclient import TestClient
 
@@ -57,6 +58,10 @@ class MockDbConnection:
         self.cars = cars if cars is not None else [MOCK_CAR_ROW]
         self.dealers = dealers if dealers is not None else [MOCK_DEALER_ROW]
 
+    @asynccontextmanager
+    async def transaction(self, **kwargs):
+        yield
+
     async def fetch(self, query: str, *args):
         q = query.lower()
         if "from cars" in q:
@@ -96,7 +101,7 @@ def client(mock_db):
 
     app.dependency_overrides[get_db_connection] = override_get_db
     try:
-        with patch("app.main.init_db_pool", new_callable=AsyncMock), patch("app.main.close_db_pool", new_callable=AsyncMock):
+        with patch("app.main.init_db_pool", new_callable=AsyncMock), patch("app.main.close_db_pool", new_callable=AsyncMock), patch("app.application.rag.dependencies.providers", return_value=(None, None)):
             with TestClient(app) as test_client:
                 yield test_client
     finally:

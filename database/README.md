@@ -26,6 +26,7 @@ PostgreSQL official entrypoint tự chạy các file được mount vào `/docke
 | 6 | `004_seed_dealers.sql` | Hoàn thiện 22 đại lý và nguồn tương ứng |
 | 7 | `005_use_curated_image_paths.sql` | Chuyển 215 image paths sang `dataset/images` |
 | 8 | `006_verify_seed.sql` | Chuẩn hóa sequences và fail-fast nếu seed thiếu |
+| 9 | `007_text_rag.sql` | Thêm hash/version, search_vector và indexes cho text RAG |
 
 Tên mount thực tế trong `docker-compose.yml` có prefix tuần tự để PostgreSQL chạy đúng thứ tự này.
 
@@ -60,7 +61,11 @@ Kết quả phải là `total = 215` và `curated = 215`.
 
 Docker chỉ tự chạy `/docker-entrypoint-initdb.d` khi tạo volume trống. Nếu volume đã tồn tại, không dùng `docker compose down -v` trừ khi bạn chấp nhận xóa database local.
 
-Để áp dụng hai migration mới mà không xóa dữ liệu:
+Để áp dụng các migration liên quan mà không xóa dữ liệu:
+
+Lệnh kiểm tra `006_verify_seed.sql` dưới đây chỉ dành cho seed **chưa indexing**
+(0 documents). Với database đã có documents, bỏ qua lệnh 006 và áp dụng riêng
+migration text RAG ở đoạn tiếp theo.
 
 ```powershell
 Get-Content -Raw database/005_use_curated_image_paths.sql |
@@ -69,6 +74,18 @@ Get-Content -Raw database/005_use_curated_image_paths.sql |
 Get-Content -Raw database/006_verify_seed.sql |
   docker compose exec -T postgres psql -U car_rag -d car_rag -v ON_ERROR_STOP=1
 ```
+
+`006_verify_seed.sql` dành cho kiểm tra seed ban đầu và yêu cầu 0 documents;
+không chạy lại sau text indexing. Đối với database đã seed và có documents,
+áp dụng riêng migration text RAG:
+
+```powershell
+Get-Content -Raw database/007_text_rag.sql |
+  docker compose exec -T postgres psql -U car_rag -d car_rag -v ON_ERROR_STOP=1
+```
+
+Lệnh này idempotent và không tạo embeddings. Xem [setup toàn project](../docs/SETUP.md)
+để chạy indexing sau migration và kiểm tra `validation.ready`.
 
 ## Rebuild seed từ corpus raw
 

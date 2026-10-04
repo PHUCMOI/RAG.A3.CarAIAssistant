@@ -28,6 +28,14 @@ class Settings(BaseSettings):
     db_pool_min_size: int = 1
     db_pool_max_size: int = 10
 
+    rag_enabled: bool = True
+    embedding_model: str = "intfloat/multilingual-e5-base"
+    embedding_revision: str = "main"
+    embedding_cache_dir: Optional[str] = None
+    ollama_url: str = "http://localhost:11434"
+    ollama_model: str = "qwen2.5:3b"
+    ollama_timeout: float = 90.0
+
     @field_validator("database_url")
     @classmethod
     def validate_database_url(cls, value: Optional[str]) -> Optional[str]:
