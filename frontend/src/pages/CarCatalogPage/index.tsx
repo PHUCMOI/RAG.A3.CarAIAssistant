@@ -1,29 +1,78 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import type { Car, CarListResponse } from '../../entities/car/model'
 import { CarCard } from '../../entities/car/CarCard'
 import { apiGet } from '../../shared/api/client'
 import { LoadingSkeleton } from '../../shared/components/LoadingSkeleton'
 import { ErrorState } from '../../shared/components/ErrorState'
-import { readSavedComparison, saveComparison } from '../../features/car-compare/hooks'
 import { EmptyState } from '../../shared/components/EmptyState'
+import { readSavedComparison, saveComparison } from '../../features/car-compare/hooks'
+import { groups, groupValue, priceError, selectCars, updateQuery } from '../../features/car-search/catalog'
 
 export default function CarCatalogPage() {
   const [params, setParams] = useSearchParams()
   const [cars, setCars] = useState<Car[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
+  const [retry, setRetry] = useState(0)
   const [compare, setCompare] = useState<string[]>(readSavedComparison)
-  const load = () => { setLoading(true); setError(false); apiGet<CarListResponse>('/api/cars?limit=100').then(x => setCars(x.items)).catch(() => setError(true)).finally(() => setLoading(false)) }
-  useEffect(load, [])
-  const brands = useMemo(() => [...new Set(cars.map(x => x.brand))].sort(), [cars])
-  const query = params.get('query') || '', brand = params.get('brand') || '', bodyType = params.get('bodyType') || '', seats = params.get('seats') || '', maxPrice = Number(params.get('maxPrice')) || 0
-  const filtered = useMemo(() => cars.filter(car => (!query || `${car.displayName} ${car.brand} ${car.aliases.join(' ')}`.toLowerCase().includes(query.toLowerCase())) && (!brand || car.brand === brand) && (!bodyType || car.bodyType?.toLowerCase().includes(bodyType.toLowerCase())) && (!seats || car.seats === Number(seats)) && (!maxPrice || (car.priceVndFrom != null && car.priceVndFrom <= maxPrice))), [cars, query, brand, bodyType, seats, maxPrice])
-  function setFilter(name: string, value: string) { const next = new URLSearchParams(params); value ? next.set(name, value) : next.delete(name); setParams(next) }
-  function toggleCompare(car: Car) { const next = compare.includes(car.carId) ? compare.filter(x => x !== car.carId) : compare.length < 3 ? [...compare, car.carId] : compare; setCompare(next); saveComparison(next) }
-  return <div className="page"><div className="page-heading"><span className="section-kicker">50 mẫu xe</span><h1>Kho dữ liệu xe</h1><p>Lọc theo nhu cầu và mở chi tiết để kiểm tra giá, bảo hành cùng nguồn dữ liệu.</p></div>
-    <div className="catalog-layout"><aside className="filters"><h2>Bộ lọc</h2><label>Từ khóa<input value={query} onChange={e => setFilter('query', e.target.value)} placeholder="Tên xe hoặc hãng" /></label><label>Hãng<select value={brand} onChange={e => setFilter('brand', e.target.value)}><option value="">Tất cả hãng</option>{brands.map(x => <option key={x}>{x}</option>)}</select></label><label>Kiểu xe<select value={bodyType} onChange={e => setFilter('bodyType', e.target.value)}><option value="">Tất cả kiểu xe</option><option>SUV</option><option>Saloon</option><option>Hatchback</option><option>Pickup</option></select></label><label>Số ghế<select value={seats} onChange={e => setFilter('seats', e.target.value)}><option value="">Bất kỳ</option><option value="5">5 chỗ</option><option value="7">7 chỗ</option></select></label><label>Giá tối đa<select value={maxPrice || ''} onChange={e => setFilter('maxPrice', e.target.value)}><option value="">Không giới hạn</option><option value="500000000">500 triệu</option><option value="800000000">800 triệu</option><option value="1000000000">1 tỷ</option><option value="2000000000">2 tỷ</option></select></label><button className="button ghost" onClick={() => setParams({})}>Xóa bộ lọc</button></aside>
-      <section className="catalog-results"><div className="results-toolbar"><strong>{filtered.length} kết quả</strong>{compare.length > 0 && <Link className={`button ${compare.length < 2 ? 'disabled' : ''}`} to={`/compare?ids=${compare.join(',')}`}>So sánh ({compare.length})</Link>}</div>{loading ? <LoadingSkeleton /> : error ? <ErrorState onRetry={load} /> : filtered.length === 0 ? <EmptyState title="Không tìm thấy xe" description="Hãy thử bỏ bớt điều kiện lọc." /> : <div className="car-grid">{filtered.map(car => <CarCard key={car.carId} car={car} onCompare={toggleCompare} selected={compare.includes(car.carId)} />)}</div>}</section>
-    </div>
+  const [query, setQuery] = useState(params.get('query') || '')
+  const [min, setMin] = useState(params.get('minPrice') || '')
+  const [max, setMax] = useState(params.get('maxPrice') || '')
+  const [priceMessage, setPriceMessage] = useState('')
+  const [view, setView] = useState('grid')
+  const dialog = useRef<HTMLDialogElement>(null)
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const paramsRef = useRef(params)
+  paramsRef.current = params
+  const change = (key: string, values: string[]) => setParams(updateQuery(paramsRef.current, key, values))
+  useEffect(() => {
+    clearTimeout(searchTimer.current)
+    setQuery(params.get('query') || '')
+    setMin(params.get('minPrice') || ''); setMax(params.get('maxPrice') || ''); setPriceMessage('')
+  }, [params])
+  useEffect(() => () => clearTimeout(searchTimer.current), [])
+  useEffect(() => {
+    const controller = new AbortController()
+    setLoading(true); setError(false)
+    apiGet<CarListResponse>('/api/cars?limit=100', controller.signal)
+      .then(result => { if (!controller.signal.aborted) setCars(result.items) })
+      .catch(() => { if (!controller.signal.aborted) setError(true) })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false) })
+    return () => controller.abort()
+  }, [retry])
+  const result = useMemo(() => selectCars(cars, params), [cars, params])
+  function applyPrices() {
+    const message = priceError(min, max)
+    setPriceMessage(message)
+    if (!message) setParams(updateQuery(updateQuery(params, 'minPrice', [min]), 'maxPrice', [max]))
+  }
+  function toggleCompare(car: Car) {
+    const next = compare.includes(car.carId) ? compare.filter(id => id !== car.carId) : compare.length < 3 ? [...compare, car.carId] : compare
+    setCompare(next); saveComparison(next)
+  }
+  const filters = (prefix: string) => <>
+    {groups.map(([key, label]) => <fieldset key={key}><legend>{label}</legend>{[...new Set([...cars.map(car => groupValue(car, key)), ...params.getAll(key)])].filter(Boolean).sort().map(value => <label className="filter-option" key={value}><input type="checkbox" checked={params.getAll(key).includes(value)} onChange={e => change(key, e.target.checked ? [...params.getAll(key), value] : params.getAll(key).filter(x => x !== value))} />{value.replaceAll('_', ' ')}</label>)}</fieldset>)}
+    <label>Số ghế<select value={params.get('seats') || ''} onChange={e => change('seats', [e.target.value])}><option value="">Bất kỳ</option>{[...new Set(cars.map(car => car.seats).filter((v): v is number => v != null))].sort((a, b) => a - b).map(value => <option key={value} value={value}>{value} chỗ</option>)}</select></label>
+    <label>Giá tối thiểu (VND)<input type="number" min="0" step="1" value={min} onChange={e => setMin(e.target.value)} aria-describedby={`${prefix}-price-error`} /></label>
+    <label>Giá tối đa (VND)<input type="number" min="0" step="1" value={max} onChange={e => setMax(e.target.value)} aria-describedby={`${prefix}-price-error`} /></label>
+    <p id={`${prefix}-price-error`} role="status">{priceMessage || result.invalidPrice}</p>
+    <button className="mini-button" onClick={applyPrices}>Áp dụng khoảng giá</button>
+    <button className="button ghost" onClick={() => setParams({})}>Xóa bộ lọc</button>
+  </>
+  const chipKeys = ['query', ...groups.map(([key]) => key), 'seats', 'minPrice', 'maxPrice']
+  const chips = chipKeys.flatMap(key => params.getAll(key).filter(Boolean).map(value => ({ key, value })))
+  return <div className="page catalog-page">
+    <div className="page-heading"><span className="section-kicker">Khám phá xe</span><h1>Kho dữ liệu xe</h1><p>Lọc và so sánh trong {cars.length} mẫu xe đã tải.</p></div>
+    <form className="catalog-search" onSubmit={e => { e.preventDefault(); clearTimeout(searchTimer.current); change('query', [query.trim()]) }}><label>Tìm xe<input value={query} onChange={e => { const value = e.target.value; setQuery(value); clearTimeout(searchTimer.current); searchTimer.current = setTimeout(() => change('query', [value.trim()]), 300) }} placeholder="Tên xe hoặc hãng" /></label><button className="button">Tìm kiếm</button></form>
+    <button className="button mobile-filter-button" onClick={() => dialog.current?.showModal()}>Mở bộ lọc</button>
+    <dialog ref={dialog} className="filter-dialog" aria-label="Bộ lọc xe"><button className="mini-button" onClick={() => dialog.current?.close()}>Đóng bộ lọc</button><div className="filters">{filters('mobile')}</div></dialog>
+    <div className="filter-chips">{chips.map(({ key, value }) => <button className="mini-button" key={`${key}:${value}`} aria-label={`Xóa bộ lọc ${key}: ${value}`} onClick={() => change(key, params.getAll(key).filter(x => x !== value))}>{key === 'minPrice' ? 'Giá từ: ' : key === 'maxPrice' ? 'Giá đến: ' : ''}{value} ×</button>)}{chips.length > 0 && <button className="mini-button" onClick={() => setParams({})}>Xóa tất cả</button>}</div>
+    <div className="catalog-layout"><aside className="filters catalog-desktop-filters"><h2>Bộ lọc</h2>{filters('desktop')}</aside><section className="catalog-results">
+      <div className="results-toolbar"><strong aria-live="polite">{result.total} kết quả trong tập đã tải</strong><label>Sắp xếp<select value={params.get('sort') || 'relevance'} onChange={e => change('sort', [e.target.value])}><option value="relevance">Liên quan</option><option value="price_asc">Giá tăng dần</option><option value="price_desc">Giá giảm dần</option><option value="name_asc">Tên A–Z</option></select></label><label>Hiển thị<select value={view} onChange={e => setView(e.target.value)}><option value="grid">Lưới</option><option value="list">Danh sách</option></select></label></div>
+      {loading ? <LoadingSkeleton /> : error ? <ErrorState onRetry={() => setRetry(x => x + 1)} /> : result.total === 0 ? <><EmptyState title="Không tìm thấy xe" description="Hãy xóa bớt các bộ lọc phía trên." /><button className="button" onClick={() => setParams({})}>Xóa bộ lọc</button></> : <div className={view === 'list' ? 'car-list' : 'car-grid'}>{result.items.map(car => <CarCard key={car.carId} car={car} onCompare={toggleCompare} selected={compare.includes(car.carId)} />)}</div>}
+      {!loading && !error && <nav className="catalog-pagination" aria-label="Phân trang xe"><button className="mini-button" disabled={result.page === 1} onClick={() => change('page', [String(result.page - 1)])}>Trang trước</button><span>Trang {result.page}/{result.pageCount}</span><button className="mini-button" disabled={result.page === result.pageCount} onClick={() => change('page', [String(result.page + 1)])}>Trang sau</button><label>Số xe mỗi trang<select value={result.pageSize} onChange={e => change('pageSize', [e.target.value])}>{[12, 24, 48].map(n => <option key={n}>{n}</option>)}</select></label></nav>}
+      {compare.length > 0 && <Link className="button" to={`/compare?ids=${compare.join(',')}`}>So sánh ({compare.length})</Link>}
+    </section></div>
   </div>
 }
