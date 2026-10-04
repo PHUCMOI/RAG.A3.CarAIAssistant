@@ -20,6 +20,7 @@ public sealed class OrdersDb(DbContextOptions<OrdersDb> options) : DbContext(opt
         JourneyModel.Configure(b);
         b.Entity<ChatSessionRecord>().ToTable("chat_sessions");
         b.Entity<ChatSessionRecord>().Property(x=>x.Payload).HasColumnType("jsonb");
+        b.Entity<ChatSessionRecord>().Property(x=>x.Context).HasColumnType("jsonb");
         b.Entity<ChatSessionRecord>().Property(x=>x.Version).IsConcurrencyToken();
         b.Entity<ChatSessionRecord>().HasIndex(x=>new{x.UserId,x.UpdatedAt});
         b.Entity<ChatSessionRecord>().HasOne<UserRecord>().WithMany().HasForeignKey(x=>x.UserId).OnDelete(DeleteBehavior.Restrict);
@@ -81,6 +82,7 @@ public sealed class ChatSessionRecord {
     public Guid? SelectedOrderId {get;set;}
     public long Version {get;set;}=1;
     public string Payload {get;set;}="[]";
+    public string Context {get;set;}="{}";
     public DateTimeOffset CreatedAt {get;set;}=DateTimeOffset.UtcNow;
     public DateTimeOffset UpdatedAt {get;set;}=DateTimeOffset.UtcNow;
 }

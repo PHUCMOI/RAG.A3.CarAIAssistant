@@ -6,7 +6,7 @@ using AutoWise.OwnerFeatures.Application;
 using AutoWise.OwnerFeatures.Domain;
 using Microsoft.EntityFrameworkCore;
 namespace AutoWise.OwnerFeatures.Infrastructure;
-public sealed class OrderAssistant(OrdersDb db,ICommonCatalogue common) : IOrderAssistant
+public sealed class OrderAssistant(OrdersDb db,ICommonCatalogue common, BedrockAssistant? bedrock = null, BedrockOptions? options = null) : IOrderAssistant
 {
     static List<ChatTurn> Turns(ChatSessionRecord row)=>JsonSerializer.Deserialize<List<ChatTurn>>(row.Payload,OrderStore.Json)!;
     static ChatSession View(ChatSessionRecord row)=>new(row.Id,row.Version,row.SelectedOrderId,Turns(row).SelectMany(t=>t.Messages).ToList());
@@ -28,21 +28,58 @@ public sealed class OrderAssistant(OrdersDb db,ICommonCatalogue common) : IOrder
         if(turns.FirstOrDefault(t=>t.RequestId==input.RequestId) is {} existing) {if(existing.Hash!=hash)throw new VersionConflictException();return View(row);}
         if(row.Version!=input.Version)throw new VersionConflictException();
         if(turns.Count>=100)throw new BusinessRuleException("Hội thoại đạt 100 lượt; hãy tạo hội thoại mới.");
-        var intent=AssistantIntent.Resolve(input.Content);var code=AssistantIntent.OrderCode(input.Content);
+        var contextEnabled = options?.ContextEnabled == true;
+        var context = row.Context == "{}" ? ConversationContext.Recover(row.SelectedOrderId, turns)
+            : JsonSerializer.Deserialize<ConversationContext>(row.Context, OrderStore.Json) ?? new();
+        // Validate stored references before any provider sees context.
+        if(contextEnabled)
+        {
+            var ownedIds = await db.Orders.AsNoTracking().Where(o => o.CustomerId == userId &&
+                (o.Id == context.CurrentOrderId || o.Id == context.PreviousOrderId)).Select(o => o.Id).ToListAsync(ct);
+            context = context with { CurrentOrderId = ownedIds.Contains(context.CurrentOrderId ?? Guid.Empty) ? context.CurrentOrderId : null,
+                PreviousOrderId = ownedIds.Contains(context.PreviousOrderId ?? Guid.Empty) ? context.PreviousOrderId : null };
+        }
+        var intent=AssistantIntent.Resolve(input.Content);
+        if(contextEnabled && bedrock != null) context=await bedrock.Summarize(context,turns,row.Version,ct);
+        // Modification requests remain read-only even if the model misclassifies them.
+        if(!contextEnabled && bedrock != null && intent != "readonly") intent=await bedrock.Resolve(input.Content,intent,ct);
+        var decision = ConversationReferences.Fallback(input.Content, context);
+        if(contextEnabled && bedrock != null && intent != "readonly") decision=await bedrock.ResolveContext(input.Content,context,turns,ct,row.Version);
+        var localReference=ConversationReferences.Fallback(input.Content,context);
+        if(contextEnabled && (localReference.OrderReference is "explicit" or "previous"))
+            decision=decision with {OrderReference=localReference.OrderReference};
+        else if(contextEnabled && ConversationContext.IsBusinessIntent(decision.Intent) &&
+            decision.OrderReference is "none" or "explicit")
+            decision=decision with {OrderReference="current"};
+        // Model suggestions cannot override unresolved ownership/order ambiguity.
+        if(contextEnabled && ConversationReferences.Fallback(input.Content,context).NeedsClarification)
+            decision=decision with {NeedsClarification=true,ClarificationKind="order"};
+        if(contextEnabled && context.PendingIntent != null &&
+            string.Equals(input.Content.Trim(),AssistantIntent.OrderCode(input.Content),StringComparison.OrdinalIgnoreCase))
+            decision=decision with {Intent=context.PendingIntent,OrderReference="explicit",NeedsClarification=false,ClarificationKind=null};
+        if(contextEnabled && intent != "readonly") intent=decision.Intent;
+        var navigation=BedrockAssistant.Route(intent);
+        var code=AssistantIntent.OrderCode(input.Content);
         Guid? selected=row.SelectedOrderId;Order? order=null;string answer;string? tool=null;var retrieved=DateTimeOffset.UtcNow;
+        if(contextEnabled) selected=decision.OrderReference switch {"previous"=>context.PreviousOrderId,"current"=>context.CurrentOrderId,_=>null};
         // Every order lookup is scoped to the authenticated user; no SQL/URL from chat.
         if(code!=null) {
             var match=await db.Orders.AsNoTracking().SingleOrDefaultAsync(o=>o.CustomerId==userId&&o.Code==code,ct);
             selected=match?.Id;order=match==null?null:OrderStore.Read(match);
-        } else if(input.OrderId is {} explicitId) {
+        } else if(input.OrderId is {} explicitId && !(contextEnabled && decision.OrderReference=="previous" && explicitId==row.SelectedOrderId)) {
             var match=await db.Orders.AsNoTracking().SingleOrDefaultAsync(o=>o.Id==explicitId&&o.CustomerId==userId,ct);
             selected=match?.Id;order=match==null?null:OrderStore.Read(match);
         } else if(selected is {} id) {
             var match=await db.Orders.AsNoTracking().SingleOrDefaultAsync(o=>o.Id==id&&o.CustomerId==userId,ct);
             order=match==null?null:OrderStore.Read(match);if(order==null)selected=null;
         }
-        if(System.Text.RegularExpressions.Regex.Matches(input.Content.ToUpperInvariant(), @"\bAW-[A-Z0-9]+(?:-[A-Z0-9]+)*\b").Count>1) {answer="Bạn nêu nhiều mã đơn. Hãy chọn một đơn hoặc hỏi từng mã để tránh nhầm thông tin.";selected=row.SelectedOrderId;order=null;}
+        if(contextEnabled && decision.NeedsClarification && code == null && (input.OrderId == null || input.OrderId == row.SelectedOrderId))
+        {answer=decision.ClarificationKind=="topic"?"Bạn muốn hỏi trạng thái, thanh toán hay lịch bàn giao?":"Bạn muốn hỏi đơn nào và nội dung gì? Hãy nêu mã đơn và điều bạn cần tra cứu.";order=null;context=context with {PendingClarification=decision.ClarificationKind};}
+        else if(contextEnabled && code != null && input.OrderId != null && order?.Id != input.OrderId)
+        { answer="Mã đơn và đơn đang chọn không khớp. Bạn muốn hỏi đơn nào?";order=null;selected=context.CurrentOrderId;context=context with {PendingClarification="order"}; }
+        else if(System.Text.RegularExpressions.Regex.Matches(input.Content.ToUpperInvariant(), @"\bAW-[A-Z0-9]+(?:-[A-Z0-9]+)*\b").Count>1) {answer="Bạn nêu nhiều mã đơn. Hãy chọn một đơn hoặc hỏi từng mã để tránh nhầm thông tin.";selected=row.SelectedOrderId;order=null;}
         else if(code!=null&&order==null || input.OrderId!=null&&code==null&&order==null) answer="Không tìm thấy đơn trong tài khoản của bạn. Hãy kiểm tra mã đơn hoặc chọn đơn của mình.";
+        else if(navigation!=null) {answer="Bạn có thể mở trang tài khoản qua liên kết bên dưới.";tool="NavigateAccount";order=null;}
         else if(intent=="readonly") answer="Trợ lý chỉ tra cứu. Bạn cần liên hệ đại lý để yêu cầu thay đổi đơn, thanh toán hoặc lịch bàn giao.";
         else if(intent=="help") answer="Bạn có thể hỏi: những đơn nào của tôi, trạng thái đơn, còn phải trả bao nhiêu, khi nào nhận xe, thông tin xe hoặc bảo hành. Chọn đơn trước để hỏi chi tiết.";
         else if(intent=="list") {
@@ -64,7 +101,16 @@ public sealed class OrderAssistant(OrdersDb db,ICommonCatalogue common) : IOrder
                 } catch(Exception ex) when(ex is HttpRequestException or TaskCanceledException or BusinessRuleException) {answer="Chưa tra được dữ liệu catalogue Python. Hãy thử lại sau; thông tin này chưa được xác minh.";tool="CommonUnavailable";}
             }
         }
-        var messages=new List<ChatMessage>{new("user",input.Content.Trim(),DateTimeOffset.UtcNow),new("assistant",answer,DateTimeOffset.UtcNow,tool,order?.Code,order==null?null:"/account/orders/"+order.Id,retrieved)};
+        if(contextEnabled)
+        {
+            if(order != null && ConversationContext.IsBusinessIntent(intent) && tool != null && tool != "CommonUnavailable")
+                context=context.Remember(order.Id,intent,DateTimeOffset.UtcNow);
+            else if(order == null && ConversationContext.IsBusinessIntent(intent) && context.PendingClarification == null)
+                context=context with {PendingClarification="order",UpdatedAt=DateTimeOffset.UtcNow};
+            selected=context.CurrentOrderId;
+            if(context.PendingClarification != null && ConversationContext.IsBusinessIntent(intent)) context=context with {PendingIntent=intent};
+        }
+        var messages=new List<ChatMessage>{new("user",input.Content.Trim(),DateTimeOffset.UtcNow),new("assistant",answer,DateTimeOffset.UtcNow,tool,order?.Code,tool=="NavigateAccount"?navigation:order==null?null:"/account/orders/"+order.Id,retrieved)};
         await using var tx=await db.Database.BeginTransactionAsync(ct);
         await db.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock(hashtextextended({sessionId.ToString()},0))",ct);
         var current=await db.ChatSessions.SingleOrDefaultAsync(s=>s.Id==sessionId&&s.UserId==userId,ct)??throw new KeyNotFoundException();
@@ -72,6 +118,7 @@ public sealed class OrderAssistant(OrdersDb db,ICommonCatalogue common) : IOrder
         if(currentTurns.FirstOrDefault(t=>t.RequestId==input.RequestId) is {} replay) {if(replay.Hash!=hash)throw new VersionConflictException();return View(current);}
         if(current.Version!=input.Version)throw new VersionConflictException();
         currentTurns.Add(new(input.RequestId,hash,messages));current.Payload=JsonSerializer.Serialize(currentTurns,OrderStore.Json);current.SelectedOrderId=selected;current.Version++;current.UpdatedAt=DateTimeOffset.UtcNow;
+        if(contextEnabled) current.Context=JsonSerializer.Serialize(context,OrderStore.Json);
         await db.SaveChangesAsync(ct);await tx.CommitAsync(ct);return View(current);
     }
     static string Money(long value)=>value.ToString("N0",CultureInfo.GetCultureInfo("vi-VN"))+" VND";

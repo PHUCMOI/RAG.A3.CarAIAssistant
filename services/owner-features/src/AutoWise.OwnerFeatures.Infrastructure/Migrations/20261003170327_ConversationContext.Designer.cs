@@ -3,6 +3,7 @@ using System;
 using AutoWise.OwnerFeatures.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AutoWise.OwnerFeatures.Infrastructure.Migrations
 {
     [DbContext(typeof(OrdersDb))]
-    partial class OrdersDbModelSnapshot : ModelSnapshot
+    [Migration("20261003170327_ConversationContext")]
+    partial class ConversationContext
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

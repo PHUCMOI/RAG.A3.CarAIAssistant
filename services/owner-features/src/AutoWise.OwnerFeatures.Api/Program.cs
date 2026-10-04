@@ -20,6 +20,19 @@ builder.Services.AddScoped<PurchaseStore>();
 builder.Services.AddScoped<CustomerAccountStore>();
 builder.Services.AddScoped<AppointmentStore>();
 builder.Services.AddScoped<IOrderAssistant, OrderAssistant>();
+var bedrockOptions = new BedrockOptions();
+builder.Configuration.GetSection("Bedrock").Bind(bedrockOptions);
+builder.Services.AddSingleton(bedrockOptions);
+if (bedrockOptions.Enabled)
+{
+    builder.Services.AddSingleton<Amazon.BedrockRuntime.IAmazonBedrockRuntime>(_ =>
+        new Amazon.BedrockRuntime.AmazonBedrockRuntimeClient(new Amazon.BedrockRuntime.AmazonBedrockRuntimeConfig
+        {
+            RegionEndpoint = Amazon.RegionEndpoint.GetBySystemName(bedrockOptions.Region),
+            MaxErrorRetry = 0
+        }));
+    builder.Services.AddScoped<BedrockAssistant>();
+}
 builder.Services.AddHttpClient<ICommonCatalogue, CommonCatalogue>(c => { c.BaseAddress = new(builder.Configuration["PythonApiUrl"] ?? "http://localhost:5080/"); c.Timeout = TimeSpan.FromSeconds(10); });
 builder.Services.AddAntiforgery(o => { o.HeaderName = "X-CSRF-TOKEN"; o.Cookie.Name = "aw.orders.csrf"; o.Cookie.SameSite = SameSiteMode.Strict; });
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(o =>

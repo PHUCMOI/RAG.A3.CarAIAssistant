@@ -1,0 +1,14 @@
+services:
+  orders-api:
+    environment:
+      Bedrock__Enabled: "true"
+      Bedrock__Region: us-east-1
+      Bedrock__ModelId: us.anthropic.claude-haiku-4-5-20251001-v1:0
+      AWS_PROFILE: rag-a3
+      AWS_SHARED_CREDENTIALS_FILE: /run/aws/credentials
+      AWS_EC2_METADATA_DISABLED: "true"
+    volumes:
+      - type: bind
+        source: ${USERPROFILE}/.aws/credentials
+        target: /run/aws/credentials
+        read_only: true
