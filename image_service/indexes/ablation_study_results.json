@@ -1,0 +1,46 @@
+{
+  "A_baseline_standalone_no_agg": {
+    "name": "Config A (Baseline thô sơ)",
+    "feature_extractor": "Standalone (Color/Sobel)",
+    "aggregation": "Không gộp xe (Image-level)",
+    "total_test_samples": 44,
+    "recall_at_1": 2.27,
+    "recall_at_3": 9.09,
+    "recall_at_5": 15.91,
+    "mrr": 0.0781,
+    "avg_latency_ms": 15.1
+  },
+  "B_standalone_with_agg": {
+    "name": "Config B (+ Car Aggregation)",
+    "feature_extractor": "Standalone (Color/Sobel)",
+    "aggregation": "Có gom nhóm xe (Car-level)",
+    "total_test_samples": 44,
+    "recall_at_1": 2.27,
+    "recall_at_3": 13.64,
+    "recall_at_5": 22.73,
+    "mrr": 0.0962,
+    "avg_latency_ms": 15.65
+  },
+  "C_clip_no_agg": {
+    "name": "Config C (+ Deep CLIP)",
+    "feature_extractor": "OpenAI CLIP ViT-B/32",
+    "aggregation": "Không gộp xe (Image-level)",
+    "total_test_samples": 44,
+    "recall_at_1": 70.45,
+    "recall_at_3": 84.09,
+    "recall_at_5": 84.09,
+    "mrr": 0.7652,
+    "avg_latency_ms": 57.15
+  },
+  "D_clip_with_agg_proposed": {
+    "name": "Config D (Hệ thống đề xuất hoàn chỉnh)",
+    "feature_extractor": "OpenAI CLIP ViT-B/32",
+    "aggregation": "Có gom nhóm xe (Car-level)",
+    "total_test_samples": 44,
+    "recall_at_1": 70.45,
+    "recall_at_3": 84.09,
+    "recall_at_5": 86.36,
+    "mrr": 0.7735,
+    "avg_latency_ms": 63.46
+  }
+}
