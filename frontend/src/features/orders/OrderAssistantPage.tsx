@@ -11,8 +11,10 @@ import { SupportDraftCard, type SupportDraft } from "./SupportDraftCard";
 import { PaymentDetailsCard, DocumentDetailsCard, type PaymentDetails, type DocumentDetails } from "./OrderEvidenceCards";
 import { apiPost } from "../../shared/api/client";
 import { isOrderQuestion } from "../chat/routing";
+import { ChatStream, composerKeyDown, ContextLinks } from "../chat/ChatUtilities";
+import { readCache, writeCache, restoreCatalog, saveCatalog, type CatalogContext } from "../chat/storage";
 type Message = {
-  contexts?: { carId: string; displayName: string }[];
+  contexts?: CatalogContext[];
   catalog?: boolean;
   role: string;
   content: string;
@@ -46,6 +48,8 @@ type Session = {
 };
 type SessionItem = { id: string; updatedAt: string };
 export function UnifiedAssistantChat() {
+  const { user } = useOrdersSession();
+  const owner = user?.id || 'guest';
   const carQuestion = useCarQuestion();
   useEffect(() => { if (carQuestion) setText(current => current || carQuestion); }, [carQuestion]);
   const [mode, setMode] = useState("auto");
@@ -56,10 +60,19 @@ export function UnifiedAssistantChat() {
   const [session, setSession] = useState<Session | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [selected, setSelected] = useState("");
-  const [text, setText] = useState(() => sessionStorage.getItem("assistant-pending-question") || "");
+  const [text, setText] = useState(() => {
+    const pendingQuestion = readCache<unknown>('guest', 'pending-question');
+    const composer = readCache<unknown>(owner, 'composer');
+    return typeof pendingQuestion === 'string' && pendingQuestion ? pendingQuestion : typeof composer === 'string' ? composer : '';
+  });
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [loadError, setLoadError] = useState("");
+  const [failed, setFailed] = useState<{ content: string; orders: boolean; orderId: string } | null>(null);
+  const locked = useRef(false);
+  const restored = useRef(false);
+  const [cacheReady, setCacheReady] = useState(false);
   const [retry, setRetry] = useState(0);
   const newSessionId = useRef<string | null>(null);
   const pending = useRef<{
@@ -72,21 +85,37 @@ export function UnifiedAssistantChat() {
   useEffect(() => {
     let active = true;
     setLoading(true);
-    setError("");
+    setLoadError("");
     Promise.all([
       request<SessionItem[]>("/assistant/sessions"),
       request<Page>("/my/orders?pageSize=100"),
       referencedOrder ? request<Order>("/my/orders/" + encodeURIComponent(referencedOrder)) : Promise.resolve(null),
     ])
-      .then(([items, page, reference]) => {
+      .then(async ([items, page, reference]) => {
         if (active) {
           setSessions(items);
           setOrders(reference && !page.items.some(o => o.id === reference.id) ? [reference, ...page.items] : page.items);
           if (reference) { setSelected(reference.id); setText("Tiến độ, lịch giao, thanh toán và hồ sơ hiện tại của đơn này?"); }
+          if (!restored.current) {
+            const savedId = readCache<unknown>(owner, 'active');
+            if (!reference && typeof savedId === 'string' && savedId) {
+              const saved = await request<Session>('/assistant/sessions/' + encodeURIComponent(savedId));
+              if (!active) return;
+              setSession({ ...saved, messages: restoreCatalog(owner, saved.id, saved.messages) });
+              setSelected(saved.selectedOrderId || ''); setOrderContext(Boolean(saved.selectedOrderId));
+            } else if (!reference) {
+              setSession({ id: '', version: 0, selectedOrderId: null, messages: restoreCatalog<Message>(owner, 'local', []) });
+            }
+            restored.current = true; setCacheReady(true);
+          }
         }
       })
       .catch((e) => {
-        if (active) setError(e.message);
+        if (active) {
+          setLoadError(e.message);
+          // Catalogue-only chat remains available when order services fail.
+          if (!restored.current) setSession({ id: '', version: 0, selectedOrderId: null, messages: restoreCatalog<Message>(owner, 'local', []) });
+        }
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -94,36 +123,33 @@ export function UnifiedAssistantChat() {
     return () => {
       active = false;
     };
-  }, [retry, referencedOrder]);
+  }, [retry, referencedOrder, owner]);
   function updateSession(result: Session) {
     setSession(current => {
       if (!current || current.id !== result.id) return result;
       let index = 0;
-      const messages = current.messages.map(message => message.catalog ? message : result.messages[index++] || message);
+      const messages = current.messages.flatMap(message => message.catalog ? [message] : result.messages[index] ? [result.messages[index++]] : []);
       return { ...result, messages: [...messages, ...result.messages.slice(index)] };
     });
   }
   useEffect(() => {
-    if (session?.id) sessionStorage.setItem("unified-assistant-" + session.id, JSON.stringify(session.messages));
-  }, [session]);
+    if (cacheReady && session) {
+      saveCatalog(owner, session.id || 'local', session.messages);
+      writeCache(owner, 'active', session.id);
+    }
+  }, [session, owner, cacheReady]);
+  useEffect(() => writeCache(owner, 'composer', text), [owner, text]);
   async function open(id: string) {
     setBusy(true);
     setError("");
     try {
       const result = await request<Session>("/assistant/sessions/" + id);
-      const cached = sessionStorage.getItem("unified-assistant-" + id);
-      let messages = result.messages;
-      if (cached) {
-        try {
-          const saved: Message[] = JSON.parse(cached);
-          let index = 0;
-          messages = [...saved.map(message => message.catalog ? message : result.messages[index++] || message), ...result.messages.slice(index)];
-        } catch { /* use server history */ }
-      }
+      const messages = restoreCatalog(owner, id, result.messages);
       setSession({ ...result, messages });
       setSelected(result.selectedOrderId || "");
       setOrderContext(true);
       pending.current = null;
+      setFailed(null); setCacheReady(true); restored.current = true;
       setText("");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Không tải được hội thoại");
@@ -131,96 +157,62 @@ export function UnifiedAssistantChat() {
       setBusy(false);
     }
   }
-  async function create() {
-    setBusy(true);
-    setError("");
-    try {
-      newSessionId.current ||= crypto.randomUUID();
-      const result = await request<Session>("/assistant/sessions", "POST", {
-        id: newSessionId.current,
-      });
-      newSessionId.current = null;
-      setSession(result);
-      setOrderContext(Boolean(referencedOrder));
-      setSelected(orders.some(o => o.id === referencedOrder) ? referencedOrder : "");
-      setText(referencedOrder && orders.some(o => o.id === referencedOrder) ? "Tiến độ, lịch giao, thanh toán và hồ sơ hiện tại của đơn này?" : "");
-      pending.current = null;
-      setSessions(await request("/assistant/sessions"));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Không tạo được hội thoại");
-    } finally {
-      setBusy(false);
-    }
+  function create() {
+    if (locked.current || busy) return;
+    setError(''); setFailed(null); pending.current = null; newSessionId.current = null;
+    setSession({ id: '', version: 0, selectedOrderId: null, messages: [] });
+    setMode('auto'); setOrderContext(Boolean(referencedOrder));
+    setSelected(orders.some(order => order.id === referencedOrder) ? referencedOrder : '');
+    setText(''); setCacheReady(true); restored.current = true;
+    writeCache('guest', 'pending-question', '');
   }
-  async function send(event: FormEvent) {
-    event.preventDefault();
-    if (!text.trim() || busy) return;
-    setBusy(true);
-    setError("");
-    const content = text.trim();
-    sessionStorage.removeItem("assistant-pending-question");
-    const routeToOrders = mode === "orders" || (mode === "auto" && isOrderQuestion(content, orderContext || Boolean(selected)));
-    if (!routeToOrders) {
-      try {
-        const result = await apiPost<{ answer: string; contexts: Message["contexts"] }, { question: string }>("/api/chat", { question: content });
-        const base = { at: new Date().toISOString(), tool: null, orderCode: null, detailUrl: null, retrievedAt: null, catalog: true };
-        setSession(current => ({ ...(current || { id: "", version: 0, selectedOrderId: null, messages: [] }), messages: [...(current?.messages || []), { ...base, role: "user", content }, { ...base, role: "assistant", content: result.answer, contexts: result.contexts }] }));
-        setOrderContext(false);
-        setText("");
-      } catch (e) { setError(e instanceof Error ? e.message : "Không gửi được câu hỏi"); }
-      finally { setBusy(false); }
-      return;
-    }
-    let activeSession = session;
-    if (!activeSession?.id) {
-      try {
-        newSessionId.current ||= crypto.randomUUID();
-        activeSession = await request<Session>("/assistant/sessions", "POST", { id: newSessionId.current });
-        newSessionId.current = null;
-        setSession({ ...activeSession, messages: session?.messages || [] });
-      } catch (e) { setError(e instanceof Error ? e.message : "Không tạo được hội thoại"); setBusy(false); return; }
-    }
-    if (
-      !pending.current ||
-      pending.current.sessionId !== activeSession.id ||
-      pending.current.content !== text.trim() ||
-      pending.current.orderId !== (selected || null)
-    )
-      pending.current = {
-        sessionId: activeSession.id,
-        requestId: crypto.randomUUID(),
-        version: activeSession.version,
-        content: text.trim(),
-        orderId: selected || null,
-      };
+  async function sendQuestion(content: string, previous?: { orders: boolean; orderId: string }) {
+    content = content.trim();
+    if (!content || locked.current || busy) return;
+    locked.current = true; setBusy(true); setError('');
+    const routeToOrders = previous?.orders ?? (mode === 'orders' || (mode === 'auto' && isOrderQuestion(content, orderContext || Boolean(selected))));
+    const orderId = previous?.orderId ?? selected;
     try {
-      const { sessionId, ...body } = pending.current;
-      const result = await request<Session>(
-        `/assistant/sessions/${sessionId}/messages`,
-        "POST",
-        body,
-      );
-      const previousCount = activeSession.messages.filter(m => !m.catalog).length;
-      setSession({ ...result, messages: [...(session?.messages || []), ...result.messages.slice(previousCount)] });
-      setOrderContext(true);
-      setSelected(result.selectedOrderId || "");
-      setText("");
-      pending.current = null;
-      setSessions(await request("/assistant/sessions"));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Không gửi được câu hỏi");
-      if (e instanceof ApiError && e.status === 409) {
-        pending.current = null;
+      if (!routeToOrders) {
+        const result = await apiPost<{ answer: string; contexts: Message['contexts'] }, { question: string }>('/api/chat', { question: content });
+        const base = { at: new Date().toISOString(), tool: null, orderCode: null, detailUrl: null, retrievedAt: null, catalog: true };
+        setSession(current => ({ ...(current || { id: '', version: 0, selectedOrderId: null, messages: [] }), messages: [...(current?.messages || []), { ...base, role: 'user', content }, { ...base, role: 'assistant', content: result.answer, contexts: result.contexts }] }));
+        setOrderContext(false);
+      } else {
+        let activeSession = session;
+        if (!activeSession?.id) {
+          newSessionId.current ||= crypto.randomUUID();
+          activeSession = await request<Session>('/assistant/sessions', 'POST', { id: newSessionId.current });
+          newSessionId.current = null;
+          setSession({ ...activeSession, messages: session?.messages || [] });
+        }
+        if (!pending.current || pending.current.sessionId !== activeSession.id || pending.current.content !== content || pending.current.orderId !== (orderId || null)) {
+          pending.current = { sessionId: activeSession.id, requestId: crypto.randomUUID(), version: activeSession.version, content, orderId: orderId || null };
+        }
+        const { sessionId, ...body } = pending.current;
         try {
-          updateSession(await request("/assistant/sessions/" + activeSession.id));
-        } catch {
-          /* keep error and draft */
+          const result = await request<Session>(`/assistant/sessions/${sessionId}/messages`, 'POST', body);
+          updateSession(result);
+          setOrderContext(true); setSelected(result.selectedOrderId || '');
+          pending.current = null;
+          // A list refresh failure must never turn an accepted message into a retry.
+          request<SessionItem[]>('/assistant/sessions').then(setSessions).catch(() => setLoadError('Tin nhắn đã gửi; chưa cập nhật được danh sách hội thoại.'));
+        } catch (e) {
+          if (e instanceof ApiError && e.status === 409) {
+            pending.current = null;
+            try { updateSession(await request<Session>('/assistant/sessions/' + activeSession.id)); } catch { /* Preserve original error. */ }
+          }
+          throw e;
         }
       }
-    } finally {
-      setBusy(false);
-    }
+      setFailed(null); setText(''); setCacheReady(true); restored.current = true;
+      writeCache('guest', 'pending-question', '');
+    } catch (e) {
+      setFailed({ content, orders: routeToOrders, orderId });
+      setError(e instanceof Error ? e.message : 'Không gửi được câu hỏi.');
+    } finally { locked.current = false; setBusy(false); }
   }
+  function send(event: FormEvent) { event.preventDefault(); void sendQuestion(text); }
   if (loading)
     return (
       <div className="page">
@@ -240,9 +232,8 @@ export function UnifiedAssistantChat() {
           hỏi. Yêu cầu đổi lịch hoặc hủy đơn chỉ được gửi khi bạn bấm xác nhận.
         </p>
       </div>
-      {error && (
-        <ErrorState message={error} onRetry={() => setRetry((v) => v + 1)} />
-      )}
+      {loadError && <ErrorState message={loadError} onRetry={() => setRetry(v => v + 1)} />}
+      {error && <div role="alert"><p>{error}</p>{failed && <button className="mini-button" disabled={busy} onClick={() => void sendQuestion(failed.content, failed)}>Gửi lại câu hỏi</button>}</div>}
       <div className="order-chat-layout">
         <aside className="content-panel">
           <button
@@ -253,6 +244,7 @@ export function UnifiedAssistantChat() {
             + Hội thoại mới
           </button>
           <h2>Hội thoại đã lưu</h2>
+          <p>Tư vấn xe lưu tạm trong tab này; lịch sử đơn hàng được tải từ tài khoản.</p>
           {sessions.length === 0 && <p>Chưa có hội thoại.</p>}
           {sessions.map((item) => (
             <button
@@ -294,7 +286,7 @@ export function UnifiedAssistantChat() {
                 câu hỏi. Ví dụ: “Tôi còn phải trả bao nhiêu?”, “Khi nào nhận
                 xe?”, “Xe được bảo hành thế nào?”.
               </p>
-              <div className="order-chat-messages" aria-live="polite">
+              <ChatStream className="order-chat-messages" revision={session?.messages}>
                 {session?.messages.map((m, index) => (
                   <article
                     className={"order-chat-message " + m.role}
@@ -316,7 +308,7 @@ export function UnifiedAssistantChat() {
                         )}
                       </section>
                     )) : <p>{m.content}</p>}
-                    {m.contexts?.map(c => <div key={c.carId}><Link to={`/cars/${c.carId}`}>{c.displayName} →</Link></div>)}
+                    <ContextLinks contexts={m.contexts} />
                     {!m.sections?.length && m.retrievedAt && (
                       <small>
                         Tra cứu:{" "}
@@ -328,9 +320,9 @@ export function UnifiedAssistantChat() {
                     )}
                   </article>
                 ))}
-              </div>
+              </ChatStream>
               {session?.supportSuggested && <p>Hai lượt tra cứu liên tiếp chưa giải quyết được. Bạn có thể chuyển vấn đề cho nhân viên.</p>}
-              <button className="mini-button" disabled={busy} onClick={() => setText("Tôi muốn gặp nhân viên hỗ trợ")}>Chuẩn bị phiếu hỗ trợ</button>
+              <button className="mini-button" disabled={busy} onClick={() => { setMode('orders'); setText("Tôi muốn gặp nhân viên hỗ trợ"); }}>Chuẩn bị phiếu hỗ trợ</button>
               {session?.draft && (session.draft.type === "support" ? <SupportDraftCard key={session.id} draft={session.draft as SupportDraft} sessionId={session.id} version={session.version} busy={busy} setBusy={setBusy} update={updateSession} error={setError} /> : <AssistantDraftCard key={session.id} draft={session.draft} sessionId={session.id} version={session.version} busy={busy} setBusy={setBusy} update={updateSession} error={setError} />)}
               <form className="orders-form" onSubmit={send}>
                 <label>
@@ -339,6 +331,7 @@ export function UnifiedAssistantChat() {
                     aria-label="Câu hỏi"
                     value={text}
                     onChange={(e) => setText(e.target.value)}
+                    onKeyDown={e => composerKeyDown(e, busy)}
                     maxLength={1000}
                     rows={3}
                     required
