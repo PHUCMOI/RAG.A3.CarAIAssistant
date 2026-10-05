@@ -1,0 +1,45 @@
+import { it, expect, vi } from 'vitest'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router-dom'
+import { GuestChat } from '../src/pages/ChatPage'
+import { json } from './fixtures'
+const mount = () => render(<MemoryRouter><GuestChat /></MemoryRouter>)
+it('retains the failed question and retries it without duplicate messages', async () => {
+  const fetchMock = vi.fn().mockRejectedValueOnce(new Error('offline')).mockResolvedValue(json({ answer: 'Đây là xe phù hợp.', contexts: [{ carId: 'c1', displayName: 'Toyota', presenceSourceId: 's1' }] }))
+  vi.stubGlobal('fetch', fetchMock)
+  mount()
+  fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Tư vấn SUV' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Gửi →' }))
+  expect(await screen.findByRole('button', { name: 'Gửi lại câu hỏi' })).toBeInTheDocument()
+  expect(screen.getByRole('textbox')).toHaveValue('Tư vấn SUV')
+  fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Nội dung khác' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Gửi lại câu hỏi' }))
+  expect(await screen.findByText('Đây là xe phù hợp.')).toBeInTheDocument()
+  expect(fetchMock.mock.calls[1][1].body).toBe(JSON.stringify({ question: 'Tư vấn SUV' }))
+  expect(screen.getAllByText('Tư vấn SUV')).toHaveLength(1)
+  expect(screen.getByRole('link', { name: 'Nguồn: s1' })).toHaveAttribute('href', '/sources/s1')
+})
+it('supports Enter, Shift+Enter, and IME without duplicate sends', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(json({ answer: 'Trả lời', contexts: [] })))
+  const user = userEvent.setup(); mount()
+  const input = screen.getByRole('textbox')
+  await user.type(input, 'SUV')
+  await user.keyboard('{Shift>}{Enter}{/Shift}')
+  expect(input).toHaveValue('SUV\n'); expect(fetch).not.toHaveBeenCalled()
+  fireEvent.keyDown(input, { key: 'Enter', isComposing: true })
+  expect(fetch).not.toHaveBeenCalled()
+  await user.keyboard('{Enter}')
+  await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1))
+  expect(await screen.findByText('Trả lời')).toBeInTheDocument()
+})
+it('restores guest catalogue history and resets it for a new conversation', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(json({ answer: 'Lịch sử đã lưu', contexts: [] })))
+  const first = mount()
+  fireEvent.change(screen.getByRole('textbox'), { target: { value: 'SUV' } }); fireEvent.click(screen.getByRole('button', { name: 'Gửi →' }))
+  await screen.findByText('Lịch sử đã lưu'); first.unmount(); mount()
+  expect(screen.getByText('Lịch sử đã lưu')).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: '+ Hội thoại mới' }))
+  expect(screen.queryByText('Lịch sử đã lưu')).not.toBeInTheDocument()
+  expect(screen.getByRole('textbox')).toHaveValue('')
+})

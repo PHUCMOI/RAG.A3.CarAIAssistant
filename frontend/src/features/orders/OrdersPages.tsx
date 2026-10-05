@@ -68,7 +68,7 @@ export function LoginPage({ admin = false }: { admin?: boolean }) {
   const [params] = useSearchParams();
   const returnTo = params.get("returnTo") || "";
   const customerTarget =
-    /^\/account(?:\/|$)/.test(returnTo) && !returnTo.includes("\\")
+    /^\/(?:account(?:\/|[?#]|$)|chat(?:[?#]|$))/.test(returnTo) && !returnTo.includes("\\")
       ? returnTo
       : "/account";
   const { user, refresh } = useOrdersSession();

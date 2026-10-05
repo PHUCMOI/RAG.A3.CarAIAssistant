@@ -72,6 +72,7 @@ export function UnifiedAssistantChat() {
   const [failed, setFailed] = useState<{ content: string; orders: boolean; orderId: string } | null>(null);
   const locked = useRef(false);
   const restored = useRef(false);
+  const appliedReference = useRef('');
   const [cacheReady, setCacheReady] = useState(false);
   const [retry, setRetry] = useState(0);
   const newSessionId = useRef<string | null>(null);
@@ -95,7 +96,11 @@ export function UnifiedAssistantChat() {
         if (active) {
           setSessions(items);
           setOrders(reference && !page.items.some(o => o.id === reference.id) ? [reference, ...page.items] : page.items);
-          if (reference) { setSelected(reference.id); setText("Tiến độ, lịch giao, thanh toán và hồ sơ hiện tại của đơn này?"); }
+          if (reference && appliedReference.current !== reference.id) {
+            appliedReference.current = reference.id;
+            setSelected(reference.id); setOrderContext(true);
+            setText("Tiến độ, lịch giao, thanh toán và hồ sơ hiện tại của đơn này?");
+          }
           if (!restored.current) {
             const savedId = readCache<unknown>(owner, 'active');
             if (!reference && typeof savedId === 'string' && savedId) {
@@ -269,7 +274,6 @@ export function UnifiedAssistantChat() {
                   value={selected}
                   onChange={(e) => {
                     setSelected(e.target.value);
-                    pending.current = null;
                   }}
                   disabled={busy}
                 >
