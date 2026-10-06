@@ -4,6 +4,7 @@ import { request } from "../orders/api";
 import { useOrdersSession } from "../orders/Session";
 import { ErrorState } from "../../shared/components/ErrorState";
 import { LoadingSkeleton } from "../../shared/components/LoadingSkeleton";
+import { ChevronDown } from "../../shared/components/ChevronDown";
 export type Profile = {
   id: string;
   displayName: string;
@@ -62,7 +63,7 @@ function AccountNavigation() {
     return () => document.removeEventListener("pointerdown", closeOutside);
   }, []);
   return (
-    <nav ref={navRef} className="account-nav" aria-label="Tài khoản khách hàng"
+    <nav ref={navRef} className="account-nav account-navigation" aria-label="Tài khoản khách hàng"
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setOpenGroup(null);
       }}>
@@ -80,7 +81,7 @@ function AccountNavigation() {
             <button type="button" className={`account-nav-trigger${active ? " active" : ""}`}
               aria-expanded={open} aria-controls={`account-nav-group-${index}`}
               onClick={() => setOpenGroup(open ? null : group.name)}>
-              {group.name}<span className={`account-nav-chevron${open ? " open" : ""}`} aria-hidden="true">⌄</span>
+              {group.name}<ChevronDown className={`account-nav-chevron${open ? " open" : ""}`} />
             </button>
             <div id={`account-nav-group-${index}`} className="account-nav-dropdown" hidden={!open}>
               {links.filter(([to]) => group.paths.includes(to)).map(([to, name]) => (

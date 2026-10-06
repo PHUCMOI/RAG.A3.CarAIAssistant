@@ -9,7 +9,7 @@ export function composerKeyDown(event: KeyboardEvent<HTMLTextAreaElement>, busy:
   }
 }
 export function ContextLinks({ contexts }: { contexts?: CatalogContext[] }) {
-  return contexts?.length ? <div className="context-cards">{contexts.map(context => <div className="chat-context" key={context.carId}><Link to={`/cars/${encodeURIComponent(context.carId)}`}>{context.displayName} →</Link>{context.presenceSourceId && <Link className="text-link" to={`/sources/${encodeURIComponent(context.presenceSourceId)}`}>Nguồn: {context.presenceSourceId}</Link>}</div>)}</div> : null
+  return contexts?.length ? <div className="context-cards">{contexts.map(context => <div className="chat-context" key={context.carId}><Link to={`/cars/${encodeURIComponent(context.carId)}`}>{context.displayName} →</Link>{context.presenceSourceId && <Link className="text-link" to={`/sources/${encodeURIComponent(context.presenceSourceId)}`}>Xem nguồn tham khảo</Link>}</div>)}</div> : null
 }
 export function ChatStream({ children, revision, className }: { children: ReactNode; revision: unknown; className: string }) {
   const container = useRef<HTMLDivElement>(null)
@@ -24,9 +24,15 @@ export function ChatStream({ children, revision, className }: { children: ReactN
     if (atBottom.current) scrollToEnd()
     else setUnread(true)
   }, [revision])
-  return <><div ref={container} className={className} aria-live="polite" role="log" aria-label="Tin nhắn hội thoại" onScroll={() => {
+  useEffect(() => {
+    if (typeof ResizeObserver === 'undefined' || !container.current) return
+    const observer = new ResizeObserver(() => { if (atBottom.current) scrollToEnd() })
+    observer.observe(container.current)
+    return () => observer.disconnect()
+  }, [])
+  return <div className="assistant-thread-container"><div ref={container} className={className} aria-live="polite" role="log" aria-label="Tin nhắn hội thoại" onScroll={() => {
     const element = container.current!
     atBottom.current = element.scrollHeight - element.scrollTop - element.clientHeight < 60
     if (atBottom.current) setUnread(false)
-  }}>{children}</div>{unread && <button className="mini-button" onClick={scrollToEnd}>Tới tin nhắn mới ↓</button>}</>
+  }}>{children}</div>{unread && <button className="mini-button assistant-new-messages" onClick={scrollToEnd}>Tới tin nhắn mới ↓</button>}</div>
 }

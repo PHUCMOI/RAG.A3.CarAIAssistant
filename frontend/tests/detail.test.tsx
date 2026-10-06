@@ -1,5 +1,5 @@
 import { it, expect, vi } from 'vitest'
-import { render, screen, waitFor, act } from '@testing-library/react'
+import { render, screen, waitFor, act, fireEvent } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import CarDetailPage from '../src/pages/CarDetailPage'
 import { car, json } from './fixtures'
@@ -28,4 +28,26 @@ it.each([404, 500])('distinguishes HTTP %s from other errors', async status => {
   const router = createMemoryRouter([{ path: '/cars/:carId', element: <CarDetailPage /> }], { initialEntries: ['/cars/test'] })
   render(<RouterProvider router={router} />)
   expect(await screen.findByText(status === 404 ? 'Không tìm thấy mẫu xe này.' : 'Không kết nối được dữ liệu xe. Vui lòng thử lại.')).toBeInTheDocument()
+})
+it('adds the detail car to the existing comparison without losing earlier selections', async () => {
+  localStorage.setItem('compareCars', JSON.stringify(['existing']))
+  vi.stubGlobal('fetch', vi.fn((url: string) => Promise.resolve(json(url.startsWith('/api/cars/') ? car('new', { displayName: 'Xe mới', fuelType: 'Petrol', transmission: 'Automatic', priceVndFrom: null, priceSourceId: null }) : { items: [] }))))
+  const router = createMemoryRouter([{ path: '/cars/:carId', element: <CarDetailPage /> }], { initialEntries: ['/cars/new'] })
+  render(<RouterProvider router={router} />)
+  fireEvent.click(await screen.findByRole('button', { name: '+ So sánh xe này' }))
+  expect(JSON.parse(localStorage.getItem('compareCars')!)).toEqual(['existing', 'new'])
+  expect(screen.getByRole('link', { name: 'Mở bảng so sánh →' })).toHaveAttribute('href', '/compare?ids=existing%2Cnew')
+  expect(screen.getByRole('button', { name: '✓ Đã chọn so sánh' })).toHaveAttribute('aria-pressed', 'true')
+  expect(screen.getAllByText('Xăng')).toHaveLength(2)
+  expect(screen.getByText('Chưa có giá tham khảo')).toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: 'Xem nguồn giá ↗' })).not.toBeInTheDocument()
+})
+it('reports the three-car limit and keeps the original comparison', async () => {
+  localStorage.setItem('compareCars', JSON.stringify(['a', 'b', 'c']))
+  vi.stubGlobal('fetch', vi.fn((url: string) => Promise.resolve(json(url.startsWith('/api/cars/') ? car('new') : { items: [] }))))
+  const router = createMemoryRouter([{ path: '/cars/:carId', element: <CarDetailPage /> }], { initialEntries: ['/cars/new'] })
+  render(<RouterProvider router={router} />)
+  fireEvent.click(await screen.findByRole('button', { name: '+ So sánh xe này' }))
+  expect(screen.getByRole('status')).toHaveTextContent('Chỉ có thể so sánh tối đa 3 xe')
+  expect(JSON.parse(localStorage.getItem('compareCars')!)).toEqual(['a', 'b', 'c'])
 })

@@ -4,7 +4,6 @@ import {
   Navigate,
   useNavigate,
   useParams,
-  useSearchParams,
 } from "react-router-dom";
 import type { Car, CarListResponse } from "../../entities/car/model";
 import { formatVnd } from "../../shared/formatting/currency";
@@ -64,108 +63,7 @@ function Guard({
     );
   return <>{children}</>;
 }
-export function LoginPage({ admin = false }: { admin?: boolean }) {
-  const [params] = useSearchParams();
-  const returnTo = params.get("returnTo") || "";
-  const customerTarget =
-    /^\/(?:account(?:\/|[?#]|$)|chat(?:[?#]|$))/.test(returnTo) && !returnTo.includes("\\")
-      ? returnTo
-      : "/account";
-  const { user, refresh } = useOrdersSession();
-  const navigate = useNavigate();
-  const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    setError("");
-    setBusy(true);
-    try {
-      const result = await request<User>("/auth/login", "POST", {
-        email: form.get("email"),
-        password: form.get("password"),
-      });
-      await refresh();
-      navigate(result.role === "Admin" ? "/admin/orders" : customerTarget);
-    } catch (err) {
-      setError(message(err));
-    } finally {
-      setBusy(false);
-    }
-  }
-  return (
-    <div className="page narrow">
-      <div className="content-panel orders-panel">
-        <span className="section-kicker">
-          {admin ? "Cổng quản trị" : "Tài khoản khách hàng"}
-        </span>
-        <h1>{admin ? "Đăng nhập quản trị" : "Đăng nhập"}</h1>
-        {params.get("passwordChanged") === "1" && (
-          <p role="status">
-            Đã đổi mật khẩu. Hãy đăng nhập lại bằng mật khẩu mới.
-          </p>
-        )}
-        {user ? (
-          <>
-            <p>Đang đăng nhập: {user.displayName}</p>
-            <Link
-              className="button"
-              to={user.role === "Admin" ? "/admin/orders" : "/account/orders"}
-            >
-              Mở đơn hàng
-            </Link>
-            <button
-              className="button secondary"
-              onClick={async () => {
-                try {
-                  await request("/auth/logout", "POST");
-                  await refresh();
-                } catch (err) {
-                  setError(message(err));
-                }
-              }}
-            >
-              Đăng xuất
-            </button>
-          </>
-        ) : (
-          <form className="orders-form" onSubmit={submit}>
-            <label>
-              Email
-              <input
-                name="email"
-                type="email"
-                required
-                autoComplete="username"
-              />
-            </label>
-            <label>
-              Mật khẩu
-              <input
-                name="password"
-                type="password"
-                required
-                autoComplete="current-password"
-              />
-            </label>
-            <button className="button" disabled={busy}>
-              {busy ? "Đang đăng nhập…" : "Đăng nhập"}
-            </button>
-          </form>
-        )}
-        {error && (
-          <p role="alert" className="orders-error">
-            {error}
-          </p>
-        )}
-        <p className="orders-help">
-          Tài khoản demo được ghi trong tài liệu triển khai local. Chỉ sử dụng
-          dữ liệu giả để kiểm thử.
-        </p>
-      </div>
-    </div>
-  );
-}
+export { LoginPage } from "./LoginPage";
 function OrderList({ admin }: { admin: boolean }) {
   const [data, setData] = useState<Page | null>(null);
   const [error, setError] = useState("");
