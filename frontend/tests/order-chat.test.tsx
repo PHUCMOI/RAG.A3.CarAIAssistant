@@ -45,3 +45,37 @@ it('restores catalogue-only chat after refresh without needing a server session'
   await waitFor(() => expect(screen.queryByText('Xe phù hợp')).not.toBeInTheDocument())
   expect(screen.getByRole('textbox')).toHaveValue('')
 })
+it('sets the correct topic for prompts even when an order topic was selected', async () => {
+  vi.mocked(request).mockImplementation(async path => path === '/my/orders?pageSize=100' ? { items: [] } : [])
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(json({ answer: 'Gợi ý SUV', contexts: [] })))
+  render(<MemoryRouter><UnifiedAssistantChat /></MemoryRouter>)
+  const topic = await screen.findByRole('combobox', { name: 'Chủ đề câu hỏi' })
+  fireEvent.change(topic, { target: { value: 'orders' } })
+  fireEvent.click(screen.getByRole('button', { name: /Tìm chiếc xe phù hợp/ }))
+  expect(topic).toHaveValue('cars')
+  fireEvent.click(screen.getByRole('button', { name: 'Gửi câu hỏi' }))
+  await screen.findByText('Gợi ý SUV')
+  expect(vi.mocked(request).mock.calls.some(([, method]) => method === 'POST')).toBe(false)
+})
+it('keeps the chat and draft visible during a retry of order data', async () => {
+  let retryStarted = false
+  let resolve!: (value: unknown) => void
+  vi.mocked(request).mockImplementation(async path => {
+    if (path === '/my/orders?pageSize=100') {
+      if (!retryStarted) throw new Error('Dịch vụ đơn hàng không phản hồi')
+      return new Promise(done => { resolve = done })
+    }
+    return []
+  })
+  render(<MemoryRouter><UnifiedAssistantChat /></MemoryRouter>)
+  const input = await screen.findByRole('textbox')
+  fireEvent.change(input, { target: { value: 'Câu hỏi đang soạn' } })
+  retryStarted = true
+  fireEvent.click(screen.getByRole('button', { name: /Thử lại/ }))
+  await screen.findByText('Đang cập nhật lịch sử và đơn hàng…')
+  expect(input).toHaveValue('Câu hỏi đang soạn')
+  expect(input).toBeVisible()
+  resolve({ items: [] })
+  await waitFor(() => expect(screen.queryByText('Đang cập nhật lịch sử và đơn hàng…')).not.toBeInTheDocument())
+  expect(input).toHaveValue('Câu hỏi đang soạn')
+})

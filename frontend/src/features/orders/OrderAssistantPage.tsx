@@ -1,3 +1,5 @@
+import { ChatLayout, ChatSidebar, ChatWelcome, ThinkingMessage } from "../chat/ChatLayout";
+import { ChatHistory } from "../chat/ChatHistory";
 import { useCarQuestion } from "../chat/useCarQuestion";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
@@ -11,7 +13,8 @@ import { SupportDraftCard, type SupportDraft } from "./SupportDraftCard";
 import { PaymentDetailsCard, DocumentDetailsCard, type PaymentDetails, type DocumentDetails } from "./OrderEvidenceCards";
 import { apiPost } from "../../shared/api/client";
 import { isOrderQuestion } from "../chat/routing";
-import { ChatStream, composerKeyDown, ContextLinks } from "../chat/ChatUtilities";
+import { AnswerContent, CopyAnswer, FailedQuestion, ChatComposer } from "../chat/ChatContent";
+import { ChatStream, ContextLinks } from "../chat/ChatUtilities";
 import { readCache, writeCache, restoreCatalog, saveCatalog, type CatalogContext } from "../chat/storage";
 type Message = {
   contexts?: CatalogContext[];
@@ -71,6 +74,8 @@ export function UnifiedAssistantChat() {
   const [loadError, setLoadError] = useState("");
   const [failed, setFailed] = useState<{ content: string; orders: boolean; orderId: string } | null>(null);
   const locked = useRef(false);
+  const input = useRef<HTMLTextAreaElement>(null);
+  const [pendingText, setPendingText] = useState("");
   const restored = useRef(false);
   const appliedReference = useRef('');
   const [cacheReady, setCacheReady] = useState(false);
@@ -173,8 +178,9 @@ export function UnifiedAssistantChat() {
   }
   async function sendQuestion(content: string, previous?: { orders: boolean; orderId: string }) {
     content = content.trim();
+    const draftAtStart = input.current?.value || '';
     if (!content || locked.current || busy) return;
-    locked.current = true; setBusy(true); setError('');
+    locked.current = true; setBusy(true); setError(''); setFailed(null); setPendingText(content);
     const routeToOrders = previous?.orders ?? (mode === 'orders' || (mode === 'auto' && isOrderQuestion(content, orderContext || Boolean(selected))));
     const orderId = previous?.orderId ?? selected;
     try {
@@ -210,87 +216,32 @@ export function UnifiedAssistantChat() {
           throw e;
         }
       }
-      setFailed(null); setText(''); setCacheReady(true); restored.current = true;
+      setFailed(null); setText(current => current === draftAtStart && draftAtStart.trim() === content ? '' : current); setCacheReady(true); restored.current = true;
       writeCache('guest', 'pending-question', '');
     } catch (e) {
       setFailed({ content, orders: routeToOrders, orderId });
       setError(e instanceof Error ? e.message : 'Không gửi được câu hỏi.');
-    } finally { locked.current = false; setBusy(false); }
+    } finally { locked.current = false; setBusy(false); setPendingText(''); input.current?.focus(); }
   }
   function send(event: FormEvent) { event.preventDefault(); void sendQuestion(text); }
-  if (loading)
+  if (loading && !session)
     return (
       <div className="page">
         <LoadingSkeleton />
       </div>
     );
-  return (
-    <div className="page">
-      <Link className="back-link" to="/account/orders">
-        ← Đơn của tôi
-      </Link>
-      <div className="page-heading">
-        <span className="section-kicker">Hỗ trợ khách hàng</span>
-        <h1>Trợ lý AI</h1>
-        <p>
-          Tư vấn xe hoặc tra cứu đơn, thanh toán và lịch bàn giao. Thông tin được lấy khi bạn
-          hỏi. Yêu cầu đổi lịch hoặc hủy đơn chỉ được gửi khi bạn bấm xác nhận.
-        </p>
-      </div>
-      {loadError && <ErrorState message={loadError} onRetry={() => setRetry(v => v + 1)} />}
-      {error && <div role="alert"><p>{error}</p>{failed && <button className="mini-button" disabled={busy} onClick={() => void sendQuestion(failed.content, failed)}>Gửi lại câu hỏi</button>}</div>}
-      <div className="order-chat-layout">
-        <aside className="content-panel">
-          <button
-            className="button"
-            disabled={busy}
-            onClick={() => void create()}
-          >
-            + Hội thoại mới
-          </button>
-          <h2>Hội thoại đã lưu</h2>
-          <p>Tư vấn xe lưu tạm trong tab này; lịch sử đơn hàng được tải từ tài khoản.</p>
-          {sessions.length === 0 && <p>Chưa có hội thoại.</p>}
-          {sessions.map((item) => (
-            <button
-              className="order-chat-session mini-button"
-              aria-pressed={session?.id === item.id}
-              data-session-id={item.id}
-              key={item.id}
-              disabled={busy}
-              onClick={() => void open(item.id)}
-            >
-              Hội thoại · {new Date(item.updatedAt).toLocaleString("vi-VN")}
-            </button>
-          ))}
-        </aside>
-        <section className="content-panel">
-          {(
-            <>
-              <label className="orders-form">Chủ đề câu hỏi<select aria-label="Chủ đề câu hỏi" value={mode} disabled={busy} onChange={e => setMode(e.target.value)}><option value="auto">Tự động nhận diện</option><option value="cars">Tư vấn xe</option><option value="orders">Đơn hàng & hỗ trợ</option></select></label>
-              <label className="orders-form">
-                Đơn cần tra cứu
-                <select
-                  value={selected}
-                  onChange={(e) => {
-                    setSelected(e.target.value);
-                  }}
-                  disabled={busy}
-                >
-                  <option value="">Chưa chọn đơn</option>
-                  {orders.map((o) => (
-                    <option key={o.id} value={o.id}>
-                      {o.code} · {o.carName}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <p className="orders-help">
-                Câu hỏi về xe được gửi tới tư vấn xe; câu hỏi về đơn được tra cứu trong tài khoản. Chọn đơn hoặc nhập mã đơn trong
-                câu hỏi. Ví dụ: “Tôi còn phải trả bao nhiêu?”, “Khi nào nhận
-                xe?”, “Xe được bảo hành thế nào?”.
-              </p>
-              <ChatStream className="order-chat-messages" revision={session?.messages}>
+  function choose(value: string, topic?: 'cars' | 'orders') { if (topic) setMode(topic); setText(value); input.current?.focus(); }
+  return <ChatLayout sidebar={<ChatSidebar busy={busy} customer onNew={create}>
+    {session?.messages.length && !session.id ? <div className="assistant-local-session">Hội thoại hiện tại</div> : null}
+    {sessions.length > 0 && <ChatHistory items={sessions} currentId={session?.id} currentTitle={session?.messages.find(message => message.role === 'user')?.content} busy={busy} onOpen={id => void open(id)} />}
+  </ChatSidebar>}>
+    <div className="assistant-controls">
+      <label>Chủ đề<select aria-label="Chủ đề câu hỏi" value={mode} disabled={busy} onChange={e => setMode(e.target.value)}><option value="auto">Tự động nhận diện</option><option value="cars">Tư vấn xe</option><option value="orders">Đơn hàng & hỗ trợ</option></select></label>
+      <label>Đơn cần tra cứu<select aria-label="Đơn cần tra cứu" value={selected} onChange={e => setSelected(e.target.value)} disabled={busy}><option value="">Chưa chọn đơn</option>{orders.map(o => <option key={o.id} value={o.id}>{o.code} · {o.carName}</option>)}</select></label>
+      <button className="mini-button" disabled={busy} onClick={() => { setMode('orders'); choose('Tôi muốn gặp nhân viên hỗ trợ'); }}>Chuẩn bị phiếu hỗ trợ</button>
+    </div>
+    <ChatStream className="assistant-thread" revision={`${session?.messages.length}:${busy}:${failed?.content}:${Boolean(session?.draft)}`}>
+      {!session?.messages.length && !pendingText && !failed && <ChatWelcome busy={busy} customer onPrompt={choose} />}
                 {session?.messages.map((m, index) => (
                   <article
                     className={"order-chat-message " + m.role}
@@ -305,14 +256,15 @@ export function UnifiedAssistantChat() {
                         {section.resultStatus !== "success" && (
                           <small>{section.resultStatus === "missing" ? "Chưa có dữ liệu" : "Chưa xác minh được"}</small>
                         )}
-                        {section.progress ? <OrderProgressCard progress={section.progress} /> : section.payment ? <PaymentDetailsCard initial={section.payment} /> : section.documents ? <DocumentDetailsCard initial={section.documents} /> : <p>{section.content}</p>}
+                        {section.progress ? <OrderProgressCard progress={section.progress} /> : section.payment ? <PaymentDetailsCard initial={section.payment} /> : section.documents ? <DocumentDetailsCard initial={section.documents} /> : <AnswerContent content={section.content} />}
                         <small>Tra cứu: {new Date(section.retrievedAt).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })}</small>
                         {section.detailUrl && (
                           <div><Link to={section.detailUrl}>Xem đơn {m.orderCode} →</Link></div>
                         )}
                       </section>
-                    )) : <p>{m.content}</p>}
+                    )) : m.role === "user" ? <p>{m.content}</p> : <AnswerContent content={m.content} />}
                     <ContextLinks contexts={m.contexts} />
+                    {m.role !== "user" && <CopyAnswer content={m.sections?.length ? m.sections.map(section => `${topicNames[section.topic] || section.topic}\n${section.content}`).join("\n\n") : m.content} />}
                     {!m.sections?.length && m.retrievedAt && (
                       <small>
                         Tra cứu:{" "}
@@ -324,34 +276,19 @@ export function UnifiedAssistantChat() {
                     )}
                   </article>
                 ))}
-              </ChatStream>
-              {session?.supportSuggested && <p>Hai lượt tra cứu liên tiếp chưa giải quyết được. Bạn có thể chuyển vấn đề cho nhân viên.</p>}
-              <button className="mini-button" disabled={busy} onClick={() => { setMode('orders'); setText("Tôi muốn gặp nhân viên hỗ trợ"); }}>Chuẩn bị phiếu hỗ trợ</button>
+      {pendingText && <ThinkingMessage question={pendingText} />}
+      {failed && !pendingText && <FailedQuestion content={failed.content} error={error} busy={busy} onRetry={() => void sendQuestion(failed.content, failed)} />}
+      {session?.supportSuggested && <p>Vấn đề chưa được giải quyết? Bạn có thể chuẩn bị phiếu hỗ trợ để gặp nhân viên.</p>}
               {session?.draft && (session.draft.type === "support" ? <SupportDraftCard key={session.id} draft={session.draft as SupportDraft} sessionId={session.id} version={session.version} busy={busy} setBusy={setBusy} update={updateSession} error={setError} /> : <AssistantDraftCard key={session.id} draft={session.draft} sessionId={session.id} version={session.version} busy={busy} setBusy={setBusy} update={updateSession} error={setError} />)}
-              <form className="orders-form" onSubmit={send}>
-                <label>
-                  Câu hỏi
-                  <textarea
-                    aria-label="Câu hỏi"
-                    value={text}
-                    onChange={(e) => setText(e.target.value)}
-                    onKeyDown={e => composerKeyDown(e, busy)}
-                    maxLength={1000}
-                    rows={3}
-                    required
-                    disabled={busy}
-                  />
-                </label>
-                <button className="button" disabled={busy || !text.trim()}>
-                  {busy ? "Đang xử lý…" : "Gửi câu hỏi"}
-                </button>
-              </form>
-            </>
-          )}
-        </section>
-      </div>
+    </ChatStream>
+    <div className="assistant-composer-area">
+      {loadError && <div className="assistant-error" role="alert"><p>{loadError}</p><button className="mini-button" disabled={loading} onClick={() => setRetry(v => v + 1)}>Thử lại tải dữ liệu</button></div>}
+      {loading && <p className="assistant-data-loading" role="status">Đang cập nhật lịch sử và đơn hàng…</p>}
+      {error && !failed && <div className="assistant-error" role="alert">{error}</div>}
+      <ChatComposer inputRef={input} value={text} onChange={setText} busy={busy} onSubmit={send} sendLabel="Gửi câu hỏi" placeholder="Hỏi về xe, đơn hàng hoặc điều bạn cần hỗ trợ…" notice="Yêu cầu thay đổi chỉ được gửi khi bạn xác nhận." />
     </div>
-  );
+  </ChatLayout>;
+
 }
 export default function OrderAssistantPage() {
   const { user, loading, error, refresh } = useOrdersSession();

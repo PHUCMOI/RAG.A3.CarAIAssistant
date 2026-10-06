@@ -1,0 +1,584 @@
+.website-shell.admin-shell .page {
+  padding-top: 34px;
+  padding-bottom: 60px;
+}
+.website-shell.admin-shell h1 {
+  font-size: 30px;
+  letter-spacing: -1px;
+  color: #254a39;
+  line-height: 1.3;
+}
+.website-shell.admin-shell h2 {
+  font-size: 19px;
+  color: #375941;
+  letter-spacing: -0.3px;
+}
+.website-shell.admin-shell h3 {
+  font-size: 15px;
+  color: #456849;
+}
+.website-shell.admin-shell .content-panel {
+  border-color: #dce5d6;
+  border-radius: 15px;
+  padding: 24px;
+}
+.admin-page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 25px;
+  margin-bottom: 28px;
+}
+.admin-page-heading h1 {
+  margin: 9px 0;
+}
+.admin-page-heading p,
+.website-shell.admin-shell .page-heading p {
+  color: #7a8976;
+  font-size: 13px;
+  line-height: 1.8;
+}
+.website-shell.admin-shell .section-kicker {
+  font-size: 10px;
+  color: #829970;
+  letter-spacing: 1.5px;
+}
+.admin-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.admin-filters {
+  display: flex;
+  align-items: end;
+  gap: 18px;
+  padding: 18px 20px;
+  background: #fff;
+  border: 1px solid #dce5d6;
+  border-radius: 13px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.admin-filters label {
+  display: grid;
+  gap: 8px;
+  font-size: 11px;
+  color: #6b8261;
+  font-weight: 600;
+  flex: 1;
+  min-width: 180px;
+}
+.website-shell.admin-shell input:not([type="checkbox"]),
+.website-shell.admin-shell select,
+.website-shell.admin-shell textarea {
+  box-sizing: border-box;
+  max-width: 100%;
+  border: 1px solid #d5dfcd;
+  border-radius: 8px;
+  background: #fcfdf9;
+  color: #36533a;
+  padding: 11px 12px;
+  font-size: 13px;
+}
+.admin-filters input,
+.admin-filters select {
+  width: 100%;
+}
+.admin-filters .admin-check,
+.website-shell.admin-shell label:has(> input[type="checkbox"]) {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  flex: none;
+}
+.website-shell.admin-shell input[type="checkbox"] {
+  width: 16px !important;
+  height: 16px;
+  flex: 0 0 16px;
+  padding: 0;
+  margin: 0;
+  accent-color: #3c744e;
+}
+.website-shell.admin-shell .orders-form {
+  gap: 15px;
+}
+.website-shell.admin-shell .orders-form label {
+  font-size: 12px;
+  color: #617859;
+}
+.website-shell.admin-shell .orders-form button {
+  justify-self: start;
+  width: auto;
+  min-width: 120px;
+}
+.website-shell.admin-shell .orders-form textarea {
+  min-height: 90px;
+}
+.admin-table-scroll {
+  overflow: auto;
+  border: 1px solid #dce5d6;
+  border-radius: 14px;
+  background: #fff;
+  scrollbar-width: thin;
+}
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 12px;
+  min-width: 950px;
+}
+.admin-table th {
+  padding: 15px 17px;
+  background: #f2f6ec;
+  color: #7c926a;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.admin-table td {
+  padding: 17px;
+  border-top: 1px solid #edf1e7;
+  vertical-align: middle;
+  color: #5f7850;
+}
+.admin-table tbody tr:hover {
+  background: #fafcf6;
+}
+.admin-table td strong {
+  font-size: 12px;
+  display: block;
+  color: #446634;
+}
+.admin-table td small {
+  display: block;
+  margin-top: 6px;
+  color: #96a585;
+  font-size: 10px;
+  line-height: 1.6;
+}
+.admin-code {
+  font-size: 11px;
+  font-weight: 700;
+  color: #456d33;
+}
+.admin-money {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.admin-badge {
+  display: inline-flex;
+  white-space: nowrap;
+  align-items: center;
+  padding: 5px 9px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 600;
+}
+.admin-badge.positive {
+  background: #eaf3e1;
+  color: #5b7e3e;
+}
+.admin-badge.negative {
+  background: #fbebe5;
+  color: #a66e58;
+}
+.admin-badge.pending {
+  background: #f8f1df;
+  color: #9a844e;
+}
+.admin-badge.neutral {
+  background: #edf0e9;
+  color: #8a9680;
+}
+.admin-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 22px;
+  color: #8a9b7b;
+  font-size: 11px;
+}
+.admin-pagination > div {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+.admin-result-count {
+  font-size: 12px;
+  color: #7d906c;
+  margin: 0 0 15px;
+}
+.admin-empty {
+  padding: 45px 20px;
+  background: #fff;
+  border: 1px dashed #ccddbb;
+  border-radius: 14px;
+  display: grid;
+  gap: 18px;
+  justify-items: center;
+  color: #8b9f78;
+  font-size: 13px;
+}
+.admin-feedback {
+  font-size: 12px;
+  line-height: 1.8;
+  padding: 12px 15px;
+  border-radius: 9px;
+}
+.admin-feedback.error {
+  background: #fff0eb;
+  color: #a16a50;
+}
+.admin-feedback.success {
+  background: #edf4e4;
+  color: #608542;
+}
+.admin-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.website-shell.admin-shell [hidden] {
+  display: none !important;
+}
+.admin-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 15px;
+  margin: 22px 0;
+}
+.admin-summary > div {
+  padding: 18px;
+  border: 1px solid #dce5d6;
+  border-radius: 12px;
+  background: #fff;
+}
+.admin-summary dt {
+  font-size: 11px;
+  color: #8b9d7d;
+}
+.admin-summary dd {
+  margin: 9px 0 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #517538;
+}
+.admin-tabs {
+  display: flex;
+  gap: 6px;
+  border-bottom: 1px solid #dce5d6;
+  padding-bottom: 12px;
+  margin: 24px 0;
+  flex-wrap: wrap;
+}
+.admin-tabs button {
+  border: 0;
+  padding: 10px 15px;
+  background: none;
+  color: #869976;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.admin-tabs button[aria-selected="true"] {
+  background: #e5eedc;
+  color: #4c7435;
+}
+.website-shell.admin-shell .admin-detail-grid {
+  grid-template-columns: 1fr;
+}
+.website-shell.admin-shell .orders-metadata {
+  gap: 12px 24px;
+}
+.website-shell.admin-shell .orders-section {
+  margin-top: 20px;
+}
+.website-shell.admin-shell .orders-form fieldset {
+  border: 1px solid #e2e9d9;
+  border-radius: 12px;
+  padding: 20px;
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+.website-shell.admin-shell legend {
+  color: #6d8a55;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 0 8px;
+}
+.admin-create-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 24px;
+  align-items: start;
+}
+.website-shell.admin-shell .admin-create-grid form {
+  max-width: none;
+}
+.admin-create-summary {
+  position: sticky;
+  top: 96px;
+  background: #edf4e4 !important;
+}
+.admin-create-summary dl {
+  display: grid;
+  gap: 9px;
+  margin-bottom: 22px;
+}
+.admin-create-summary dt {
+  font-size: 11px;
+  color: #8b9f78;
+}
+.admin-create-summary dd {
+  margin: 0 0 13px;
+  color: #57773e;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.admin-card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+.admin-note {
+  padding: 15px 18px;
+  background: #f1f5eb;
+  border-radius: 10px;
+  font-size: 12px;
+  color: #869a70;
+  line-height: 1.8;
+}
+.website-shell.admin-shell .admin-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 18px 0;
+}
+.website-shell.admin-shell details > summary {
+  cursor: pointer;
+  color: #698b4d;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 12px 0;
+}
+.website-shell.admin-shell .admin-conversation {
+  max-width: 900px;
+  margin: 20px auto;
+}
+.website-shell.admin-shell .admin-conversation article {
+  padding: 17px 20px;
+  border: 1px solid #e0e8d7;
+  border-radius: 12px;
+  margin: 14px 0;
+  background: #fff;
+  font-size: 13px;
+  line-height: 1.8;
+}
+.website-shell.admin-shell .admin-conversation article.internal {
+  background: #fff8e8;
+  border-color: #e9d9af;
+}
+.website-shell.admin-shell .admin-conversation article small {
+  color: #8ea279;
+  font-size: 10px;
+}
+.website-shell.admin-shell .admin-conversation article p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.website-shell.admin-shell .admin-conversation article strong {
+  color: #5e8050;
+  font-size: 12px;
+}
+.website-shell.admin-shell .admin-conversation article.internal strong {
+  color: #a18b50;
+}
+.website-shell.admin-shell .admin-submitted-note {
+  font-size: 11px;
+  color: #9b8562;
+}
+.website-shell.admin-shell .orders-table {
+  font-size: 12px;
+}
+.website-shell.admin-shell .orders-help {
+  font-size: 11px;
+  line-height: 1.8;
+  color: #8f9f80;
+}
+.website-shell.admin-shell .admin-record {
+  margin: 18px 0;
+}
+.website-shell.admin-shell .admin-record p {
+  font-size: 13px;
+  line-height: 1.8;
+  color: #7b9168;
+}
+.website-shell.admin-shell .admin-record .orders-form {
+  border-top: 1px solid #e8eee0;
+  padding-top: 18px;
+  margin-top: 18px;
+}
+.website-shell.admin-shell :focus-visible {
+  outline: 2px solid #4d8052;
+  outline-offset: 3px;
+}
+@media (max-width: 1000px) {
+  .admin-create-grid {
+    grid-template-columns: 1fr;
+  }
+  .admin-create-summary {
+    position: static;
+  }
+  .admin-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .admin-page-heading {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .admin-pagination {
+    flex-wrap: wrap;
+  }
+}
+.website-shell.admin-shell .admin-order-summary {
+  display: grid;
+  grid-template-columns: 1.4fr repeat(3, 1fr);
+  gap: 16px;
+  margin: 24px 0;
+}
+.website-shell.admin-shell .admin-order-summary > div {
+  background: #fff;
+  border: 1px solid #dce5d6;
+  border-radius: 12px;
+  padding: 18px;
+  display: grid;
+  gap: 9px;
+  align-content: start;
+}
+.website-shell.admin-shell .admin-order-summary small {
+  font-size: 11px;
+  color: #6b8061;
+}
+.website-shell.admin-shell .admin-order-summary strong {
+  font-size: 18px;
+  color: #36533a;
+}
+.website-shell.admin-shell .admin-order-summary .admin-badge {
+  justify-self: start;
+}
+.website-shell.admin-shell .admin-create-customer {
+  margin-bottom: 24px;
+  max-width: 800px;
+}
+.website-shell.admin-shell .admin-slot-create {
+  margin-top: 24px;
+}
+.website-shell.admin-shell .admin-conversation-message {
+  max-width: 900px;
+  border: 1px solid #dce5d6;
+  border-radius: 12px;
+  padding: 18px;
+  margin: 16px 0;
+  background: #f8fbf4;
+}
+.website-shell.admin-shell .admin-conversation-message.internal {
+  background: #fff6df;
+  border-color: #e4d19b;
+}
+.website-shell.admin-shell .admin-conversation-message.internal strong {
+  color: #795b20;
+}
+.website-shell.admin-shell .admin-record small {
+  display: block;
+  margin: 8px 0;
+}
+.website-shell.admin-shell .admin-record > strong {
+  display: block;
+  margin-top: 12px;
+}
+.website-shell.admin-shell .admin-record p {
+  color: #465e3d;
+}
+.website-shell.admin-shell .admin-table th,
+.website-shell.admin-shell .admin-table td {
+  color: #49603f;
+}
+.website-shell.admin-shell .orders-inline-form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.website-shell.admin-shell .orders-inline-form > button {
+  align-self: end;
+}
+.website-shell.admin-shell .content-panel:has(> .orders-form) {
+  margin-bottom: 20px;
+}
+.website-shell.admin-shell .admin-table {
+  font-size: 13px;
+}
+.website-shell.admin-shell .admin-table td strong {
+  font-size: 13px;
+}
+.website-shell.admin-shell .admin-table td small {
+  font-size: 11px;
+  color: #728265;
+}
+.website-shell.admin-shell .admin-table th {
+  font-size: 11px;
+}
+.website-shell.admin-shell .admin-badge {
+  font-size: 11px;
+}
+.website-shell.admin-shell .admin-code {
+  font-size: 12px;
+}
+.website-shell.admin-shell .admin-filters label {
+  font-size: 12px;
+}
+.website-shell.admin-shell .admin-page-heading p {
+  font-size: 14px;
+}
+.website-shell.admin-shell .admin-pagination,
+.website-shell.admin-shell .admin-result-count {
+  font-size: 12px;
+}
+.website-shell.admin-shell .admin-feedback {
+  font-size: 13px;
+}
+.website-shell.admin-shell .admin-note {
+  color: #526942;
+}
+.website-shell.admin-shell .admin-create-summary dt {
+  color: #617657;
+}
+.website-shell.admin-shell .admin-tabs button {
+  font-size: 13px;
+}
+.website-shell.admin-shell .admin-record {
+  overflow-wrap: anywhere;
+}
+.website-shell.admin-shell .admin-slot-create {
+  overflow: visible;
+}
+
+.website-shell.admin-shell .page-heading {
+  margin-bottom: 24px;
+}
+.website-shell.admin-shell .page-heading h1 {
+  font-size: 30px;
+  line-height: 1.3;
+  margin: 10px 0;
+}

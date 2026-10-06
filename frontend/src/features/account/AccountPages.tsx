@@ -8,29 +8,10 @@ import {
   Pager,
   failure,
   time,
-  links,
   type Profile,
   type Page,
 } from "./shared";
-export function AccountHome() {
-  const { user } = useOrdersSession();
-  const count = useData<{ count: number }>("/my/notifications/unread-count");
-  return (
-    <div className="page">
-      <h1>Tài khoản của {user?.displayName}</h1>
-      <p>Theo dõi nhu cầu mua xe và giao dịch của bạn.</p>
-      {count.data && <p>{count.data.count} thông báo chưa đọc</p>}
-      <div className="orders-grid">
-        {links.slice(1).map(([to, name]) => (
-          <Link className="content-panel order-card" key={to} to={to}>
-            <h2>{name}</h2>
-            <span>Mở →</span>
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
-}
+export { AccountHome } from "./AccountHome";
 export function ProfilePage() {
   const { data, setData, error, setError, reload } =
     useData<Profile>("/my/profile");

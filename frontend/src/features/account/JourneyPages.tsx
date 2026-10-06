@@ -1,3 +1,11 @@
+import { useAdminWrite } from "../admin/useAdminWrite";
+import {
+  AdminFeedback,
+  AdminBadge,
+  AdminHeading,
+  AdminPager,
+  useAdminListQuery,
+} from "../admin/ui";
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { request, statuses, type Order } from "../orders/api";
@@ -28,16 +36,48 @@ type Change = {
 };
 export function ChangeRequestsPage({ admin = false }: { admin?: boolean }) {
   const [params] = useSearchParams();
-  const [page, setPage] = useState(1);
+  const filter = useAdminListQuery();
+  const [customerPage, setCustomerPage] = useState(1);
+  const page = admin ? filter.page : customerPage;
+  const setPage = (value: number) =>
+    admin ? filter.update("page", String(value)) : setCustomerPage(value);
   const state = useData<Page<Change>>(
-    (admin ? "/admin" : "/my") + "/change-requests?page=" + page + (!admin && params.get("requestId") ? "&requestId=" + encodeURIComponent(params.get("requestId")!) : ""),
+    (admin ? "/admin" : "/my") +
+      "/change-requests?page=" +
+      page +
+      (!admin && params.get("requestId")
+        ? "&requestId=" + encodeURIComponent(params.get("requestId")!)
+        : ""),
   );
   const orders = useData<Page<Order>>(
     admin ? "/admin/orders?pageSize=100" : "/my/orders?pageSize=100",
   );
-  const [busy, setBusy] = useState(false);
+  const [customerBusy, setBusy] = useState(false);
+  const write = useAdminWrite();
+  const busy = admin
+    ? write.disabled || Boolean(state.error && state.data)
+    : customerBusy;
   const [error, setError] = useState("");
+  const [activePath, setActivePath] = useState("");
   async function mutate(path: string, body: unknown) {
+    if (admin) {
+      if (busy) return;
+      setActivePath(path);
+      await write.run(async () => {
+        await request(path, "POST", body);
+        try {
+          state.setData(
+            await request<Page<Change>>("/admin/change-requests?page=" + page),
+          );
+          state.setError("");
+        } catch (e) {
+          state.setError(
+            "Đã lưu thao tác, nhưng chưa tải lại được danh sách. Chỉ tải lại dữ liệu; không gửi lại thao tác vừa lưu.",
+          );
+        }
+      });
+      return;
+    }
     setBusy(true);
     setError("");
     try {
@@ -60,15 +100,49 @@ export function ChangeRequestsPage({ admin = false }: { admin?: boolean }) {
   }
   return (
     <div className="page">
-      <h1>
-        {admin
-          ? "Xử lý đề nghị thay đổi / hủy đơn"
-          : "Đề nghị thay đổi / hủy đơn"}
-      </h1>
+      {admin ? (
+        <AdminHeading title="Đề nghị thay đổi / hủy đơn" />
+      ) : (
+        <h1>Đề nghị thay đổi / hủy đơn</h1>
+      )}
       <p>
         Admin phản hồi đề nghị; quyết định duyệt chưa tự sửa trạng thái đơn hoặc
         hoàn tiền. Nhân viên thực hiện nghiệp vụ trên đơn sau khi thống nhất.
       </p>
+      {admin && (
+        <>
+          <AdminFeedback
+            error={
+              !activePath || activePath.endsWith("appointment-slots")
+                ? write.error || (state.data ? state.error : "")
+                : ""
+            }
+            success={
+              !activePath || activePath.endsWith("appointment-slots")
+                ? write.success
+                : ""
+            }
+          />
+          {(write.conflict || Boolean(state.error && state.data)) && (
+            <button
+              className="mini-button"
+              disabled={write.busy}
+              onClick={() =>
+                void write.refresh(async () => {
+                  state.setData(
+                    await request<Page<Change>>(
+                      "/admin/change-requests?page=" + page,
+                    ),
+                  );
+                  state.setError("");
+                })
+              }
+            >
+              Tải phiên bản mới
+            </button>
+          )}
+        </>
+      )}
       {error && (
         <p role="alert" className="orders-error">
           {error}
@@ -124,19 +198,33 @@ export function ChangeRequestsPage({ admin = false }: { admin?: boolean }) {
         <>
           {state.data.items.length === 0 && <p>Chưa có đề nghị.</p>}
           {state.data.items.map((r) => (
-            <section className="content-panel account-list-row" key={r.id}>
+            <section
+              className={
+                admin
+                  ? "content-panel account-list-row admin-record"
+                  : "content-panel account-list-row"
+              }
+              key={r.id}
+            >
               <Link
                 to={(admin ? "/admin/orders/" : "/account/orders/") + r.orderId}
               >
                 Mở đơn liên quan →
               </Link>
               <strong>
-                {r.code} · {r.type === "cancel" ? "Đề nghị hủy" : "Đề nghị thay đổi"} ·{" "}
+                {r.code} ·{" "}
+                {r.type === "cancel" ? "Đề nghị hủy" : "Đề nghị thay đổi"} ·{" "}
                 {labels[r.status]}
               </strong>
               <small>{time(r.createdAt)}</small>
               <p>{r.reason}</p>
               {r.response && <p>Phản hồi: {r.response}</p>}
+              {admin && activePath.includes(r.id) && (
+                <AdminFeedback
+                  error={write.error || state.error}
+                  success={write.success}
+                />
+              )}
               {admin && r.status === "pending" && (
                 <form
                   className="orders-form"
@@ -171,7 +259,21 @@ export function ChangeRequestsPage({ admin = false }: { admin?: boolean }) {
               )}
             </section>
           ))}
-          <Pager page={page} total={state.data.totalCount} setPage={setPage} />
+          {admin ? (
+            <AdminPager
+              page={page}
+              size={state.data.pageSize || 20}
+              total={state.data.totalCount}
+              change={setPage}
+              busy={busy}
+            />
+          ) : (
+            <Pager
+              page={page}
+              total={state.data.totalCount}
+              setPage={setPage}
+            />
+          )}
         </>
       )}
     </div>
@@ -311,14 +413,44 @@ type Appointment = {
 };
 export function AppointmentsPage({ admin = false }: { admin?: boolean }) {
   const prefix = admin ? "/admin" : "/my";
-  const [page, setPage] = useState(1);
+  const filter = useAdminListQuery();
+  const [customerPage, setCustomerPage] = useState(1);
+  const page = admin ? filter.page : customerPage;
+  const setPage = (value: number) =>
+    admin ? filter.update("page", String(value)) : setCustomerPage(value);
   const state = useData<Page<Appointment>>(
     prefix + "/appointments?page=" + page,
   );
   const slots = useData<Slot[]>(prefix + "/appointment-slots");
-  const [busy, setBusy] = useState(false);
+  const [customerBusy, setBusy] = useState(false);
+  const write = useAdminWrite();
+  const busy = admin
+    ? write.disabled || Boolean(state.error && state.data)
+    : customerBusy;
   const [error, setError] = useState("");
+  const [activePath, setActivePath] = useState("");
   async function mutate(path: string, body: unknown) {
+    if (admin) {
+      if (busy) return;
+      setActivePath(path);
+      await write.run(async () => {
+        await request(path, "POST", body);
+        try {
+          state.setData(
+            await request<Page<Appointment>>(
+              "/admin/appointments?page=" + page,
+            ),
+          );
+          slots.setData(await request<Slot[]>("/admin/appointment-slots"));
+          state.setError("");
+        } catch (e) {
+          state.setError(
+            "Đã lưu thao tác, nhưng chưa tải lại được lịch hẹn. Chỉ tải lại dữ liệu; không gửi lại thao tác vừa lưu.",
+          );
+        }
+      });
+      return;
+    }
     setBusy(true);
     setError("");
     try {
@@ -333,45 +465,99 @@ export function AppointmentsPage({ admin = false }: { admin?: boolean }) {
   }
   return (
     <div className="page">
-      <h1>
-        {admin ? "Quản lý lịch tư vấn / lái thử" : "Lịch tư vấn / lái thử"}
-      </h1>
+      {admin ? (
+        <AdminHeading title="Lịch tư vấn / lái thử" />
+      ) : (
+        <h1>Lịch tư vấn / lái thử</h1>
+      )}
       <p>
         Lịch khách gửi chờ đại lý xác nhận. Lịch thay thế cần khách đồng ý;
         không đặt trùng thời gian.
       </p>
+      {admin && (
+        <>
+          <AdminFeedback
+            error={
+              !activePath || activePath.endsWith("appointment-slots")
+                ? write.error || (state.data ? state.error : "")
+                : ""
+            }
+            success={
+              !activePath || activePath.endsWith("appointment-slots")
+                ? write.success
+                : ""
+            }
+          />
+          {(write.conflict || Boolean(state.error && state.data)) && (
+            <button
+              className="mini-button"
+              disabled={write.busy}
+              onClick={() =>
+                void write.refresh(async () => {
+                  state.setData(
+                    await request<Page<Appointment>>(
+                      "/admin/appointments?page=" + page,
+                    ),
+                  );
+                  slots.setData(
+                    await request<Slot[]>("/admin/appointment-slots"),
+                  );
+                  state.setError("");
+                })
+              }
+            >
+              Tải phiên bản mới
+            </button>
+          )}
+        </>
+      )}
       {error && (
         <p role="alert" className="orders-error">
           {error}
         </p>
       )}
-      <section className="content-panel">
-        <h2>{admin ? "Mở khung giờ" : "Đặt lịch mới"}</h2>
-        <AppointmentForm
-          admin={admin}
-          slots={slots.data || []}
-          busy={busy}
-          submit={(body) =>
-            mutate(
-              prefix + (admin ? "/appointment-slots" : "/appointments"),
-              body,
-            )
-          }
-        />
-        {!slots.data && <Load error={slots.error} retry={slots.reload} />}
-      </section>
+      {!admin && (
+        <>
+          <section className="content-panel">
+            <h2>{admin ? "Mở khung giờ" : "Đặt lịch mới"}</h2>
+            <AppointmentForm
+              admin={admin}
+              slots={slots.data || []}
+              busy={busy}
+              submit={(body) =>
+                mutate(
+                  prefix + (admin ? "/appointment-slots" : "/appointments"),
+                  body,
+                )
+              }
+            />
+            {!slots.data && <Load error={slots.error} retry={slots.reload} />}
+          </section>
+        </>
+      )}
       {!state.data ? (
         <Load error={state.error} retry={state.reload} />
       ) : (
         <>
           {!state.data.items.length && <p>Chưa có lịch hẹn.</p>}
           {state.data.items.map((a) => (
-            <section className="content-panel account-list-row" key={a.id}>
+            <section
+              className={
+                admin
+                  ? "content-panel account-list-row admin-record"
+                  : "content-panel account-list-row"
+              }
+              key={a.id}
+            >
               <h2>
                 {a.details.carName} ·{" "}
                 {a.details.kind === "test_drive" ? "Lái thử" : "Tư vấn"}
               </h2>
-              <strong>{labels[a.status]}</strong>
+              {admin ? (
+                <AdminBadge value={a.status}>{labels[a.status]}</AdminBadge>
+              ) : (
+                <strong>{labels[a.status]}</strong>
+              )}
               <p>
                 {a.slot.dealerName} · {a.slot.staffName}
               </p>
@@ -386,20 +572,31 @@ export function AppointmentsPage({ admin = false }: { admin?: boolean }) {
                   {time(h.at)} · {h.detail}
                 </small>
               ))}
+              {admin && activePath.includes(a.id) && (
+                <AdminFeedback
+                  error={write.error || state.error}
+                  success={write.success}
+                />
+              )}
               {!["rejected", "cancelled"].includes(a.status) &&
                 new Date(a.slot.startsAt) > new Date() && (
                   <>
-                    <ActionForm
-                      label="Hủy lịch"
-                      busy={busy}
-                      submit={(reason) =>
-                        mutate(prefix + "/appointments/" + a.id + "/actions", {
-                          version: a.version,
-                          action: "cancel",
-                          reason,
-                        })
-                      }
-                    />
+                    <AppointmentDisclosure admin={admin} title="Hủy lịch hẹn">
+                      <ActionForm
+                        label="Hủy lịch"
+                        busy={busy}
+                        submit={(reason) =>
+                          mutate(
+                            prefix + "/appointments/" + a.id + "/actions",
+                            {
+                              version: a.version,
+                              action: "cancel",
+                              reason,
+                            },
+                          )
+                        }
+                      />
+                    </AppointmentDisclosure>
                     {!admin && a.status === "proposed" && (
                       <ActionForm
                         label="Chấp nhận lịch mới"
@@ -415,7 +612,8 @@ export function AppointmentsPage({ admin = false }: { admin?: boolean }) {
                   </>
                 )}
               {admin && ["requested", "proposed"].includes(a.status) && (
-                <>
+                <details>
+                  <summary>Xử lý lịch hẹn</summary>
                   <form
                     className="orders-form"
                     onSubmit={(e) => {
@@ -463,11 +661,45 @@ export function AppointmentsPage({ admin = false }: { admin?: boolean }) {
                       Lưu xử lý
                     </button>
                   </form>
-                </>
+                </details>
               )}
             </section>
           ))}
-          <Pager page={page} total={state.data.totalCount} setPage={setPage} />
+          {admin ? (
+            <AdminPager
+              page={page}
+              size={state.data.pageSize || 20}
+              total={state.data.totalCount}
+              change={setPage}
+              busy={busy}
+            />
+          ) : (
+            <Pager
+              page={page}
+              total={state.data.totalCount}
+              setPage={setPage}
+            />
+          )}
+        </>
+      )}
+      {admin && (
+        <>
+          <details className="content-panel admin-slot-create">
+            <summary>Mở khung giờ mới</summary>
+            <h2>{admin ? "Mở khung giờ" : "Đặt lịch mới"}</h2>
+            <AppointmentForm
+              admin={admin}
+              slots={slots.data || []}
+              busy={busy}
+              submit={(body) =>
+                mutate(
+                  prefix + (admin ? "/appointment-slots" : "/appointments"),
+                  body,
+                )
+              }
+            />
+            {!slots.data && <Load error={slots.error} retry={slots.reload} />}
+          </details>
         </>
       )}
     </div>
@@ -630,5 +862,24 @@ function AppointmentForm({
         {admin ? "Mở khung giờ" : "Gửi yêu cầu lịch"}
       </button>
     </form>
+  );
+}
+
+function AppointmentDisclosure({
+  admin,
+  title,
+  children,
+}: {
+  admin: boolean;
+  title: string;
+  children: import("react").ReactNode;
+}) {
+  return admin ? (
+    <details>
+      <summary>{title}</summary>
+      {children}
+    </details>
+  ) : (
+    <>{children}</>
   );
 }

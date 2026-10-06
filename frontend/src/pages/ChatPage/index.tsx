@@ -1,282 +1,93 @@
-import { useEffect, useRef, useState, type FormEvent, type ChangeEvent } from 'react'
+import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
+import { ChatLayout, ChatSidebar, ChatWelcome, ThinkingMessage } from '../../features/chat/ChatLayout'
 import { apiPost, apiPostForm } from '../../shared/api/client'
 import { useOrdersSession } from '../../features/orders/Session'
 import { UnifiedAssistantChat } from '../../features/orders/OrderAssistantPage'
 import { isOrderQuestion } from '../../features/chat/routing'
 import { useCarQuestion } from '../../features/chat/useCarQuestion'
 import { LoadingSkeleton } from '../../shared/components/LoadingSkeleton'
-import { ChatStream, composerKeyDown, ContextLinks } from '../../features/chat/ChatUtilities'
-import {
-  clearChatCache,
-  readCache,
-  restoreCatalog,
-  saveCatalog,
-  writeCache,
-  type CatalogMessage,
-  type CatalogContext,
-  type IdentifiedCarItem,
-} from '../../features/chat/storage'
+import { AnswerContent, CopyAnswer, FailedQuestion, ChatComposer } from '../../features/chat/ChatContent'
+import { ChatStream, ContextLinks } from '../../features/chat/ChatUtilities'
+import { clearChatCache, readCache, restoreCatalog, saveCatalog, writeCache, type CatalogMessage, type CatalogContext, type IdentifiedCarItem } from '../../features/chat/storage'
 
-const welcome: CatalogMessage = {
-  role: 'assistant',
-  catalog: true,
-  content: 'Xin chào! Hãy cho mình biết ngân sách, số ghế hoặc tải lên ảnh xe bạn muốn nhận diện và tư vấn.',
-}
-
+const welcome: CatalogMessage = { role: 'assistant', catalog: true, content: 'Xin chào! Hãy cho mình biết ngân sách, số ghế hoặc mẫu xe bạn đang quan tâm.' }
 export function GuestChat() {
   const carQuestion = useCarQuestion()
-  const [question, setQuestion] = useState(() => {
-    const value = readCache<unknown>('guest', 'composer')
-    return typeof value === 'string' ? value : ''
-  })
+  const [question, setQuestion] = useState(() => { const value = readCache<unknown>('guest', 'composer'); return typeof value === 'string' ? value : '' })
   const [sending, setSending] = useState(false)
   const locked = useRef(false)
-  const [error, setError] = useState('')
-  const [failed, setFailed] = useState('')
+  const input = useRef<HTMLTextAreaElement>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-
-  const [messages, setMessages] = useState<CatalogMessage[]>(() => {
-    const saved = restoreCatalog<CatalogMessage>('guest', 'messages', [])
-    return saved.length ? saved : [welcome]
-  })
-
-  useEffect(() => {
-    if (carQuestion) setQuestion((current) => current || carQuestion)
-  }, [carQuestion])
+  const fileInput = useRef<HTMLInputElement>(null)
+  const previewVersion = useRef(0)
+  const failedRequest = useRef<{ text: string; file: File | null; preview: string | null } | null>(null)
+  function clearAttachment() { previewVersion.current++; setSelectedFile(null); setImagePreview(null); if (fileInput.current) fileInput.current.value = '' }
+  function selectImage(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    if (!file) return
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) { setError('Chọn ảnh JPEG, PNG hoặc WebP.'); return }
+    const version = ++previewVersion.current
+    setSelectedFile(file); setImagePreview(null); setError('')
+    const reader = new FileReader()
+    reader.onload = () => { if (version === previewVersion.current) setImagePreview(String(reader.result)) }
+    reader.readAsDataURL(file)
+  }
+  const [pendingText, setPendingText] = useState('')
+  const [error, setError] = useState('')
+  const [failed, setFailed] = useState('')
+  const [messages, setMessages] = useState<CatalogMessage[]>(() => { const saved = restoreCatalog<CatalogMessage>('guest', 'messages', []); return saved.length ? saved : [welcome] })
+  useEffect(() => { if (carQuestion) setQuestion(current => current || carQuestion) }, [carQuestion])
   useEffect(() => saveCatalog('guest', 'messages', messages), [messages])
   useEffect(() => writeCache('guest', 'composer', question), [question])
-
-  function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    if (!file.type.startsWith('image/')) {
-      setError('Vui lòng chọn tập tin hình ảnh (JPG, PNG, WebP).')
-      return
-    }
-    setSelectedFile(file)
-    const reader = new FileReader()
-    reader.onload = () => {
-      setImagePreview(reader.result as string)
-    }
-    reader.readAsDataURL(file)
-    setError('')
-  }
-
-  function clearAttachment() {
-    setSelectedFile(null)
-    setImagePreview(null)
-    if (fileInputRef.current) fileInputRef.current.value = ''
-  }
-
-  async function send(value: string) {
-    const text = value.trim()
-    if ((!text && !selectedFile) || locked.current) return
-    locked.current = true
-    setSending(true)
-    setError('')
-
-    const fileToSend = selectedFile
-    const previewToSend = imagePreview
-
+  async function send(value: string, retry = false) {
+    const request = retry ? failedRequest.current : null
+    const text = request ? request.text : value.trim()
+    const file = request ? request.file : selectedFile
+    const preview = request ? request.preview : imagePreview
+    const draftAtStart = input.current?.value || ''
+    if ((!text && !file) || locked.current) return
+    locked.current = true; setSending(true); setError(''); setFailed(''); setPendingText(text || 'Nhận diện xe từ hình ảnh')
     try {
-      if (fileToSend) {
-        const formData = new FormData()
-        formData.append('file', fileToSend)
-        if (text) formData.append('message', text)
-
-        setMessages((current) => [
-          ...current,
-          {
-            role: 'user',
-            content: text || 'Nhận diện mẫu xe từ hình ảnh này',
-            imageUrl: previewToSend || undefined,
-            catalog: true,
-          },
-        ])
+      if (file) {
+        const form = new FormData(); form.append('file', file); if (text) form.append('message', text)
+        const result = await apiPostForm<{ answer: string; identified_cars?: IdentifiedCarItem[]; uncertain?: boolean }>('/api/image-service/chat', form)
+        const contexts = (result.identified_cars || []).map(car => ({ carId: car.car_id, displayName: [car.brand, car.model].filter(Boolean).join(' ') || car.car_id }))
+        setMessages(current => [...current, { role: 'user', content: text, imageUrl: preview || undefined, catalog: true }, { role: 'assistant', content: result.answer, contexts, identifiedCars: result.identified_cars, uncertain: result.uncertain, catalog: true }])
         clearAttachment()
-
-        const result = await apiPostForm<{
-          answer: string
-          identified_cars?: IdentifiedCarItem[]
-          contexts?: Array<{ car_id: string; text?: string; source_name?: string }>
-          uncertain?: boolean
-          latency_ms?: number
-        }>('/api/image-service/chat', formData)
-
-        const carContexts: CatalogContext[] = (result.identified_cars || []).map((c) => ({
-          carId: c.car_id,
-          displayName: `${c.brand || ''} ${c.model || ''} (${Math.round((c.similarity || 0) * 100)}% khớp)`.trim() || c.car_id,
-          presenceSourceId: 'image_retrieval_clip',
-        }))
-
-        setMessages((current) => [
-          ...current,
-          {
-            role: 'assistant',
-            content: result.answer,
-            contexts: carContexts,
-            identifiedCars: result.identified_cars,
-            uncertain: result.uncertain,
-            catalog: true,
-          },
-        ])
       } else if (isOrderQuestion(text)) {
         writeCache('guest', 'pending-question', text)
-        setMessages((current) => [
-          ...current,
-          { role: 'user', content: text, catalog: true },
-          { role: 'assistant', catalog: true, content: 'Bạn cần đăng nhập để tra cứu và xử lý đơn hàng của mình.' },
-        ])
+        setMessages(current => [...current, { role: 'user', content: text, catalog: true }, { role: 'assistant', catalog: true, content: 'Bạn cần đăng nhập để tra cứu và xử lý đơn hàng của mình.' }])
       } else {
         const result = await apiPost<{ answer: string; contexts: CatalogContext[] }, { question: string }>('/api/chat', { question: text })
-        setMessages((current) => [
-          ...current,
-          { role: 'user', content: text, catalog: true },
-          { role: 'assistant', content: result.answer, contexts: result.contexts, catalog: true },
-        ])
+        setMessages(current => [...current, { role: 'user', content: text, catalog: true }, { role: 'assistant', content: result.answer, contexts: result.contexts, catalog: true }])
       }
-      setQuestion('')
-      setFailed('')
-    } catch {
-      setFailed(text)
-      setError('Không gửi được câu hỏi hoặc dịch vụ đang bận. Vui lòng thử lại.')
-    } finally {
-      locked.current = false
-      setSending(false)
-    }
+      setQuestion(current => current === draftAtStart && draftAtStart.trim() === text ? '' : current); setFailed(''); failedRequest.current = null
+    } catch { failedRequest.current = { text, file, preview }; setFailed(text || 'Nhận diện xe từ hình ảnh'); setError('Không gửi được câu hỏi. Nội dung vẫn được giữ để bạn thử lại.') }
+    finally { locked.current = false; setSending(false); setPendingText(''); input.current?.focus() }
   }
-
-  function submit(event: FormEvent) {
-    event.preventDefault()
-    void send(question)
-  }
-
-  const prompts = [
-    'SUV 5 chỗ dưới 1 tỷ',
-    'So sánh Honda CR-V và Mazda CX-5',
-    'Đại lý Toyota tại Hà Nội',
-  ]
-
-  return (
-    <div className="chat-page">
-      <aside className="chat-info">
-        <span className="section-kicker">AutoWise assistant</span>
-        <h1>Trợ lý AI của bạn.</h1>
-        <p>
-          Tư vấn xe đa phương thức (văn bản & hình ảnh) và hỗ trợ đơn hàng. Đăng nhập để tra cứu đơn, thanh toán và hồ sơ.
-        </p>
-        <div>
-          {prompts.map((prompt) => (
-            <button disabled={sending} key={prompt} onClick={() => setQuestion(prompt)}>
-              {prompt} →
-            </button>
-          ))}
-        </div>
-        <button
-          className="mini-button"
-          disabled={sending}
-          onClick={() => {
-            clearChatCache('guest')
-            clearAttachment()
-            setMessages([welcome])
-            setQuestion('')
-            setFailed('')
-            setError('')
-          }}
-        >
-          + Hội thoại mới
-        </button>
-        <p>Hỗ trợ nhận diện xe từ ảnh bằng CLIP và tư vấn thông số bằng RAG.</p>
-      </aside>
-
-      <section className="chat-workspace">
-        <ChatStream className="chat-stream" revision={`${messages.length}:${sending}`}>
-          {messages.map((message, index) => (
-            <div key={index} className={`chat-message ${message.role}`}>
-              <span>{message.role === 'assistant' ? 'A' : 'Bạn'}</span>
-              <div>
-                {message.imageUrl && (
-                  <div className="chat-image-preview-bubble">
-                    <img src={message.imageUrl} alt="Ảnh người dùng gửi" />
-                  </div>
-                )}
-                <p>{message.content}</p>
-                {message.uncertain && (
-                  <div className="chat-uncertain-warning">
-                    ⚠️ <em>Độ tin cậy nhận diện thấp hoặc góc chụp khó.</em>
-                  </div>
-                )}
-                <ContextLinks contexts={message.contexts} />
-              </div>
-            </div>
-          ))}
-          {sending && <p role="status">Đang xử lý câu hỏi & nhận diện ảnh…</p>}
-        </ChatStream>
-
-        {error && (
-          <div role="alert">
-            <p>{error}</p>
-            <button className="mini-button" disabled={sending} onClick={() => void send(failed)}>
-              Gửi lại
-            </button>
-          </div>
-        )}
-
-        <Link to="/login?returnTo=%2Fchat">Đăng nhập để tra cứu đơn hàng →</Link>
-
-        {selectedFile && (
-          <div className="chat-attachment-bar">
-            {imagePreview && <img src={imagePreview} alt="Preview" className="chat-attachment-thumb" />}
-            <span className="chat-attachment-name">📷 {selectedFile.name}</span>
-            <button type="button" className="chat-attachment-remove" onClick={clearAttachment} title="Xóa ảnh">
-              ✕
-            </button>
-          </div>
-        )}
-
-        <form className="chat-input" onSubmit={submit}>
-          <input
-            type="file"
-            ref={fileInputRef}
-            accept="image/jpeg,image/png,image/webp"
-            style={{ display: 'none' }}
-            onChange={handleFileChange}
-          />
-          <button
-            type="button"
-            className="chat-attach-btn"
-            title="Đính kèm ảnh xe để AI nhận diện"
-            disabled={sending}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            📷
-          </button>
-          <textarea
-            aria-label="Câu hỏi"
-            rows={2}
-            maxLength={1000}
-            value={question}
-            disabled={sending}
-            onChange={(e) => setQuestion(e.target.value)}
-            onKeyDown={(e) => composerKeyDown(e, sending)}
-            placeholder={
-              selectedFile
-                ? 'Nhập thêm câu hỏi về chiếc xe trong ảnh (tùy chọn)...'
-                : 'Ví dụ: Tôi cần xe 7 chỗ dưới 1,2 tỷ hoặc bấm 📷 gửi ảnh xe...'
-            }
-          />
-          <button disabled={sending || (!question.trim() && !selectedFile)}>Gửi →</button>
-        </form>
-      </section>
+  function submit(event: FormEvent) { event.preventDefault(); void send(question) }
+  const empty = messages.length === 1 && messages[0].content === welcome.content
+  function choose(value: string) { setQuestion(value); input.current?.focus() }
+  return <ChatLayout sidebar={<ChatSidebar busy={sending} onNew={() => { clearChatCache('guest'); clearAttachment(); failedRequest.current = null; setMessages([welcome]); setQuestion(''); setFailed(''); setError(''); input.current?.focus() }}>{!empty && <div className="assistant-local-session">Hội thoại hiện tại</div>}</ChatSidebar>}>
+    <ChatStream className="assistant-thread" revision={`${messages.length}:${sending}:${failed}`}>
+      {empty && !sending && !failed ? <ChatWelcome busy={sending} onPrompt={choose} /> : messages.filter((_, index) => index !== 0 || !empty).map((message, index) => <article key={index} className={`order-chat-message ${message.role}`}><strong>{message.role === 'assistant' ? 'AutoWise' : 'Bạn'}</strong>{message.role === 'assistant' ? <AnswerContent content={message.content} /> : <p>{message.content}</p>}{message.imageUrl && <img className="chat-image-preview-bubble" src={message.imageUrl} alt="Ảnh xe đã gửi" />}{message.uncertain && <p className="chat-uncertain-warning">Kết quả nhận diện chưa chắc chắn. Hãy kiểm tra thông tin xe.</p>}<ContextLinks contexts={message.contexts} />{message.role === 'assistant' && <CopyAnswer content={message.content} />}</article>)}
+      {sending && <ThinkingMessage question={pendingText} />}{failed && !sending && <FailedQuestion content={failed} error={error} busy={sending} onRetry={() => void send(failed, true)} />}
+    </ChatStream>
+    <div className="assistant-composer-area">
+      <p className="assistant-login"><Link to="/login?returnTo=%2Fchat">Đăng nhập để tra cứu đơn hàng →</Link></p>
+      <ChatComposer canSend={!!selectedFile} attachment={<div>
+        <input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={selectImage} />
+        {selectedFile && <div className="chat-attachment-bar">{imagePreview && <img className="chat-attachment-thumb" src={imagePreview} alt="Ảnh xe đính kèm" />}<span className="chat-attachment-name">{selectedFile.name}</span><button type="button" className="chat-attachment-remove" disabled={sending} onClick={clearAttachment} aria-label="Bỏ ảnh đính kèm">×</button></div>}
+        <button type="button" className="chat-attach-btn" disabled={sending} onClick={() => fileInput.current?.click()}>Đính kèm ảnh xe</button>
+      </div>} inputRef={input} value={question} onChange={setQuestion} busy={sending} onSubmit={submit} sendLabel="Gửi →" placeholder="Hỏi AutoWise về chiếc xe bạn quan tâm…" notice="Kiểm tra thông tin quan trọng với đại lý." />
     </div>
-  )
+  </ChatLayout>
 }
 
 export default function ChatPage() {
   const { user, loading, error, refresh } = useOrdersSession()
   if (loading) return <LoadingSkeleton />
-  return <>{error && <div className="page" role="status">Không kết nối được tài khoản. Bạn vẫn có thể tư vấn xe. <button className="mini-button" onClick={() => void refresh()}>Thử lại dịch vụ tài khoản</button></div>}{user?.role === 'Customer' ? <UnifiedAssistantChat key={user.id} /> : <GuestChat />}</>
+  return <div className="chat-route">{error && <div className="assistant-service-error" role="status">Không kết nối được tài khoản. Bạn vẫn có thể tư vấn xe. <button className="mini-button" onClick={() => void refresh()}>Thử lại dịch vụ tài khoản</button></div>}{user?.role === 'Customer' ? <UnifiedAssistantChat key={user.id} /> : <GuestChat />}</div>
 }
