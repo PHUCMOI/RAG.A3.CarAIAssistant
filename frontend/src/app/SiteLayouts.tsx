@@ -8,6 +8,7 @@ import { AppFooter } from "../shared/components/AppFooter";
 import { ErrorState } from "../shared/components/ErrorState";
 import { LoadingSkeleton } from "../shared/components/LoadingSkeleton";
 import { useOrdersSession } from "../features/orders/Session";
+import '../features/admin/admin.css';
 
 export function CustomerLayout() {
   const { user, loading } = useOrdersSession();

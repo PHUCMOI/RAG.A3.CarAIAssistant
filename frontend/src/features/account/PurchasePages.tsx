@@ -1,3 +1,6 @@
+import { AdminPurchaseList } from "../admin/AdminLists";
+import { AdminFeedback } from "../admin/ui";
+import { useAdminWrite } from "../admin/useAdminWrite";
 import { useEffect, useState, type FormEvent } from "react";
 import {
   Link,
@@ -217,6 +220,10 @@ export function CatalogueForm({
   );
 }
 export function PurchaseList({ admin = false }: { admin?: boolean }) {
+  return admin ? <AdminPurchaseList /> : <CustomerPurchaseList />;
+}
+function CustomerPurchaseList() {
+  const admin = false;
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState("");
   const [query, setQuery] = useState("");
@@ -336,14 +343,32 @@ export function NewPurchasePage() {
 }
 export function PurchaseDetail({ admin = false }: { admin?: boolean }) {
   const { id } = useParams();
+  return <PurchaseDetailContent key={id} admin={admin} />;
+}
+function PurchaseDetailContent({ admin }: { admin: boolean }) {
+  const { id } = useParams();
   const prefix = admin ? "/admin" : "/my";
   const url = prefix + "/purchase-requests/" + id;
   const state = useData<Purchase>(url);
-  const [busy, setBusy] = useState(false);
+  const [customerBusy, setBusy] = useState(false);
+  const write = useAdminWrite();
+  const busy = admin ? write.disabled : customerBusy;
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState("");
   async function act(action: string, body: Record<string, unknown>) {
     if (!state.data) return;
+    if (admin) {
+      await write.run(async () =>
+        state.setData(
+          await request<Purchase>(
+            url + (action ? "/" + action : ""),
+            action ? "POST" : "PATCH",
+            { ...body, version: state.data!.version },
+          ),
+        ),
+      );
+      return;
+    }
     setBusy(true);
     setError("");
     try {
@@ -379,7 +404,18 @@ export function PurchaseDetail({ admin = false }: { admin?: boolean }) {
           <p>
             {labels[r.status]} · {r.details.dealerName}
           </p>
-          <button className="mini-button" onClick={state.reload}>
+          <button
+            className="mini-button"
+            disabled={write.busy}
+            onClick={
+              admin
+                ? () =>
+                    void write.refresh(async () =>
+                      state.setData(await request<Purchase>(url)),
+                    )
+                : state.reload
+            }
+          >
             Tải lại dữ liệu
           </button>
           {error && (
@@ -389,7 +425,7 @@ export function PurchaseDetail({ admin = false }: { admin?: boolean }) {
           )}
           <div className="orders-detail-grid">
             <section className="content-panel">
-              <h2>Thông tin yêu cầu</h2>
+              <h2>{admin ? "Thông tin liên hệ" : "Thông tin yêu cầu"}</h2>
               <p>
                 {r.details.customerName} · {r.details.email}
               </p>
@@ -397,6 +433,7 @@ export function PurchaseDetail({ admin = false }: { admin?: boolean }) {
                 {r.details.phone} · Liên hệ qua{" "}
                 {r.details.contactMethod === "phone" ? "điện thoại" : "email"}
               </p>
+              {admin && <h3>Nhu cầu xe</h3>}
               <p>Phiên bản: {r.details.variant || "Chưa chọn"}</p>
               <p>{r.details.notes || "Không có ghi chú"}</p>
               <p>Đây là nhu cầu tư vấn; chỉ đơn chính thức mới có giá chốt.</p>
@@ -454,6 +491,7 @@ export function PurchaseDetail({ admin = false }: { admin?: boolean }) {
           {admin && ["submitted", "in_consultation"].includes(r.status) && (
             <section className="content-panel orders-section">
               <h2>Xử lý yêu cầu</h2>
+              <AdminFeedback error={write.error} success={write.success} />
               {r.status === "submitted" && (
                 <button
                   className="button"
@@ -471,57 +509,59 @@ export function PurchaseDetail({ admin = false }: { admin?: boolean }) {
                     busy={busy}
                     submit={(reason) => act("responses", { reason })}
                   />
-                  <h3>Chuyển thành đơn</h3>
-                  <form
-                    className="orders-form"
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      const f = new FormData(e.currentTarget);
-                      void act("convert", {
-                        totalVnd: Number(f.get("total")),
-                        depositRequiredVnd: Number(f.get("deposit")),
-                        variant: f.get("variant") || null,
-                        reason: f.get("reason"),
-                      });
-                    }}
-                  >
-                    <label>
-                      Giá chốt VND
-                      <input
-                        name="total"
-                        type="number"
-                        min={1}
-                        max={100000000000}
-                        step={1}
-                        required
-                      />
-                    </label>
-                    <label>
-                      Cọc yêu cầu VND
-                      <input
-                        name="deposit"
-                        type="number"
-                        min={0}
-                        step={1}
-                        required
-                      />
-                    </label>
-                    <label>
-                      Phiên bản xác nhận
-                      <input
-                        name="variant"
-                        maxLength={150}
-                        defaultValue={r.details.variant || ""}
-                      />
-                    </label>
-                    <label>
-                      Nội dung đã thống nhất với khách
-                      <input name="reason" required maxLength={1000} />
-                    </label>
-                    <button className="button" disabled={busy}>
-                      Tạo đơn chính thức
-                    </button>
-                  </form>
+                  <details>
+                    <summary>Chuyển thành đơn chính thức</summary>
+                    <form
+                      className="orders-form"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        const f = new FormData(e.currentTarget);
+                        void act("convert", {
+                          totalVnd: Number(f.get("total")),
+                          depositRequiredVnd: Number(f.get("deposit")),
+                          variant: f.get("variant") || null,
+                          reason: f.get("reason"),
+                        });
+                      }}
+                    >
+                      <label>
+                        Giá chốt VND
+                        <input
+                          name="total"
+                          type="number"
+                          min={1}
+                          max={100000000000}
+                          step={1}
+                          required
+                        />
+                      </label>
+                      <label>
+                        Cọc yêu cầu VND
+                        <input
+                          name="deposit"
+                          type="number"
+                          min={0}
+                          step={1}
+                          required
+                        />
+                      </label>
+                      <label>
+                        Phiên bản xác nhận
+                        <input
+                          name="variant"
+                          maxLength={150}
+                          defaultValue={r.details.variant || ""}
+                        />
+                      </label>
+                      <label>
+                        Nội dung đã thống nhất với khách
+                        <input name="reason" required maxLength={1000} />
+                      </label>
+                      <button className="button" disabled={busy}>
+                        Tạo đơn chính thức
+                      </button>
+                    </form>
+                  </details>
                 </>
               )}
               <h3>Từ chối yêu cầu</h3>

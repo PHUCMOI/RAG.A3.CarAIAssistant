@@ -1,18 +1,18 @@
+import { AdminBadge, AdminFeedback } from "../admin/ui";
+import { useAdminWrite } from "../admin/useAdminWrite";
+import { AdminEvidence } from "../admin/AdminEvidence";
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
-import {
-  Link,
-  Navigate,
-  useNavigate,
-  useParams,
-} from "react-router-dom";
-import type { Car, CarListResponse } from "../../entities/car/model";
+import { Link, Navigate, useParams, useSearchParams } from "react-router-dom";
 import { formatVnd } from "../../shared/formatting/currency";
 import { formatDate } from "../../shared/formatting/date";
 import { ErrorState } from "../../shared/components/ErrorState";
 import { LoadingSkeleton } from "../../shared/components/LoadingSkeleton";
-import { request, statuses, type Order, type Page, type User } from "./api";
+import { request, statuses, type Order, type Page } from "./api";
 import { useOrdersSession } from "./Session";
 import { OrderEvidencePanel } from "./OrderEvidenceCards";
+import { AdminCreateOrder } from "../admin/AdminCreateOrder";
+import { AdminCustomers } from "../admin/AdminLists";
+import { AdminOrdersList } from "../admin/AdminOrdersList";
 
 function message(err: unknown) {
   return err instanceof Error ? err.message : "Không thể xử lý yêu cầu.";
@@ -223,273 +223,21 @@ function OrderList({ admin }: { admin: boolean }) {
 export function OrdersPage({ admin = false }: { admin?: boolean }) {
   return (
     <Guard admin={admin}>
-      <OrderList admin={admin} />
+      {admin ? <AdminOrdersList /> : <OrderList admin={false} />}
     </Guard>
-  );
-}
-function CreateOrder() {
-  const navigate = useNavigate();
-  const [cars, setCars] = useState<Car[]>([]);
-  const [dealers, setDealers] = useState<{ dealerId: number; name: string }[]>(
-    [],
-  );
-  const [customers, setCustomers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [retry, setRetry] = useState(0);
-  useEffect(() => {
-    let active = true;
-    setLoading(true);
-    setError("");
-    Promise.all([
-      fetch("/api/cars?limit=100").then(async (r) => {
-        if (!r.ok) throw new Error("Không tải được catalogue");
-        return r.json() as Promise<CarListResponse>;
-      }),
-      fetch("/api/dealers").then(async (r) => {
-        if (!r.ok) throw new Error("Không tải được đại lý");
-        return r.json();
-      }),
-      request<User[]>("/admin/customers"),
-    ])
-      .then(([c, d, u]) => {
-        if (active) {
-          setCars(c.items);
-          setDealers(d.items);
-          setCustomers(u);
-        }
-      })
-      .catch((err) => {
-        if (active) setError(message(err));
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, [retry]);
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    setBusy(true);
-    setError("");
-    try {
-      const order = await request<Order>("/admin/orders", "POST", {
-        customerId: form.get("customerId"),
-        carId: form.get("carId"),
-        dealerId: Number(form.get("dealerId")),
-        totalVnd: money(String(form.get("total"))),
-        depositRequiredVnd: money(String(form.get("deposit"))),
-        variant: String(form.get("variant") || "") || null,
-      });
-      navigate("/admin/orders/" + order.id);
-    } catch (err) {
-      setError(message(err));
-    } finally {
-      setBusy(false);
-    }
-  }
-  return (
-    <div className="page narrow">
-      <Link className="back-link" to="/admin/orders">
-        ← Đơn hàng
-      </Link>
-      <div className="content-panel orders-panel">
-        <h1>Tạo đơn mua xe</h1>
-        <p>
-          Giá chốt do admin xác nhận; không tự lấy giá catalogue làm giá giao
-          dịch.
-        </p>
-        {loading ? (
-          <LoadingSkeleton />
-        ) : !cars.length || !customers.length ? (
-          <ErrorState
-            message={error || "Cần dữ liệu xe và khách hàng."}
-            onRetry={() => setRetry((value) => value + 1)}
-          />
-        ) : (
-          <form className="orders-form" onSubmit={submit}>
-            <label>
-              Khách hàng
-              <select name="customerId" required>
-                {customers.map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.displayName} · {user.email}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Xe
-              <select name="carId" required>
-                {cars.map((car) => (
-                  <option key={car.carId} value={car.carId}>
-                    {car.displayName}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Đại lý
-              <select name="dealerId" required>
-                {dealers.map((dealer) => (
-                  <option key={dealer.dealerId} value={dealer.dealerId}>
-                    {dealer.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Phiên bản đã xác nhận (tùy chọn)
-              <input name="variant" maxLength={150} />
-            </label>
-            <label>
-              Giá chốt (VND)
-              <input
-                name="total"
-                type="number"
-                min="1"
-                max="100000000000"
-                step="1"
-                required
-              />
-            </label>
-            <label>
-              Cọc yêu cầu (nằm trong giá chốt, VND)
-              <input
-                name="deposit"
-                type="number"
-                min="0"
-                step="1"
-                defaultValue="50000000"
-                required
-              />
-            </label>
-            <button className="button" disabled={busy}>
-              {busy ? "Đang tạo…" : "Tạo đơn"}
-            </button>
-          </form>
-        )}
-        {error && (
-          <p role="alert" className="orders-error">
-            {error}
-          </p>
-        )}
-      </div>
-    </div>
   );
 }
 export function NewOrderPage() {
   return (
     <Guard admin>
-      <CreateOrder />
+      <AdminCreateOrder />
     </Guard>
-  );
-}
-function Customers() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [loading, setLoading] = useState(true);
-  async function load() {
-    setLoading(true);
-    try {
-      setUsers(await request("/admin/customers"));
-      setError("");
-    } catch (err) {
-      setError(message(err));
-    } finally {
-      setLoading(false);
-    }
-  }
-  useEffect(() => {
-    void load();
-  }, []);
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const element = event.currentTarget;
-    const form = new FormData(element);
-    setBusy(true);
-    setError("");
-    try {
-      await request("/admin/customers", "POST", {
-        displayName: form.get("name"),
-        email: form.get("email"),
-        password: form.get("password"),
-      });
-      element.reset();
-      await load();
-    } catch (err) {
-      setError(message(err));
-    } finally {
-      setBusy(false);
-    }
-  }
-  return (
-    <div className="page">
-      <Link className="back-link" to="/admin/orders">
-        ← Đơn hàng
-      </Link>
-      <h1>Khách hàng</h1>
-      <div className="orders-detail-grid">
-        <section className="content-panel">
-          <h2>Tài khoản khách hàng</h2>
-          {loading ? (
-            <LoadingSkeleton />
-          ) : (
-            users.map((user) => (
-              <div className="orders-list-row" key={user.id}>
-                <strong>{user.displayName}</strong>
-                <small>{user.email}</small>
-              </div>
-            ))
-          )}
-          <button className="mini-button" onClick={() => void load()}>
-            Tải lại
-          </button>
-        </section>
-        <section className="content-panel">
-          <h2>Tạo khách hàng</h2>
-          <form className="orders-form" onSubmit={submit}>
-            <label>
-              Họ tên
-              <input name="name" maxLength={100} required />
-            </label>
-            <label>
-              Email
-              <input name="email" type="email" required />
-            </label>
-            <label>
-              Mật khẩu demo (ít nhất 12 ký tự)
-              <input
-                name="password"
-                type="password"
-                minLength={12}
-                maxLength={128}
-                autoComplete="new-password"
-                required
-              />
-            </label>
-            <button className="button" disabled={busy}>
-              Tạo khách hàng
-            </button>
-          </form>
-          {error && (
-            <p role="alert" className="orders-error">
-              {error}
-            </p>
-          )}
-        </section>
-      </div>
-    </div>
   );
 }
 export function CustomersPage() {
   return (
     <Guard admin>
-      <Customers />
+      <AdminCustomers />
     </Guard>
   );
 }
@@ -499,7 +247,25 @@ function Detail({ admin }: { admin: boolean }) {
   const [order, setOrder] = useState<Order | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-  const [busy, setBusy] = useState(false);
+  const [customerBusy, setBusy] = useState(false);
+  const write = useAdminWrite();
+  const busy = admin ? write.disabled : customerBusy;
+  const [params, setParams] = useSearchParams();
+  const tabs = {
+    overview: "Tổng quan",
+    payments: "Thanh toán",
+    delivery: "Bàn giao",
+    documents: "Hồ sơ",
+    history: "Lịch sử",
+  };
+  const tab = Object.hasOwn(tabs, params.get("tab") || "")
+    ? params.get("tab")!
+    : "overview";
+  function changeTab(value: string) {
+    const next = new URLSearchParams(params);
+    next.set("tab", value);
+    setParams(next);
+  }
   const [retry, setRetry] = useState(0);
   const base = `${admin ? "/admin" : "/my"}/orders/${orderId}`;
   useEffect(() => {
@@ -522,6 +288,12 @@ function Detail({ admin }: { admin: boolean }) {
     };
   }, [base, retry]);
   async function mutate(path: string, body: unknown, method = "POST") {
+    if (admin) {
+      await write.run(async () =>
+        setOrder(await request<Order>(base + path, method, body)),
+      );
+      return;
+    }
     setBusy(true);
     setError("");
     try {
@@ -605,7 +377,18 @@ function Detail({ admin }: { admin: boolean }) {
         </p>
       </div>
       <div className="orders-toolbar">
-        <button className="mini-button" onClick={() => setRetry((v) => v + 1)}>
+        <button
+          className="mini-button"
+          disabled={write.busy}
+          onClick={
+            admin
+              ? () =>
+                  void write.refresh(async () =>
+                    setOrder(await request<Order>(base)),
+                  )
+              : () => setRetry((v) => v + 1)
+          }
+        >
           Tải lại
         </button>
         <span>Phiên bản {order.version}</span>
@@ -623,8 +406,95 @@ function Detail({ admin }: { admin: boolean }) {
           {error}
         </p>
       )}
-      <div className="orders-detail-grid">
-        <section className="content-panel">
+      {admin && (
+        <>
+          <div className="admin-order-summary">
+            <div>
+              <small>Khách hàng · {order.code}</small>
+              <strong>{order.customerName}</strong>
+              <AdminBadge value={order.status}>
+                {statuses[order.status]}
+              </AdminBadge>
+            </div>
+            <div>
+              <small>Giá chốt</small>
+              <strong>{formatVnd(order.totalVnd)}</strong>
+            </div>
+            <div>
+              <small>Đã thu ròng</small>
+              <strong>{formatVnd(order.netReceived)}</strong>
+            </div>
+            <div>
+              <small>
+                {order.status === "cancelled"
+                  ? "Đang giữ sau hủy"
+                  : "Còn phải thu"}
+              </small>
+              <strong>
+                {formatVnd(
+                  order.status === "cancelled"
+                    ? order.netReceived
+                    : order.remainingVnd,
+                )}
+              </strong>
+            </div>
+          </div>
+          <nav
+            className="admin-tabs"
+            role="tablist"
+            aria-label="Chi tiết đơn"
+            onKeyDown={(e) => {
+              const values = Object.keys(tabs);
+              const i = values.indexOf(tab);
+              const index =
+                e.key === "ArrowRight"
+                  ? (i + 1) % values.length
+                  : e.key === "ArrowLeft"
+                    ? (i + values.length - 1) % values.length
+                    : e.key === "Home"
+                      ? 0
+                      : e.key === "End"
+                        ? values.length - 1
+                        : -1;
+              if (index >= 0) {
+                e.preventDefault();
+                changeTab(values[index]);
+                e.currentTarget
+                  .querySelectorAll<HTMLButtonElement>("button")
+                  [index].focus();
+              }
+            }}
+          >
+            {Object.entries(tabs).map(([value, label]) => (
+              <button
+                id={"tab-" + value}
+                type="button"
+                key={value}
+                role="tab"
+                aria-controls={"panel-" + value}
+                aria-selected={tab === value}
+                tabIndex={tab === value ? 0 : -1}
+                onClick={() => changeTab(value)}
+              >
+                {label}
+              </button>
+            ))}
+          </nav>
+          <AdminFeedback error={write.error} success={write.success} />
+        </>
+      )}
+      <div
+        className={
+          admin ? "orders-detail-grid admin-detail-grid" : "orders-detail-grid"
+        }
+      >
+        <section
+          id={admin ? "panel-overview" : undefined}
+          role={admin ? "tabpanel" : undefined}
+          aria-labelledby={admin ? "tab-overview" : undefined}
+          hidden={admin && tab !== "overview"}
+          className="content-panel"
+        >
           <h2>Thông tin đơn</h2>
           <dl className="orders-metadata">
             <dt>Khách hàng</dt>
@@ -665,13 +535,23 @@ function Detail({ admin }: { admin: boolean }) {
             có thể thay đổi.
           </p>
         </section>
-        <section className="content-panel">
+        <section
+          id={admin ? "panel-delivery" : undefined}
+          role={admin ? "tabpanel" : undefined}
+          aria-labelledby={admin ? "tab-delivery" : undefined}
+          hidden={admin && tab !== "delivery"}
+          className="content-panel"
+        >
           <h2>Lịch bàn giao</h2>
           <p>
             Dự kiến: <strong>{formatDate(order.plannedDate)}</strong>
           </p>
           <p>Địa điểm: {order.deliveryLocation || "Chưa có thông tin"}</p>
-          <p>{order.deliveryScheduleConfirmed && order.deliveryConfirmedAt ? "Lịch đã được đại lý xác nhận" : "Lịch chưa được đại lý xác nhận"}</p>
+          <p>
+            {order.deliveryScheduleConfirmed && order.deliveryConfirmedAt
+              ? "Lịch đã được đại lý xác nhận"
+              : "Lịch chưa được đại lý xác nhận"}
+          </p>
           <p>
             Thực tế:{" "}
             {order.actualHandoverAt
@@ -682,7 +562,7 @@ function Detail({ admin }: { admin: boolean }) {
             <form
               className="orders-form"
               onSubmit={submitDelivery}
-              key={"delivery" + order.version}
+              key={admin ? "delivery" : "delivery" + order.version}
             >
               <label>
                 Ngày dự kiến
@@ -729,7 +609,10 @@ function Detail({ admin }: { admin: boolean }) {
                 <input name="confirmed" type="checkbox" />
                 Đại lý xác nhận lịch bàn giao này
               </label>
-              <p className="orders-help">Chọn xác nhận cho mỗi lần lưu lịch. Nếu không chọn, lịch được lưu là dự kiến.</p>
+              <p className="orders-help">
+                Chọn xác nhận cho mỗi lần lưu lịch. Nếu không chọn, lịch được
+                lưu là dự kiến.
+              </p>
               <button className="button" disabled={busy}>
                 Lưu lịch bàn giao
               </button>
@@ -738,26 +621,57 @@ function Detail({ admin }: { admin: boolean }) {
         </section>
       </div>
       {admin && !ended && (
-        <section className="content-panel orders-section">
+        <section
+          hidden={tab !== "delivery"}
+          className="content-panel orders-section"
+        >
           <h2>Thông tin chờ dành cho khách</h2>
-          <form className="orders-form" key={"progress-note" + order.version} onSubmit={(event) => {
-            event.preventDefault();
-            const form = new FormData(event.currentTarget);
-            void mutate("/progress-note", { version: order.version, customerWaitingReason: form.get("customerWaitingReason") || null, reason: form.get("reason") }, "PUT");
-          }}>
-            <label>Thông tin chờ hiển thị cho khách (tùy chọn)
-              <textarea name="customerWaitingReason" maxLength={500} rows={3} defaultValue={order.customerWaitingReason || ""} />
+          <form
+            className="orders-form"
+            key="progress-note"
+            onSubmit={(event) => {
+              event.preventDefault();
+              const form = new FormData(event.currentTarget);
+              void mutate(
+                "/progress-note",
+                {
+                  version: order.version,
+                  customerWaitingReason:
+                    form.get("customerWaitingReason") || null,
+                  reason: form.get("reason"),
+                },
+                "PUT",
+              );
+            }}
+          >
+            <label>
+              Thông tin chờ hiển thị cho khách (tùy chọn)
+              <textarea
+                name="customerWaitingReason"
+                maxLength={500}
+                rows={3}
+                defaultValue={order.customerWaitingReason || ""}
+              />
             </label>
-            <p className="orders-help">Chỉ nhập nội dung được phép gửi cho khách. Để trống để xóa; nội dung được xóa khi chuyển trạng thái.</p>
-            <label>Lý do cập nhật thông tin chờ (ghi nhận nội bộ)
+            <p className="orders-help">
+              Chỉ nhập nội dung được phép gửi cho khách. Để trống để xóa; nội
+              dung được xóa khi chuyển trạng thái.
+            </p>
+            <label>
+              Lý do cập nhật thông tin chờ (ghi nhận nội bộ)
               <input name="reason" maxLength={500} required />
             </label>
-            <button className="button" disabled={busy}>Lưu thông tin chờ</button>
+            <button className="button" disabled={busy}>
+              Lưu thông tin chờ
+            </button>
           </form>
         </section>
       )}
       {admin && !ended && (
-        <section className="content-panel orders-section">
+        <section
+          hidden={tab !== "overview"}
+          className="content-panel orders-section"
+        >
           <h2>Cập nhật trạng thái</h2>
           <form
             className="orders-form orders-inline-form"
@@ -795,11 +709,14 @@ function Detail({ admin }: { admin: boolean }) {
       {admin &&
         order.status === "pending_confirmation" &&
         !order.payments.some((p) => p.status === "confirmed") && (
-          <section className="content-panel orders-section">
+          <section
+            hidden={tab !== "overview"}
+            className="content-panel orders-section"
+          >
             <h2>Sửa giá chốt draft</h2>
             <form
               className="orders-form orders-inline-form"
-              key={"draft" + order.version}
+              key="draft"
               onSubmit={(event) => {
                 event.preventDefault();
                 const form = new FormData(event.currentTarget);
@@ -856,8 +773,22 @@ function Detail({ admin }: { admin: boolean }) {
             </form>
           </section>
         )}
-      <OrderEvidencePanel orderId={order.id} admin={admin} version={order.version} />
-      <section className="content-panel orders-section">
+      {admin ? (
+        <AdminEvidence orderId={order.id} version={order.version} tab={tab} />
+      ) : (
+        <OrderEvidencePanel
+          orderId={order.id}
+          admin={false}
+          version={order.version}
+        />
+      )}
+      <section
+        id="panel-payments"
+        role={admin ? "tabpanel" : undefined}
+        aria-labelledby={admin ? "tab-payments" : undefined}
+        hidden={admin && tab !== "payments"}
+        className="content-panel orders-section"
+      >
         <h2>Giao dịch thanh toán</h2>
         <p className="orders-help">
           Ghi nhận thủ công, không thu tiền trực tuyến. Chỉ giao dịch đã xác
@@ -875,62 +806,82 @@ function Detail({ admin }: { admin: boolean }) {
               </tr>
             </thead>
             <tbody>
-              {order.payments.slice((paymentPage - 1) * 20, paymentPage * 20).map((payment) => (
-                <tr key={payment.id}>
-                  <td>{payment.reference}</td>
-                  <td>
-                    {payment.type === "receipt" ? "Thu tiền" : "Hoàn tiền"}
-                  </td>
-                  <td>{formatVnd(payment.amountVnd)}</td>
-                  <td>
-                    {
+              {order.payments
+                .slice((paymentPage - 1) * 20, paymentPage * 20)
+                .map((payment) => (
+                  <tr key={payment.id}>
+                    <td>{payment.reference}</td>
+                    <td>
+                      {payment.type === "receipt" ? "Thu tiền" : "Hoàn tiền"}
+                    </td>
+                    <td>{formatVnd(payment.amountVnd)}</td>
+                    <td>
                       {
-                        pending: "Chờ xác nhận",
-                        confirmed: "Đã xác nhận",
-                        failed: "Thất bại",
-                      }[payment.status]
-                    }
-                  </td>
-                  <td>
-                    {admin && payment.status === "pending" && !ended && (
-                      <div className="orders-toolbar">
-                        <button
-                          className="mini-button"
-                          disabled={busy}
-                          onClick={() =>
-                            void mutate(`/payments/${payment.id}/confirm`, {
-                              version: order.version,
-                            })
-                          }
-                        >
-                          Xác nhận
-                        </button>
-                        <button
-                          className="mini-button"
-                          disabled={busy}
-                          onClick={() => {
-                            const reason = window.prompt(
-                              "Lý do giao dịch thất bại",
-                            );
-                            if (reason)
-                              void mutate(`/payments/${payment.id}/fail`, {
+                        {
+                          pending: "Chờ xác nhận",
+                          confirmed: "Đã xác nhận",
+                          failed: "Thất bại",
+                        }[payment.status]
+                      }
+                    </td>
+                    <td>
+                      {admin && payment.status === "pending" && !ended && (
+                        <div className="orders-toolbar">
+                          <button
+                            className="mini-button"
+                            disabled={busy}
+                            onClick={() =>
+                              void mutate(`/payments/${payment.id}/confirm`, {
                                 version: order.version,
-                                reason,
-                              });
-                          }}
-                        >
-                          Thất bại
-                        </button>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
+                              })
+                            }
+                          >
+                            Xác nhận
+                          </button>
+                          <button
+                            className="mini-button"
+                            disabled={busy}
+                            onClick={() => {
+                              const reason = window.prompt(
+                                "Lý do giao dịch thất bại",
+                              );
+                              if (reason)
+                                void mutate(`/payments/${payment.id}/fail`, {
+                                  version: order.version,
+                                  reason,
+                                });
+                            }}
+                          >
+                            Thất bại
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>
         {!order.payments.length && <p>Chưa có giao dịch.</p>}
-        {order.payments.length > 20 && <div className="orders-toolbar"><button className="mini-button" disabled={paymentPage === 1} onClick={() => setPaymentPage(p => p - 1)}>Trang trước</button><span>Trang {paymentPage}</span><button className="mini-button" disabled={paymentPage * 20 >= order.payments.length} onClick={() => setPaymentPage(p => p + 1)}>Trang sau</button></div>}
+        {order.payments.length > 20 && (
+          <div className="orders-toolbar">
+            <button
+              className="mini-button"
+              disabled={paymentPage === 1}
+              onClick={() => setPaymentPage((p) => p - 1)}
+            >
+              Trang trước
+            </button>
+            <span>Trang {paymentPage}</span>
+            <button
+              className="mini-button"
+              disabled={paymentPage * 20 >= order.payments.length}
+              onClick={() => setPaymentPage((p) => p + 1)}
+            >
+              Trang sau
+            </button>
+          </div>
+        )}
         {admin && !ended && (
           <form
             className="orders-form orders-inline-form"
@@ -979,7 +930,13 @@ function Detail({ admin }: { admin: boolean }) {
           </form>
         )}
       </section>
-      <section className="content-panel orders-section">
+      <section
+        id="panel-history"
+        role={admin ? "tabpanel" : undefined}
+        aria-labelledby={admin ? "tab-history" : undefined}
+        hidden={admin && tab !== "history"}
+        className="content-panel orders-section"
+      >
         <h2>Lịch sử cập nhật</h2>
         <ol className="orders-timeline">
           {[...order.history]
@@ -1011,9 +968,10 @@ function Detail({ admin }: { admin: boolean }) {
   );
 }
 export function OrderDetailPage({ admin = false }: { admin?: boolean }) {
+  const { orderId } = useParams();
   return (
     <Guard admin={admin}>
-      <Detail admin={admin} />
+      <Detail key={orderId} admin={admin} />
     </Guard>
   );
 }

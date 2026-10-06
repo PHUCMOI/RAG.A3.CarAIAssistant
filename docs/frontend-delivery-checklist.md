@@ -80,3 +80,7 @@ npm.cmd run test:browser
 | Admin dữ liệu/RAG | CRUD/import, job status, retrieval test và quyền truy cập |
 
 Không thêm gallery giả, nút upload không hoạt động hoặc màn hình CRUD giả vào sản phẩm. Các đề xuất ngoài kế hoạch này như xe tương tự vẫn thuộc backlog.
+
+## Cập nhật admin — 2026-10-06
+
+Đợt tối ưu admin từ `d8b2127` được bàn giao riêng tại [frontend-admin-delivery.md](frontend-admin-delivery.md). Tài liệu đó ghi checklist 5 đợt, test mock, smoke BE với bản ghi demo riêng và giới hạn nghiệm thu desktop. Playwright bổ sung project 1280px bên cạnh các độ rộng trước đây.
