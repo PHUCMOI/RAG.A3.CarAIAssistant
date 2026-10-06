@@ -100,10 +100,12 @@ services:
       INDEXES_DIR: /app/image_service/indexes
       DATA_DIR: /app/image_service/data
       DATASET_DIR: /app/dataset
+      HF_HOME: /root/.cache/huggingface
     volumes:
       - ./image_service/indexes:/app/image_service/indexes
       - ./image_service/data:/app/image_service/data:ro
       - ./dataset:/app/dataset:ro
+      - ${USERPROFILE:-~}/.cache/huggingface:/root/.cache/huggingface
 
 volumes:
   car-rag-postgres:

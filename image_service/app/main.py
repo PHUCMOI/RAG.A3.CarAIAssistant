@@ -78,6 +78,15 @@ app.include_router(text_search.router)
 app.include_router(chat.router)
 app.include_router(cars.router)
 
+from fastapi.staticfiles import StaticFiles
+images_dir = settings.dataset_dir / "images"
+if not images_dir.exists() and (settings.project_root / "dataset" / "images").exists():
+    images_dir = settings.project_root / "dataset" / "images"
+
+if images_dir.exists():
+    app.mount("/images", StaticFiles(directory=str(images_dir)), name="dataset-images")
+
+
 
 if __name__ == "__main__":
     import uvicorn

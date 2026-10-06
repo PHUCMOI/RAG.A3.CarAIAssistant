@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 const links = [
   ["/", "Trang chủ"],
   ["/cars", "Dữ liệu xe"],
+  ["/search-image", "Tìm bằng ảnh 📷"],
   ["/compare", "So sánh"],
   ["/dealers", "Đại lý"],
   ["/chat", "Trợ lý AI"],

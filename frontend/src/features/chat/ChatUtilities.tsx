@@ -9,7 +9,22 @@ export function composerKeyDown(event: KeyboardEvent<HTMLTextAreaElement>, busy:
   }
 }
 export function ContextLinks({ contexts }: { contexts?: CatalogContext[] }) {
-  return contexts?.length ? <div className="context-cards">{contexts.map(context => <div className="chat-context" key={context.carId}><Link to={`/cars/${encodeURIComponent(context.carId)}`}>{context.displayName} →</Link>{context.presenceSourceId && <Link className="text-link" to={`/sources/${encodeURIComponent(context.presenceSourceId)}`}>Nguồn: {context.presenceSourceId}</Link>}</div>)}</div> : null
+  return contexts?.length ? (
+    <div className="context-cards">
+      {contexts.map(context => (
+        <div className="chat-context" key={context.carId}>
+          <Link to={`/cars/${encodeURIComponent(context.carId)}`}>
+            <strong>{context.displayName} →</strong>
+          </Link>
+          {context.presenceSourceId && (
+            <Link className="text-link" to={`/sources/${encodeURIComponent(context.presenceSourceId)}`}>
+              <small>Nguồn: {context.presenceSourceId}</small>
+            </Link>
+          )}
+        </div>
+      ))}
+    </div>
+  ) : null
 }
 export function ChatStream({ children, revision, className }: { children: ReactNode; revision: unknown; className: string }) {
   const container = useRef<HTMLDivElement>(null)

@@ -19,13 +19,27 @@ export function clearLegacyChatCache() {
   try { Object.keys(sessionStorage).filter(k => k.startsWith('unified-assistant-') || k === 'assistant-pending-question').forEach(k => sessionStorage.removeItem(k)) } catch { /* optional storage */ }
 }
 export type CatalogContext = { carId: string; displayName: string; presenceSourceId?: string }
-export type CatalogMessage = { role: string; content: string; catalog?: boolean; contexts?: CatalogContext[] }
+export type IdentifiedCarItem = { car_id: string; brand?: string; model?: string; similarity?: number }
+export type CatalogMessage = {
+  role: string;
+  content: string;
+  catalog?: boolean;
+  contexts?: CatalogContext[];
+  imageUrl?: string;
+  identifiedCars?: IdentifiedCarItem[];
+  uncertain?: boolean;
+}
 type SavedEntry<T> = { after: number; message: T }
 export function saveCatalog<T extends CatalogMessage>(owner: string, slot: string, messages: T[]) {
   let after = 0
   const entries: SavedEntry<T>[] = []
   for (const message of messages) {
-    if (message.catalog) entries.push({ after, message })
+    if (message.catalog) {
+      const sanitized = message.imageUrl && message.imageUrl.length > 500
+        ? { ...message, imageUrl: undefined }
+        : message
+      entries.push({ after, message: sanitized as T })
+    }
     else after++
   }
   writeCache(owner, slot, entries)
