@@ -90,6 +90,10 @@ Không xóa volume để chữa lỗi setup; init scripts không tự chạy l�
 
 ## 3. Khởi động Ollama và tải model
 
+Nếu dùng Claude Haiku 4.5 trên Amazon Bedrock, làm theo [cấu hình Bedrock](BEDROCK.md)
+và bỏ qua bước Ollama này. `.env.example` chọn `LLM_PROVIDER=bedrock`; muốn chạy
+model local thì đặt `LLM_PROVIDER=ollama` trước khi tiếp tục.
+
 Nếu đã có Ollama chạy và có `qwen2.5:3b`, kiểm tra endpoint ở cuối bước này rồi
 bỏ qua tạo container/pull. Backend cần truy cập được HTTP endpoint; việc Docker
 hiển thị image/model đã tải không chứng minh cổng HTTP đang được publish.

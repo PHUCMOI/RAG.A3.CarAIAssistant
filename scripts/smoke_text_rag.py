@@ -1,4 +1,4 @@
-"""Live embedding + five-intent Ollama smoke; any degraded mode fails explicitly."""
+"""Live embedding + five-intent model smoke; any degraded mode fails explicitly."""
 import argparse
 import asyncio
 import json
@@ -23,13 +23,18 @@ async def run(api_url):
     vectors = await embedding.embed([q for _, q in CASES], query=True)
     report = {"embeddingModel": embedding.model, "embeddingVersion": embedding.version,
               "dimensions": [len(v) for v in vectors], "cases": []}
-    async with httpx.AsyncClient(timeout=settings.ollama_timeout + 30) as client:
-        tags = (await client.get(settings.ollama_url.rstrip("/") + "/api/tags")).raise_for_status().json()
-        model = next((m for m in tags["models"] if m.get("name") == settings.ollama_model), None)
-        report["ollamaModel"] = settings.ollama_model
-        report["ollamaDigest"] = model.get("digest") if model else None
-        if not report["ollamaDigest"]:
-            raise ValueError("Configured Ollama model is not installed")
+    report["llmProvider"] = settings.llm_provider
+    async with httpx.AsyncClient(timeout=settings.generation_timeout + 30) as client:
+        if settings.llm_provider == "ollama":
+            tags = (await client.get(settings.ollama_url.rstrip("/") + "/api/tags")).raise_for_status().json()
+            model = next((m for m in tags["models"] if m.get("name") == settings.ollama_model), None)
+            report["ollamaModel"] = settings.ollama_model
+            report["ollamaDigest"] = model.get("digest") if model else None
+            if not report["ollamaDigest"]:
+                raise ValueError("Configured Ollama model is not installed")
+        else:
+            report["bedrockModel"] = settings.bedrock_model_id
+            report["awsRegion"] = settings.aws_region
         for intent, question in CASES:
             start = time.perf_counter()
             data = (await client.post(api_url.rstrip("/") + "/api/chat", json={"question": question})).raise_for_status().json()
