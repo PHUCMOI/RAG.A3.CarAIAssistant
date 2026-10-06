@@ -7,6 +7,7 @@ import CarDetailPage from "../pages/CarDetailPage";
 import ComparePage from "../pages/ComparePage";
 import DealersPage from "../pages/DealersPage";
 import ChatPage from "../pages/ChatPage";
+import ImageSearchPage from "../pages/ImageSearchPage";
 import SourceDetailPage from "../pages/SourceDetailPage";
 import AdminDataPage from "../pages/AdminDataPage";
 import { OrdersSession } from "../features/orders/Session";
@@ -105,6 +106,7 @@ export function AppRouter() {
             <Route path="/cars/:carId" element={<CarDetailPage />} />
             <Route path="/compare" element={<ComparePage />} />
             <Route path="/dealers" element={<DealersPage />} />
+            <Route path="/search-image" element={<ImageSearchPage />} />
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/sources/:sourceId" element={<SourceDetailPage />} />
             <Route

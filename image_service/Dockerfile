@@ -17,6 +17,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
+# Cài đặt PyTorch (bản CPU nhẹ ~180MB) và transformers
+RUN pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu && \
+    pip install --no-cache-dir transformers
+
 # Cài đặt dependencies
 COPY image_service/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
