@@ -16,3 +16,13 @@ export async function apiPost<TResponse, TBody>(path: string, body: TBody): Prom
   if (!response.ok) throw new PublicApiError(response.status)
   return response.json() as Promise<TResponse>
 }
+
+export async function apiPostForm<TResponse>(path: string, formData: FormData): Promise<TResponse> {
+  const response = await fetch(path, {
+    method: 'POST',
+    body: formData,
+  })
+  if (!response.ok) throw new PublicApiError(response.status)
+  return response.json() as Promise<TResponse>
+}
+

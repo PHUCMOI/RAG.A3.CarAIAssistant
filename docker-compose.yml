@@ -17,6 +17,7 @@ services:
       - ./database/004_seed_dealers.sql:/docker-entrypoint-initdb.d/005_seed_dealers.sql:ro
       - ./database/005_use_curated_image_paths.sql:/docker-entrypoint-initdb.d/006_use_curated_image_paths.sql:ro
       - ./database/006_verify_seed.sql:/docker-entrypoint-initdb.d/007_verify_seed.sql:ro
+      - ./database/007_text_rag.sql:/docker-entrypoint-initdb.d/008_text_rag.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U car_rag -d car_rag"]
       interval: 5s
@@ -31,6 +32,22 @@ services:
       PORT: 8080
       DATABASE_URL: postgresql://car_rag:car_rag_dev@postgres:5432/car_rag
       FRONTEND_ORIGIN: http://localhost:5173
+      RAG_ENABLED: ${RAG_ENABLED:-true}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-intfloat/multilingual-e5-base}
+      EMBEDDING_REVISION: ${EMBEDDING_REVISION:-main}
+      EMBEDDING_CACHE_DIR: /models/text
+      LLM_PROVIDER: ${LLM_PROVIDER:-ollama}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      BEDROCK_MODEL_ID: ${BEDROCK_MODEL_ID:-us.anthropic.claude-haiku-4-5-20251001-v1:0}
+      BEDROCK_TIMEOUT: ${BEDROCK_TIMEOUT:-30}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN:-}
+      OLLAMA_URL: ${OLLAMA_DOCKER_URL:-http://host.docker.internal:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:3b}
+      OLLAMA_TIMEOUT: ${OLLAMA_TIMEOUT:-90}
+    volumes:
+      - text-model-cache:/models/text
     ports:
       - "5080:8080"
     healthcheck:
@@ -83,11 +100,14 @@ services:
       INDEXES_DIR: /app/image_service/indexes
       DATA_DIR: /app/image_service/data
       DATASET_DIR: /app/dataset
+      HF_HOME: /root/.cache/huggingface
     volumes:
       - ./image_service/indexes:/app/image_service/indexes
       - ./image_service/data:/app/image_service/data:ro
       - ./dataset:/app/dataset:ro
+      - ${USERPROFILE:-~}/.cache/huggingface:/root/.cache/huggingface
 
 volumes:
   car-rag-postgres:
+  text-model-cache:
 

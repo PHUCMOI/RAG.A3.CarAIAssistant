@@ -1,6 +1,7 @@
 from datetime import date, datetime
 from typing import Any, Optional
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+from app.application.rag.contracts import RagFilters, Evidence, Citation
 
 
 class CamelModel(BaseModel):
@@ -67,23 +68,48 @@ class DealerListResponse(CamelModel):
 
 
 class TextSearchRequest(CamelModel):
-    query: str
+    query: str = Field(min_length=1, max_length=4000)
     brand: Optional[str] = None
     body_type: Optional[str] = Field(None, alias="bodyType")
-    seats: Optional[int] = None
-    max_price: Optional[int] = Field(None, alias="maxPrice")
+    seats: Optional[int] = Field(None, ge=1, le=100)
+    min_price: Optional[int] = Field(None, alias="minPrice", ge=0)
+    max_price: Optional[int] = Field(None, alias="maxPrice", ge=0)
+    fuel_type: Optional[str] = Field(None, alias="fuelType")
+    transmission: Optional[str] = None
     top_k: Optional[int] = Field(5, alias="topK")
+
+    @field_validator("query")
+    @classmethod
+    def nonblank_query(cls, value):
+        value = value.strip()
+        if not value:
+            raise ValueError("query must not be blank")
+        return value
 
 
 class TextSearchResponse(CamelModel):
     query: str
     results: list[CarDto]
     retrieval: str = "postgresql-structured-search"
+    intent: str = "find_car"
+    filters: RagFilters = Field(default_factory=RagFilters)
+    evidence: list[Evidence] = Field(default_factory=list)
 
 
 class ChatRequest(CamelModel):
     question: str = Field(min_length=1, max_length=4000)
     image_name: Optional[str] = Field(None, alias="imageName")
+    filters: Optional[RagFilters] = None
+    car_ids: Optional[list[str]] = Field(None, alias="carIds", max_length=100)
+    top_k: Optional[int] = Field(5, alias="topK")
+
+    @field_validator("question")
+    @classmethod
+    def nonblank_question(cls, value):
+        value = value.strip()
+        if not value:
+            raise ValueError("question must not be blank")
+        return value
 
 
 class ChatContext(CamelModel):
@@ -97,6 +123,13 @@ class ChatResponse(CamelModel):
     answer: str
     contexts: list[ChatContext]
     grounded: bool = True
+    intent: str = "other"
+    filters: RagFilters = Field(default_factory=RagFilters)
+    evidence: list[Evidence] = Field(default_factory=list)
+    citations: list[Citation] = Field(default_factory=list)
+    status: str = "no_data"
+    generation_mode: str = Field("template", alias="generationMode")
+    retrieval: str = "postgresql-structured-search"
 
 
 class HealthResponse(CamelModel):

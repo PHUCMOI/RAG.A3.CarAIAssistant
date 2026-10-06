@@ -9,7 +9,7 @@ def test_chat_with_results(client):
     data = response.json()
     assert data["grounded"] is True
     assert "Honda CR-V" in data["contexts"][0]["displayName"]
-    assert "Đây là các mẫu xe phù hợp nhất" in data["answer"]
+    assert data["evidence"] and data["generationMode"] == "template"
 
 
 def test_chat_no_results(client):
@@ -34,5 +34,6 @@ def test_chat_with_image(client):
     response = client.post("/api/chat", json={"question": "Xe này là xe gì?", "imageName": "car_front.jpg"})
     assert response.status_code == 200
     data = response.json()
-    assert data["grounded"] is True
+    assert data["grounded"] is False
     assert "Giao diện đã nhận tên ảnh" in data["answer"]
+    assert data["status"] == "needs_clarification"

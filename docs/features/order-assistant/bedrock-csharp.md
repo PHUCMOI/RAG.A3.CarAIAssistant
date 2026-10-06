@@ -44,7 +44,7 @@ Chạy Docker local chỉ đổi cấu hình runtime, không cần sửa compose
 ```powershell
 $contextOverridePath = Join-Path $env:TEMP 'rag-a3-context-compose.yml'
 Set-Content -LiteralPath $contextOverridePath -Value "services:`n  orders-api:`n    environment:`n      Bedrock__ContextEnabled: 'true'"
-docker compose -f docker-compose.yml -f docker-compose.bedrock.yml -f $contextOverridePath up --build -d orders-api
+docker compose -f docker-compose.yml -f docker-compose.bedrock-env.yml -f $contextOverridePath up --build -d orders-api
 ```
 
 Kiểm thử bằng C# (các nhóm opt-in cần DB local, Docker và AWS credentials):
@@ -96,18 +96,20 @@ region đích của US cross-region profile. Không cần streaming permission h
 
 ## Chạy Docker với Bedrock
 
-Lưu credentials mới trong `%USERPROFILE%\.aws\credentials` với profile `[rag-a3]`.
-Không dùng credentials đã lộ trong chat. Sau đó chạy:
+Đặt credentials mới vào `.env` được Git ignore hoặc biến môi trường PowerShell:
+`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` và `AWS_SESSION_TOKEN` nếu là temporary
+credentials. Không dùng credentials đã lộ trong chat. Xem [hướng dẫn Bedrock](../../BEDROCK.md).
+Sau đó chạy:
 
 ```powershell
-docker compose -f docker-compose.yml -f docker-compose.bedrock.yml up --build -d orders-api
+docker compose -f docker-compose.yml -f docker-compose.bedrock-env.yml up --build -d api orders-api
 ```
 
-Override bật Bedrock và mount duy nhất file credentials read-only vào container.
-Sau khi cập nhật file credentials, restart orders-api để SDK đọc lại:
+Override bật Bedrock cho cả Python và C#, truyền credentials vào environment của
+backend. Sau khi cập nhật credentials, dùng `up -d` để nạp lại environment:
 
 ```powershell
-docker compose -f docker-compose.yml -f docker-compose.bedrock.yml restart orders-api
+docker compose -f docker-compose.yml -f docker-compose.bedrock-env.yml up -d api orders-api
 ```
 
 Log `Bedrock inference completed` kèm request ID chứng minh lời gọi provider đã

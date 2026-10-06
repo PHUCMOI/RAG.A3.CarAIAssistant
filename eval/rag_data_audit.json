@@ -1,0 +1,188 @@
+{
+  "snapshot": "committed SQL seed",
+  "externalSourceReview": "pending",
+  "cars": [
+    {
+      "carId": "car_34_3",
+      "displayName": "Honda CR-V",
+      "questionOccurrences": 6,
+      "marketStatusVn": "official_current",
+      "priceVndFrom": 1039000000,
+      "priceAsOf": "2026-10-01",
+      "priceSourceId": "honda_products_2026",
+      "warrantyId": 2,
+      "issues": [
+        "Thông số DVM-CAR/UK chưa có provenance riêng theo trường hoặc xác minh phiên bản Việt Nam.",
+        "Policy theo hãng; cần xác nhận VIN/ngày bán, đặc biệt xe nhập khẩu/lịch sử."
+      ]
+    },
+    {
+      "carId": "car_57_7",
+      "displayName": "Mazda CX-5",
+      "questionOccurrences": 6,
+      "marketStatusVn": "official_current",
+      "priceVndFrom": 699000000,
+      "priceAsOf": "2026-10-01",
+      "priceSourceId": "mazda_vn_lineup",
+      "warrantyId": 3,
+      "issues": [
+        "Thông số DVM-CAR/UK chưa có provenance riêng theo trường hoặc xác minh phiên bản Việt Nam.",
+        "Policy theo hãng; cần xác nhận VIN/ngày bán, đặc biệt xe nhập khẩu/lịch sử."
+      ]
+    },
+    {
+      "carId": "car_92_44",
+      "displayName": "Toyota Yaris",
+      "questionOccurrences": 6,
+      "marketStatusVn": "official_historical",
+      "priceVndFrom": 684000000,
+      "priceAsOf": "2023-11-01",
+      "priceSourceId": "toyota_yaris_price_2023",
+      "warrantyId": 1,
+      "issues": [
+        "Thông số DVM-CAR/UK chưa có provenance riêng theo trường hoặc xác minh phiên bản Việt Nam.",
+        "Policy theo hãng; cần xác nhận VIN/ngày bán, đặc biệt xe nhập khẩu/lịch sử."
+      ]
+    },
+    {
+      "carId": "car_34_2",
+      "displayName": "Honda Civic",
+      "questionOccurrences": 6,
+      "marketStatusVn": "official_current",
+      "priceVndFrom": 789000000,
+      "priceAsOf": "2026-10-01",
+      "priceSourceId": "honda_products_2026",
+      "warrantyId": 2,
+      "issues": [
+        "Thông số DVM-CAR/UK chưa có provenance riêng theo trường hoặc xác minh phiên bản Việt Nam.",
+        "Policy theo hãng; cần xác nhận VIN/ngày bán, đặc biệt xe nhập khẩu/lịch sử."
+      ]
+    },
+    {
+      "carId": "car_92_34",
+      "displayName": "Toyota RAV4",
+      "questionOccurrences": 5,
+      "marketStatusVn": "present_via_import",
+      "priceVndFrom": 2400000000,
+      "priceAsOf": "2026-09-01",
+      "priceSourceId": "toyota_rav4_import_price_2026",
+      "warrantyId": 1,
+      "issues": [
+        "Thông số DVM-CAR/UK chưa có provenance riêng theo trường hoặc xác minh phiên bản Việt Nam.",
+        "Policy theo hãng; cần xác nhận VIN/ngày bán, đặc biệt xe nhập khẩu/lịch sử."
+      ]
+    },
+    {
+      "carId": "car_57_11",
+      "displayName": "Mazda3",
+      "questionOccurrences": 5,
+      "marketStatusVn": "official_current",
+      "priceVndFrom": 569000000,
+      "priceAsOf": "2026-10-01",
+      "priceSourceId": "mazda_vn_lineup",
+      "warrantyId": 3,
+      "issues": [
+        "Thông số DVM-CAR/UK chưa có provenance riêng theo trường hoặc xác minh phiên bản Việt Nam.",
+        "Policy theo hãng; cần xác nhận VIN/ngày bán, đặc biệt xe nhập khẩu/lịch sử."
+      ]
+    },
+    {
+      "carId": "car_36_24",
+      "displayName": "Hyundai Tucson",
+      "questionOccurrences": 5,
+      "marketStatusVn": "official_current",
+      "priceVndFrom": 769000000,
+      "priceAsOf": "2026-10-01",
+      "priceSourceId": "hyundai_authorized_prices_2026",
+      "warrantyId": 5,
+      "issues": [
+        "Thông số DVM-CAR/UK chưa có provenance riêng theo trường hoặc xác minh phiên bản Việt Nam.",
+        "Policy theo hãng; cần xác nhận VIN/ngày bán, đặc biệt xe nhập khẩu/lịch sử."
+      ]
+    },
+    {
+      "carId": "car_36_20",
+      "displayName": "Hyundai Santa Fe",
+      "questionOccurrences": 5,
+      "marketStatusVn": "official_current",
+      "priceVndFrom": 1069000000,
+      "priceAsOf": "2026-10-01",
+      "priceSourceId": "hyundai_authorized_prices_2026",
+      "warrantyId": 5,
+      "issues": [
+        "Thông số DVM-CAR/UK chưa có provenance riêng theo trường hoặc xác minh phiên bản Việt Nam.",
+        "Policy theo hãng; cần xác nhận VIN/ngày bán, đặc biệt xe nhập khẩu/lịch sử."
+      ]
+    },
+    {
+      "carId": "car_29_30",
+      "displayName": "Ford Ranger",
+      "questionOccurrences": 5,
+      "marketStatusVn": "official_current",
+      "priceVndFrom": 707000000,
+      "priceAsOf": "2026-10-01",
+      "priceSourceId": "ford_prices_2026",
+      "warrantyId": 6,
+      "issues": [
+        "Thông số DVM-CAR/UK chưa có provenance riêng theo trường hoặc xác minh phiên bản Việt Nam.",
+        "Policy theo hãng; cần xác nhận VIN/ngày bán, đặc biệt xe nhập khẩu/lịch sử."
+      ]
+    },
+    {
+      "carId": "car_29_9",
+      "displayName": "Ford Explorer",
+      "questionOccurrences": 4,
+      "marketStatusVn": "official_current",
+      "priceVndFrom": 2099000000,
+      "priceAsOf": "2026-10-01",
+      "priceSourceId": "ford_prices_2026",
+      "warrantyId": 6,
+      "issues": [
+        "Thông số DVM-CAR/UK chưa có provenance riêng theo trường hoặc xác minh phiên bản Việt Nam.",
+        "Policy theo hãng; cần xác nhận VIN/ngày bán, đặc biệt xe nhập khẩu/lịch sử."
+      ]
+    },
+    {
+      "carId": "car_43_13",
+      "displayName": "Kia Sportage",
+      "questionOccurrences": 3,
+      "marketStatusVn": "official_current",
+      "priceVndFrom": 769000000,
+      "priceAsOf": "2026-10-01",
+      "priceSourceId": "kia_products_2026",
+      "warrantyId": 4,
+      "issues": [
+        "Thông số DVM-CAR/UK chưa có provenance riêng theo trường hoặc xác minh phiên bản Việt Nam.",
+        "Policy theo hãng; cần xác nhận VIN/ngày bán, đặc biệt xe nhập khẩu/lịch sử."
+      ]
+    },
+    {
+      "carId": "car_64_20",
+      "displayName": "Nissan Navara",
+      "questionOccurrences": 3,
+      "marketStatusVn": "official_current",
+      "priceVndFrom": 748000000,
+      "priceAsOf": "2026-10-01",
+      "priceSourceId": "nissan_products",
+      "warrantyId": 8,
+      "issues": [
+        "Thông số DVM-CAR/UK chưa có provenance riêng theo trường hoặc xác minh phiên bản Việt Nam.",
+        "Policy theo hãng; cần xác nhận VIN/ngày bán, đặc biệt xe nhập khẩu/lịch sử."
+      ]
+    },
+    {
+      "carId": "car_87_10",
+      "displayName": "Suzuki Swift",
+      "questionOccurrences": 2,
+      "marketStatusVn": "official_current",
+      "priceVndFrom": 569000000,
+      "priceAsOf": "2026-10-01",
+      "priceSourceId": "suzuki_products",
+      "warrantyId": 9,
+      "issues": [
+        "Thông số DVM-CAR/UK chưa có provenance riêng theo trường hoặc xác minh phiên bản Việt Nam.",
+        "Policy theo hãng; cần xác nhận VIN/ngày bán, đặc biệt xe nhập khẩu/lịch sử."
+      ]
+    }
+  ]
+}

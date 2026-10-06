@@ -1,0 +1,15 @@
+services:
+  api:
+    environment:
+      LLM_PROVIDER: bedrock
+      AWS_EC2_METADATA_DISABLED: "true"
+  orders-api:
+    environment:
+      Bedrock__Enabled: "true"
+      Bedrock__Region: ${AWS_REGION:-us-east-1}
+      Bedrock__ModelId: ${BEDROCK_MODEL_ID:-us.anthropic.claude-haiku-4-5-20251001-v1:0}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN:-}
+      AWS_EC2_METADATA_DISABLED: "true"

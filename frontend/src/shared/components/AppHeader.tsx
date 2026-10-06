@@ -1,11 +1,11 @@
-﻿import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useOrdersSession } from '../../features/orders/Session';
 import { request } from '../../features/orders/api';
 import './header.css';
 import { ChevronDown } from './ChevronDown';
 type LinkItem = readonly [string, string];
-const publicLinks: LinkItem[] = [['/', 'Trang chủ'], ['/cars', 'Khám phá xe'], ['/compare', 'So sánh'], ['/dealers', 'Đại lý'], ['/chat', 'Trợ lý AI']];
+const publicLinks: LinkItem[] = [['/', 'Trang chủ'], ['/cars', 'Khám phá xe'], ['/search-image', 'Tìm bằng ảnh'], ['/compare', 'So sánh'], ['/dealers', 'Đại lý'], ['/chat', 'Trợ lý AI']];
 const requests: LinkItem[] = [['/admin/purchase-requests', 'Yêu cầu mua xe'], ['/admin/change-requests', 'Đề nghị thay đổi']];
 const care: LinkItem[] = [['/admin/appointments', 'Lịch hẹn'], ['/admin/support-tickets', 'Phiếu hỗ trợ']];
 const account: LinkItem[] = [['/account', 'Tổng quan tài khoản'], ['/account/orders', 'Đơn hàng của tôi'], ['/account/favorites', 'Xe yêu thích'], ['/account/profile', 'Thông tin cá nhân'], ['/account/security', 'Bảo mật']];

@@ -1,7 +1,7 @@
 from functools import lru_cache
-from typing import Optional
+from typing import Literal, Optional
 from urllib.parse import quote
-from pydantic import field_validator
+from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -27,6 +27,26 @@ class Settings(BaseSettings):
     frontend_origin: str = "http://localhost:5173"
     db_pool_min_size: int = 1
     db_pool_max_size: int = 10
+
+    rag_enabled: bool = True
+    embedding_model: str = "intfloat/multilingual-e5-base"
+    embedding_revision: str = "main"
+    embedding_cache_dir: Optional[str] = None
+    llm_provider: Literal["ollama", "bedrock"] = "ollama"
+    aws_region: str = "us-east-1"
+    aws_profile: Optional[str] = None
+    aws_access_key_id: Optional[SecretStr] = Field(default=None, repr=False)
+    aws_secret_access_key: Optional[SecretStr] = Field(default=None, repr=False)
+    aws_session_token: Optional[SecretStr] = Field(default=None, repr=False)
+    bedrock_model_id: str = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
+    bedrock_timeout: float = Field(default=30.0, gt=0)
+    ollama_url: str = "http://localhost:11434"
+    ollama_model: str = "qwen2.5:3b"
+    ollama_timeout: float = 90.0
+
+    @property
+    def generation_timeout(self) -> float:
+        return self.bedrock_timeout if self.llm_provider == "bedrock" else self.ollama_timeout
 
     @field_validator("database_url")
     @classmethod
