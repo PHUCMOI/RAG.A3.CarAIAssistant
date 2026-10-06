@@ -2,14 +2,7 @@ services:
   api:
     environment:
       LLM_PROVIDER: bedrock
-      AWS_PROFILE: ${AWS_PROFILE:-rag-a3}
-      AWS_SHARED_CREDENTIALS_FILE: /run/aws/credentials
       AWS_EC2_METADATA_DISABLED: "true"
-    volumes:
-      - type: bind
-        source: ${USERPROFILE}/.aws/credentials
-        target: /run/aws/credentials
-        read_only: true
   orders-api:
     environment:
       Bedrock__Enabled: "true"
@@ -19,11 +12,4 @@ services:
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
       AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN:-}
-      AWS_PROFILE: ${AWS_PROFILE:-rag-a3}
-      AWS_SHARED_CREDENTIALS_FILE: /run/aws/credentials
       AWS_EC2_METADATA_DISABLED: "true"
-    volumes:
-      - type: bind
-        source: ${USERPROFILE}/.aws/credentials
-        target: /run/aws/credentials
-        read_only: true

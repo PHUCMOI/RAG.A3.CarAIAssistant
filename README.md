@@ -11,6 +11,8 @@ database/Ollama CPU hoặc GPU, tạo index và chạy backend/frontend. Có hai
 development trên Windows/PowerShell hoặc toàn bộ ứng dụng bằng Docker, kèm bước
 kiểm tra thành công và xử lý lỗi. Không cần corpus raw để chạy dữ liệu hiện tại.
 
+Để dùng Claude Haiku 4.5 trên Amazon Bedrock, xem [hướng dẫn Bedrock](docs/BEDROCK.md).
+
 Lưu ý: `package.json` nằm trong **frontend**. Từ root dùng
 `npm.cmd --prefix frontend run dev`; backend dùng Python **3.12** trong `.venv`.
 
@@ -24,7 +26,7 @@ Lưu ý: `package.json` nằm trong **frontend**. Từ root dùng
 - Trang chi tiết xe.
 - So sánh 2–3 xe, chọn/thay/xóa trên màn hình, xem khác biệt và chia sẻ URL.
 - Danh sách 22 đại lý, lọc theo hãng và thành phố.
-- Chatbot text RAG: intent/entities, SQL filters, lexical/pgvector retrieval và Ollama; structured/template fallback khi model/index chưa sẵn sàng.
+- Chatbot text RAG: intent/entities, SQL filters, lexical/pgvector retrieval và Claude Haiku 4.5 qua Bedrock hoặc Ollama; structured/template fallback khi model/index chưa sẵn sàng.
 - Responsive cho desktop, tablet và mobile.
 - Swagger/OpenAPI cho backend.
 - API danh sách/chi tiết nguồn và danh sách bảo hành.
