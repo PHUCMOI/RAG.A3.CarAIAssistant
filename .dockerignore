@@ -3,6 +3,10 @@
 data
 .git
 .env
+.venv
+.local
+.pytest_cache
+**/__pycache__
 backend/CarRag.Api
 
 **/bin

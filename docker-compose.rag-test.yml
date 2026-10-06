@@ -1,0 +1,16 @@
+services:
+  rag-test-db:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_DB: car_rag_test
+      POSTGRES_USER: car_rag_test
+      POSTGRES_PASSWORD: car_rag_test
+    ports:
+      - "127.0.0.1:55432:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U car_rag_test -d car_rag_test"]
+      interval: 2s
+      timeout: 3s
+      retries: 30

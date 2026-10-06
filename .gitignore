@@ -12,6 +12,19 @@ data/tables_V2.0/
 
 .venv/
 .pytest_cache/
+.local/
+
+# Recreated by text indexing; not needed to set up a fresh database.
+data/documents.jsonl
+data/text_index_report.json
+
+# Runtime evaluation reports; keep source, ground truth and seed audit tracked.
+eval/results_text.csv
+eval/results_text.summary.json
+eval/live_smoke_text.json
+eval/seed_template_results.csv
+eval/seed_template_summary.json
+eval/ollama_latency_cpu.json
 
 # Exclude local build artifacts left by the previous backend.
 backend/CarRag.Api/

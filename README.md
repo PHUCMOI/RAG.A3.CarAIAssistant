@@ -4,6 +4,16 @@ AutoWise là website khám phá và tư vấn ô tô tại Việt Nam, sử dụ
 
 ![AutoWise website preview](docs/website-preview.png)
 
+## Setup cho người mới
+
+Đọc **[hướng dẫn setup từng bước](docs/SETUP.md)** để clone đúng branch, cấu hình
+database/Ollama CPU hoặc GPU, tạo index và chạy backend/frontend. Có hai lựa chọn:
+development trên Windows/PowerShell hoặc toàn bộ ứng dụng bằng Docker, kèm bước
+kiểm tra thành công và xử lý lỗi. Không cần corpus raw để chạy dữ liệu hiện tại.
+
+Lưu ý: `package.json` nằm trong **frontend**. Từ root dùng
+`npm.cmd --prefix frontend run dev`; backend dùng Python **3.12** trong `.venv`.
+
 ## Trạng thái hiện tại
 
 ### Đã hoạt động
@@ -14,7 +24,7 @@ AutoWise là website khám phá và tư vấn ô tô tại Việt Nam, sử dụ
 - Trang chi tiết xe.
 - So sánh 2–3 xe, chọn/thay/xóa trên màn hình, xem khác biệt và chia sẻ URL.
 - Danh sách 22 đại lý, lọc theo hãng và thành phố.
-- Chatbot structured retrieval từ PostgreSQL.
+- Chatbot text RAG: intent/entities, SQL filters, lexical/pgvector retrieval và Ollama; structured/template fallback khi model/index chưa sẵn sàng.
 - Responsive cho desktop, tablet và mobile.
 - Swagger/OpenAPI cho backend.
 - API danh sách/chi tiết nguồn và danh sách bảo hành.
@@ -25,14 +35,12 @@ AutoWise là website khám phá và tư vấn ô tô tại Việt Nam, sử dụ
 
 ### Chưa triển khai
 
-- LLM tạo câu trả lời tự nhiên.
-- Text/image embeddings và vector search.
-- Dữ liệu cho bảng `documents`.
+- Image embeddings/vector search trong API chính (text đã có pipeline riêng).
 - Lưu lịch sử hội thoại RAG common (trợ lý đơn hàng C# đã có lịch sử).
 - Authentication cho phần RAG/common ngoài module C# (C# đã có auth và phân quyền).
 - CRUD catalogue/RAG trong giao diện quản trị common (module nghiệp vụ C# đã có màn hình xử lý).
 - Tích hợp nhận diện ảnh vào frontend/API chính. Prototype độc lập nằm tại `image_service/`, cần model runtime tương thích index.
-- Text/image vector search trong API chính; prototype ảnh có FAISS index 512 chiều riêng.
+- Image vector search trong API chính; prototype ảnh có FAISS index 512 chiều riêng.
 
 Các route Admin và RAG Settings hiện mới là placeholder giao diện.
 
@@ -56,13 +64,15 @@ Các route Admin và RAG Settings hiện mới là placeholder giao diện.
 | `dealers` | 22 | Đại lý của 9 hãng |
 | `warranties` | 9 | Chính sách bảo hành theo hãng |
 | `sources` | 61 | Nguồn và phạm vi thông tin |
-| `documents` | 0 | Dành cho RAG chunks và embeddings |
+| `documents` | 0 khi seed | Text RAG CLI tạo chunks/embeddings sau seed verification |
 
 Dữ liệu nghiệp vụ trong PostgreSQL được lưu bằng tiếng Anh. Giao diện và phản hồi cho người dùng sử dụng tiếng Việt.
 
 ## Chạy toàn bộ bằng Docker
 
-Yêu cầu cho first run: Docker Desktop. SQL seed và curated image dataset đã nằm trong repository; không cần Python hoặc corpus raw để dựng phiên bản hiện tại.
+Yêu cầu: Docker Desktop. SQL seed và curated images đã ở repository. Cấu hình
+Ollama và index text RAG theo **[cách B trong hướng dẫn setup](docs/SETUP.md#b-toàn-bộ-ứng-dụng-bằng-docker)**.
+Compose khởi động PostgreSQL, Python API, C# API và website; Ollama được chuẩn bị riêng.
 
 ```powershell
 docker compose up --build -d
@@ -94,28 +104,29 @@ Không dùng `docker compose down -v` nếu muốn giữ dữ liệu PostgreSQL.
 
 ## Chạy ở chế độ development
 
-Khởi động PostgreSQL:
+Chuẩn bị Python 3.12, Node 24, `.env`, dependencies, PostgreSQL, Ollama và index
+theo **[hướng dẫn setup](docs/SETUP.md)**. Sau lần setup đầu, chạy từ root:
 
 ```powershell
 docker compose up -d postgres
+# Nếu dùng container Ollama được tạo theo hướng dẫn:
+docker start autowise-ollama-rag
 ```
 
 Chạy backend:
 
 ```powershell
-py backend/run.py
-# hoặc: py -m uvicorn app.main:app --app-dir backend --reload --port 5080
+.\.venv\Scripts\python.exe backend/run.py
 ```
 
 Chạy frontend trong terminal khác:
 
 ```powershell
-Set-Location frontend
-npm install
-npm run dev
+npm.cmd --prefix frontend run dev
 ```
 
-Vite sẽ proxy request `/api` đến `http://localhost:5080`.
+Vite proxy `/api` đến `http://localhost:5080`. Đăng nhập/customer account/đơn hàng
+cần service C# cổng 5090; xem mục A4 trong setup. Catalogue và chat text dùng Python.
 
 ## Các route giao diện
 
@@ -126,7 +137,7 @@ Vite sẽ proxy request `/api` đến `http://localhost:5080`.
 | `/cars/:carId` | Chi tiết xe | Hoạt động |
 | `/compare?ids=...` | So sánh xe | Hoạt động |
 | `/dealers` | Danh sách đại lý | Hoạt động |
-| `/chat` | Chatbot | Structured retrieval |
+| `/chat` | Chatbot | Text RAG / template fallback |
 | `/sources/:sourceId` | Chi tiết nguồn | Hoạt động |
 | `/admin/data` | Quản trị dữ liệu | Placeholder |
 | `/admin/rag` | Cấu hình RAG | Placeholder |
@@ -183,7 +194,23 @@ Content-Type: application/json
 }
 ```
 
-Endpoint chat hiện tìm xe được nhắc đến hoặc fallback sang tìm kiếm PostgreSQL, sau đó trả về template answer và context. Endpoint chưa gọi LLM.
+Endpoint chat phân tích intent/entities, áp dụng SQL filters và hybrid retrieval rồi gọi Ollama khi có facts. Response giữ `answer`, `contexts`, `grounded`, bổ sung `intent`, `filters`, `evidence`, `citations`, `status`, `generationMode`. Cần chạy text indexing và cấu hình Ollama; lỗi provider dùng template có căn cứ.
+
+## Text RAG
+
+Xem [hướng dẫn module](backend/app/application/rag/README.md) để chuẩn bị Python 3.12,
+Ollama `qwen2.5:3b`, migration database đang tồn tại, chạy indexing và evaluation.
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install --no-cache-dir -r backend/requirements-rag.txt
+.\.venv\Scripts\python.exe scripts/build_text_index.py
+.\.venv\Scripts\python.exe scripts/validate_rag_index.py
+```
+
+Document dùng tiếng Việt, embedding `intfloat/multilingual-e5-base` 768 chiều.
+Database seed ban đầu vẫn có 0 documents; job indexing mới sinh dữ liệu.
+Bộ 50 câu hỏi đánh giá nằm trong `eval/ground_truth_text.jsonl`; facts và đáp án cần được review trước khi dùng làm release gate.
+Offline seed/template diagnostics không thay thế kết quả PostgreSQL/vector/Ollama thật.
 
 ## Kết nối PostgreSQL bằng pgAdmin 4
 
@@ -287,13 +314,11 @@ First-run database được kiểm tra tự động với expected counts: 50 xe
 
 ```powershell
 # Chạy bộ test backend (Python / pytest)
-py -m pytest backend/tests -v -p no:asyncio
+.\.venv\Scripts\python.exe -m pytest backend/tests -q
 
 # Build frontend
-Set-Location frontend
-npm run build
+npm.cmd --prefix frontend run build
 
-Set-Location ..
 docker compose up -d --build api web
 ```
 
@@ -331,14 +356,11 @@ docker compose up -d --build api web
 
 ## Hướng phát triển tiếp theo
 
-1. Tạo dữ liệu cho bảng `documents`.
-2. Chọn embedding model tương thích `vector(768)`.
-3. Triển khai full-text, vector và hybrid retrieval.
-4. Kết nối LLM và kiểm tra citation.
-5. Mở rộng bộ chọn xe sang server search/pagination khi dataset tăng.
-6. Lưu chat sessions và messages.
-7. Thêm authentication và trang admin CRUD.
-8. Tạo image embeddings `vector(512)` cho tìm kiếm ảnh.
+1. Đánh giá live text RAG và hoàn thành kiểm tra chéo ground truth.
+2. Mở rộng bộ chọn xe sang server search/pagination khi dataset tăng.
+3. Lưu chat sessions và messages cho RAG common.
+4. Thêm authentication và trang admin CRUD cho catalogue/RAG common.
+5. Tạo image embeddings `vector(512)` và nối module ảnh với text RAG.
 
 
 ## Python migration và image prototype

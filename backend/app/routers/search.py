@@ -1,29 +1,19 @@
-import asyncpg
 from fastapi import APIRouter, Depends
-from app.core.database import get_db_connection
 from app.models.schemas import TextSearchRequest, TextSearchResponse
-from app.repositories.car_repository import CarRepository
+from app.application.rag.contracts import RagFilters
+from app.application.rag.dependencies import get_rag_service
+from app.application.rag.intent import analyze
 
 router = APIRouter(prefix="/search", tags=["Search"])
 
 
 @router.post("/text", response_model=TextSearchResponse)
-async def text_search(
-    request: TextSearchRequest,
-    conn: asyncpg.Connection = Depends(get_db_connection),
-):
-    top_k = max(1, min(request.top_k or 5, 20))
-    cars = await CarRepository.search(
-        conn=conn,
-        query=request.query,
-        brand=request.brand,
-        body_type=request.body_type,
-        seats=request.seats,
-        max_price=request.max_price,
-        limit=top_k,
-    )
-    return TextSearchResponse(
-        query=request.query,
-        results=cars,
-        retrieval="postgresql-structured-search",
-    )
+async def text_search(request: TextSearchRequest, service=Depends(get_rag_service)):
+    catalogue = await service.repository.catalogue()
+    analysis = await analyze(request.query, catalogue,
+                             service.generator if hasattr(service.generator, "classify") else None)
+    explicit = RagFilters(**request.model_dump(by_alias=False, exclude_unset=True, exclude_none=True,
+                          exclude={"query", "top_k"}))
+    result = await service.retriever.retrieve(analysis, explicit, top_k=request.top_k)
+    return TextSearchResponse(query=request.query, results=result.cars, retrieval=result.retrieval,
+                              intent=analysis.intent, filters=result.filters, evidence=result.evidence)

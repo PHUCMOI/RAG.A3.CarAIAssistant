@@ -1,4 +1,9 @@
-> Backend runtime đã chuyển sang Python/FastAPI (2026-10-02). Các cấu trúc RAG bên dưới là mục tiêu; hiện API chính chỉ structured retrieval. Image service là prototype tùy chọn, chưa tích hợp frontend hoặc pgvector.
+> Text RAG đã được triển khai trong `backend/app/application/rag/` (2026-10-03): Vietnamese documents, multilingual E5 768 chiều, PostgreSQL lexical/vector retrieval và Ollama với template fallback. Xem README của module để chạy/index/test. Các phần jobs/admin/reranker bên dưới vẫn là hướng mở rộng, chưa triển khai. Image service vẫn là prototype riêng.
+
+API runtime giữ `/api/chat` và `/api/search/text`; các `/api/v1` bên dưới là thiết
+kế tương lai. MVP dùng Ollama chọn `allowedStatements` được backend tạo từ facts,
+validate references/subject/field/unit và tự thêm cảnh báo. Không chấp nhận prose
+tự do chưa có căn cứ. Code đã có tests; nghiệm thu index/model thật vẫn pending.
 
 # AutoWise Text RAG — Business logic và implementation specification
 
@@ -20,7 +25,7 @@ Không bao gồm image embedding; xem [`RAG_image.md`](./RAG_image.md).
 
 1. **Structured first:** exact facts lấy từ bảng nghiệp vụ.
 2. **Deterministic documents:** cùng input + cùng template version phải tạo cùng content.
-3. **English storage, Vietnamese presentation:** document/index bằng tiếng Anh; query có thể tiếng Việt.
+3. **English business storage, Vietnamese documents/presentation:** dữ liệu nghiệp vụ giữ tiếng Anh; template documents, query và câu trả lời dùng tiếng Việt.
 4. **Evidence before generation:** không gọi LLM khi chưa tạo context package.
 5. **Citation by ID:** model chỉ được cite source/document đã cấp.
 6. **Incremental and idempotent:** record không đổi không được embed lại.
@@ -78,7 +83,7 @@ CREATE INDEX ix_documents_metadata
 
 Sau khi backfill thành công, đặt `content_hash` và `template_version` thành `NOT NULL`.
 
-`simple` configuration phù hợp cho content tiếng Anh có model name/ký hiệu và không stem quá mức. Nếu đổi ngôn ngữ/content strategy phải benchmark trước.
+Implementation dùng `simple` cho document tiếng Việt để giữ model name/ký hiệu và không stem quá mức; cần benchmark trên index thật trước khi kết luận chất lượng lexical search.
 
 Vector index chỉ thêm sau khi đã đo query plan:
 
@@ -125,35 +130,33 @@ Rules:
 
 ## 6. Content generation
 
-### 6.1 Canonical English templates
+### 6.1 Template tiếng Việt của implementation
 
 Ví dụ `overview`:
 
 ```text
-Vehicle: Honda CR-V.
-Brand: Honda.
-Known aliases: CRV.
-Body type: SUV.
-Vietnam market status: official_current.
-Description: [verified English description].
+Xe: Honda CR-V. Hãng: Honda.
+Tên khác: CRV.
+Được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.
 ```
 
 Ví dụ `price`:
 
 ```text
-Vehicle: Honda CR-V.
-Vietnam reference price starts from VND 1,109,000,000.
-Price as of: 2026-09-30.
-This is a reference starting price and not a real-time dealer quotation.
+Giá tham khảo của Honda CR-V.
+Giá từ: [giá VND có price_source_id].
+Ngày giá tham khảo: [price_as_of].
+Đây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.
 ```
 
 Ví dụ `warranty`:
 
 ```text
-Brand: Honda.
-Warranty duration: 36 months.
-Warranty distance limit: 100,000 km.
-Coverage and exclusions: [verified policy notes or “Not available”].
+Bảo hành tham khảo của Honda.
+Thời hạn: [duration_months] tháng.
+Giới hạn quãng đường: [distance_limit_km] km.
+[Điều kiện policy đã dịch bằng template được rà soát].
+Đây là chính sách theo hãng; cần xác nhận áp dụng cho xe, VIN và ngày bán cụ thể.
 ```
 
 ### 6.2 Generation rules
