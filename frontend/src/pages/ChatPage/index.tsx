@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
+import { ImageIcon } from '../../shared/components/ImageIcon'
 import { ChatLayout, ChatSidebar, ChatWelcome, ThinkingMessage } from '../../features/chat/ChatLayout'
 import { apiPost, apiPostForm } from '../../shared/api/client'
 import { useOrdersSession } from '../../features/orders/Session'
@@ -29,7 +30,7 @@ export function GuestChat() {
     if (!file) return
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) { setError('Chọn ảnh JPEG, PNG hoặc WebP.'); return }
     const version = ++previewVersion.current
-    setSelectedFile(file); setImagePreview(null); setError('')
+    setSelectedFile(file); setImagePreview(null); setError(''); event.target.value = ''
     const reader = new FileReader()
     reader.onload = () => { if (version === previewVersion.current) setImagePreview(String(reader.result)) }
     reader.readAsDataURL(file)
@@ -55,7 +56,7 @@ export function GuestChat() {
         const result = await apiPostForm<{ answer: string; identified_cars?: IdentifiedCarItem[]; uncertain?: boolean }>('/api/image-service/chat', form)
         const contexts = (result.identified_cars || []).map(car => ({ carId: car.car_id, displayName: [car.brand, car.model].filter(Boolean).join(' ') || car.car_id }))
         setMessages(current => [...current, { role: 'user', content: text, imageUrl: preview || undefined, catalog: true }, { role: 'assistant', content: result.answer, contexts, identifiedCars: result.identified_cars, uncertain: result.uncertain, catalog: true }])
-        clearAttachment()
+        if (selectedFile === file) clearAttachment()
       } else if (isOrderQuestion(text)) {
         writeCache('guest', 'pending-question', text)
         setMessages(current => [...current, { role: 'user', content: text, catalog: true }, { role: 'assistant', catalog: true, content: 'Bạn cần đăng nhập để tra cứu và xử lý đơn hàng của mình.' }])
@@ -72,15 +73,15 @@ export function GuestChat() {
   function choose(value: string) { setQuestion(value); input.current?.focus() }
   return <ChatLayout sidebar={<ChatSidebar busy={sending} onNew={() => { clearChatCache('guest'); clearAttachment(); failedRequest.current = null; setMessages([welcome]); setQuestion(''); setFailed(''); setError(''); input.current?.focus() }}>{!empty && <div className="assistant-local-session">Hội thoại hiện tại</div>}</ChatSidebar>}>
     <ChatStream className="assistant-thread" revision={`${messages.length}:${sending}:${failed}`}>
-      {empty && !sending && !failed ? <ChatWelcome busy={sending} onPrompt={choose} /> : messages.filter((_, index) => index !== 0 || !empty).map((message, index) => <article key={index} className={`order-chat-message ${message.role}`}><strong>{message.role === 'assistant' ? 'AutoWise' : 'Bạn'}</strong>{message.role === 'assistant' ? <AnswerContent content={message.content} /> : <p>{message.content}</p>}{message.imageUrl && <img className="chat-image-preview-bubble" src={message.imageUrl} alt="Ảnh xe đã gửi" />}{message.uncertain && <p className="chat-uncertain-warning">Kết quả nhận diện chưa chắc chắn. Hãy kiểm tra thông tin xe.</p>}<ContextLinks contexts={message.contexts} />{message.role === 'assistant' && <CopyAnswer content={message.content} />}</article>)}
+      {empty && !sending && !failed ? <ChatWelcome busy={sending} onPrompt={choose} /> : messages.filter((_, index) => index !== 0 || !empty).map((message, index) => <article key={index} className={`order-chat-message ${message.role}`}><strong>{message.role === 'assistant' ? 'AutoWise' : 'Bạn'}</strong>{message.role === 'assistant' ? <AnswerContent content={message.content} /> : <p>{message.content || (message.imageUrl ? 'Nhận diện xe trong ảnh' : '')}</p>}{message.imageUrl && <img className="chat-image-preview-bubble" src={message.imageUrl} alt="Ảnh xe đã gửi" />}{message.uncertain && <p className="chat-uncertain-warning">Kết quả nhận diện chưa chắc chắn. Hãy kiểm tra thông tin xe.</p>}<ContextLinks contexts={message.contexts} />{message.role === 'assistant' && <CopyAnswer content={message.content} />}</article>)}
       {sending && <ThinkingMessage question={pendingText} />}{failed && !sending && <FailedQuestion content={failed} error={error} busy={sending} onRetry={() => void send(failed, true)} />}
     </ChatStream>
     <div className="assistant-composer-area">
       <p className="assistant-login"><Link to="/login?returnTo=%2Fchat">Đăng nhập để tra cứu đơn hàng →</Link></p>
-      <ChatComposer canSend={!!selectedFile} attachment={<div>
+      <ChatComposer canSend={!!selectedFile} tools={<button type="button" className="chat-attach-btn" disabled={sending} onClick={() => fileInput.current?.click()} aria-label="Đính kèm ảnh xe" title="Đính kèm ảnh xe"><ImageIcon /></button>} attachment={<div className="assistant-attachments">
         <input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={selectImage} />
-        {selectedFile && <div className="chat-attachment-bar">{imagePreview && <img className="chat-attachment-thumb" src={imagePreview} alt="Ảnh xe đính kèm" />}<span className="chat-attachment-name">{selectedFile.name}</span><button type="button" className="chat-attachment-remove" disabled={sending} onClick={clearAttachment} aria-label="Bỏ ảnh đính kèm">×</button></div>}
-        <button type="button" className="chat-attach-btn" disabled={sending} onClick={() => fileInput.current?.click()}>Đính kèm ảnh xe</button>
+        {selectedFile && <div className="chat-attachment-bar">{imagePreview && <img className="chat-attachment-thumb" src={imagePreview} alt="Ảnh xe đính kèm" />}<div className="chat-attachment-info"><span className="chat-attachment-name">{selectedFile.name}</span><small>{sending ? 'Đang nhận diện xe…' : 'Ảnh xe · Có thể gửi kèm câu hỏi'}</small></div><button type="button" className="chat-attachment-remove" disabled={sending} onClick={clearAttachment} aria-label="Bỏ ảnh đính kèm">×</button></div>}
+        {error && !failed && <p className="assistant-attachment-error" role="alert">{error}</p>}
       </div>} inputRef={input} value={question} onChange={setQuestion} busy={sending} onSubmit={submit} sendLabel="Gửi →" placeholder="Hỏi AutoWise về chiếc xe bạn quan tâm…" notice="Kiểm tra thông tin quan trọng với đại lý." />
     </div>
   </ChatLayout>

@@ -11,3 +11,25 @@
 @media(min-width:901px){.assistant-header small,.assistant-controls label{font-size:12px}.assistant-composer-help{font-size:11px}}
 @media(prefers-reduced-motion:reduce){.assistant-dots{animation:none}.assistant-prompts button{transition:none}}
 .assistant-composer textarea:focus-visible{outline:none}.assistant-composer:focus-within{border-color:#347c68;box-shadow:0 0 0 3px #347c6820}
+/* Image controls share the same composer for guests and customers. */
+.assistant-composer-tools{flex-shrink:0;align-self:flex-end}
+.assistant-composer .assistant-composer-tools button{display:grid;place-items:center;width:38px;height:42px;background:#f0f5eb;color:#607b50;border:1px solid #e2eadb;border-radius:11px;padding:0}
+.assistant-composer .assistant-composer-tools button:hover:not(:disabled){background:#e3efd6;color:#284c35}
+.assistant-attachments:has(.chat-attachment-bar){margin-bottom:10px}
+.assistant-attachments .chat-attachment-bar{display:flex;align-items:center;gap:12px;padding:10px;background:#f2f6ec;border:1px solid #dce7d1;border-radius:13px;width:fit-content;max-width:100%;box-sizing:border-box}
+.chat-attachment-thumb{display:block;object-fit:cover;width:52px;height:46px;border-radius:8px;background:#e4ecd9;border:1px solid #d2dfc4;flex-shrink:0}
+.chat-attachment-info{min-width:0;max-width:400px}
+.chat-attachment-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:#365333;font-weight:600}
+.chat-attachment-info small{display:block;font-size:10px;color:#7e8e71;margin-top:6px}
+.chat-attachment-remove{background:#e6eedc;color:#69815a;border:0;border-radius:8px;display:grid;place-items:center;width:28px;height:28px;font-size:20px;cursor:pointer;flex-shrink:0}
+.assistant-attachment-error{font-size:12px;color:#974b34;margin:0 0 10px}
+.assistant-thread .chat-image-preview-bubble{display:block;width:auto;max-width:min(320px,100%);max-height:240px;object-fit:contain;border-radius:12px;border:1px solid #d6e3cb;margin-top:12px;background:#f1f6eb}
+.assistant-thread .chat-uncertain-warning{font-size:12px;line-height:1.7;padding:10px 12px;margin:12px 0;border:1px solid #e7d9af;border-radius:9px;background:#fff9e9;color:#88692f}
+.assistant-image-link{display:flex;align-items:center;gap:8px;font-size:12px;color:#5a7748;border:1px solid #dce6d2;background:#f6f9f0;border-radius:9px;padding:8px 11px;flex-shrink:0}
+.assistant-image-link svg{width:17px;height:17px}
+.assistant-image-link:hover{background:#eaf3df}
+.assistant-welcome-image{display:inline-flex;align-items:center;gap:9px;font-size:12px;color:#66834f;margin-top:22px;padding:9px 13px;border-radius:9px;background:#f1f6e9}
+.assistant-welcome-image svg{width:18px;height:18px}
+.assistant-welcome-image:hover{background:#e7f0db}
+@media(max-width:480px){.assistant-image-link{padding:7px;font-size:10px}.assistant-image-link>span:last-child{display:none}.chat-attachment-info{max-width:190px}}
+@media(min-width:901px){.assistant-welcome{margin:16px auto 12px}.assistant-welcome-mark{width:54px;height:54px;border-radius:18px;font-size:27px;margin-bottom:14px}.assistant-welcome h1{font-size:30px}.assistant-welcome>p{margin-bottom:20px;line-height:1.7}.assistant-prompts button{padding:14px;gap:6px}.assistant-welcome-image{margin-top:16px}}
