@@ -1,7 +1,8 @@
-import { useState, useRef, type ChangeEvent, type DragEvent, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useState, useRef, type ChangeEvent, type DragEvent, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { apiPostForm } from '../../shared/api/client'
-import { LoadingSkeleton } from '../../shared/components/LoadingSkeleton'
+import { ImageIcon } from '../../shared/components/ImageIcon'
+import './image-search.css'
 
 export interface CarImageMatch {
   car_id: string
@@ -11,7 +12,6 @@ export interface CarImageMatch {
   similarity: number
   best_image: string
 }
-
 export interface ImageSearchResult {
   results: CarImageMatch[]
   confidence: 'high' | 'medium' | 'low'
@@ -19,364 +19,124 @@ export interface ImageSearchResult {
   margin: number
   latency_ms?: number
 }
-
-// Danh sách các mẫu xe test nhanh có sẵn trong dataset
 const SAMPLE_CARS = [
-  {
-    name: 'Honda CR-V',
-    path: 'images/car_34_3/Honda$$CR-V$$2007$$Black$$34_3$$671$$image_19.jpg',
-  },
-  {
-    name: 'Toyota RAV4',
-    path: 'images/car_92_34/Toyota$$RAV4$$2011$$Beige$$92_34$$341$$image_2.jpg',
-  },
-  {
-    name: 'Toyota Corolla',
-    path: 'images/car_92_11/Toyota$$Corolla$$2003$$Black$$92_11$$45$$image_0.jpg',
-  },
-  {
-    name: 'Honda Civic',
-    path: 'images/car_34_2/Honda$$Civic$$2009$$Black$$34_2$$740$$image_6.jpg',
-  },
-  {
-    name: 'Mazda 3',
-    path: 'images/car_57_11/Mazda$$Mazda3$$2008$$Black$$57_11$$1233$$image_41.jpg',
-  },
+  { name: 'Honda CR-V', path: 'images/car_34_3/Honda$$CR-V$$2007$$Black$$34_3$$671$$image_19.jpg' },
+  { name: 'Toyota RAV4', path: 'images/car_92_34/Toyota$$RAV4$$2011$$Beige$$92_34$$341$$image_2.jpg' },
+  { name: 'Toyota Corolla', path: 'images/car_92_11/Toyota$$Corolla$$2003$$Black$$92_11$$45$$image_0.jpg' },
+  { name: 'Honda Civic', path: 'images/car_34_2/Honda$$Civic$$2009$$Black$$34_2$$740$$image_6.jpg' },
+  { name: 'Mazda 3', path: 'images/car_57_11/Mazda$$Mazda3$$2008$$Black$$57_11$$1233$$image_41.jpg' },
 ]
+const placeholder = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240"><rect width="400" height="240" fill="#edf2e8"/><path d="M110 145h180l-15-38h-32l-20-25h-49l-22 25h-27z" fill="none" stroke="#94a48c" stroke-width="5"/><circle cx="148" cy="147" r="12" fill="#94a48c"/><circle cx="250" cy="147" r="12" fill="#94a48c"/></svg>')
 
 export default function ImageSearchPage() {
-  const navigate = useNavigate()
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [topK, setTopK] = useState(5)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [failedSample, setFailedSample] = useState<typeof SAMPLE_CARS[number] | null>(null)
   const [searchData, setSearchData] = useState<ImageSearchResult | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const locked = useRef(false)
+  const mounted = useRef(true)
+  const resultsTitle = useRef<HTMLHeadingElement>(null)
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false } }, [])
+  useEffect(() => {
+    if (!selectedFile) { setPreviewUrl(null); return }
+    const url = URL.createObjectURL(selectedFile)
+    setPreviewUrl(url)
+    return () => URL.revokeObjectURL(url)
+  }, [selectedFile])
 
   function handleFile(file: File) {
-    if (!file.type.startsWith('image/')) {
-      setError('Vui lòng chọn tệp định dạng hình ảnh (.jpg, .png, .webp).')
-      return
+    if (locked.current) return
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setError('Chọn ảnh JPG, PNG hoặc WebP để tìm xe.'); return
     }
-    setError('')
-    setSelectedFile(file)
-    const reader = new FileReader()
-    reader.onload = () => setPreviewUrl(reader.result as string)
-    reader.readAsDataURL(file)
+    setError(''); setFailedSample(null); setSelectedFile(file); setSearchData(null)
   }
-
-  function onFileInputChange(e: ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
+  function onFileInputChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    if (file) handleFile(file)
+    event.target.value = ''
+  }
+  function onDrop(event: DragEvent<HTMLDivElement>) {
+    event.preventDefault(); setIsDragging(false)
+    const file = event.dataTransfer.files?.[0]
     if (file) handleFile(file)
   }
-
-  function onDragOver(e: DragEvent<HTMLDivElement>) {
-    e.preventDefault()
-    setIsDragging(true)
+  async function requestSearch(file: File, k: number) {
+    const form = new FormData(); form.append('file', file); form.append('top_k', String(k))
+    const data = await apiPostForm<ImageSearchResult>('/api/image-service/search/image', form)
+    if (mounted.current) { setSearchData(data); requestAnimationFrame(() => resultsTitle.current?.focus()) }
   }
-
-  function onDragLeave(e: DragEvent<HTMLDivElement>) {
-    e.preventDefault()
-    setIsDragging(false)
+  async function executeSearch(file: File) {
+    if (locked.current) return
+    locked.current = true; setLoading(true); setError(''); setFailedSample(null); setSearchData(null)
+    try { await requestSearch(file, topK) }
+    catch { if (mounted.current) setError('Chưa thể tìm kiếm ảnh lúc này. Ảnh của bạn vẫn được giữ; hãy thử lại.') }
+    finally { locked.current = false; if (mounted.current) setLoading(false) }
   }
-
-  function onDrop(e: DragEvent<HTMLDivElement>) {
-    e.preventDefault()
-    setIsDragging(false)
-    const file = e.dataTransfer.files?.[0]
-    if (file) handleFile(file)
-  }
-
-  async function loadSampleImage(sample: typeof SAMPLE_CARS[0]) {
+  async function loadSampleImage(sample: typeof SAMPLE_CARS[number]) {
+    if (locked.current) return
+    locked.current = true; setLoading(true); setError(''); setFailedSample(null); setSearchData(null)
     try {
-      setLoading(true)
-      setError('')
-      const fullUrl = `/api/image-service/${sample.path}`
-      const resp = await fetch(fullUrl)
-      if (!resp.ok) throw new Error('Không thể tải ảnh mẫu từ server')
-      const blob = await resp.blob()
+      const response = await fetch(`/api/image-service/${sample.path}`)
+      if (!response.ok) throw new Error('Sample unavailable')
+      const blob = await response.blob()
       const file = new File([blob], `${sample.name}.jpg`, { type: 'image/jpeg' })
-      handleFile(file)
-      // Tự động tìm kiếm ngay với ảnh mẫu
-      await executeSearch(file, topK)
-    } catch (err) {
-      setError('Lỗi tải ảnh mẫu. Vui lòng đảm bảo Image Service đang chạy.')
-    } finally {
-      setLoading(false)
-    }
+      if (!mounted.current) return
+      setSelectedFile(file)
+      await requestSearch(file, topK)
+    } catch { if (mounted.current) { setFailedSample(sample); setError('Chưa thể tìm kiếm với ảnh mẫu. Hãy thử lại hoặc chọn ảnh của bạn.') } }
+    finally { locked.current = false; if (mounted.current) setLoading(false) }
   }
-
-  async function executeSearch(fileToSearch: File, k: number) {
-    setLoading(true)
-    setError('')
-    setSearchData(null)
-    try {
-      const formData = new FormData()
-      formData.append('file', fileToSearch)
-      formData.append('top_k', String(k))
-
-      const data = await apiPostForm<ImageSearchResult>(
-        '/api/image-service/search/image',
-        formData
-      )
-      setSearchData(data)
-    } catch (err: any) {
-      setError('Không thể kết nối đến Dịch vụ Tìm kiếm ảnh (Image Service). Hãy chắc chắn cổng 8000 đang chạy.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  function handleSubmit(e: FormEvent) {
-    e.preventDefault()
-    if (!selectedFile) {
-      setError('Vui lòng chọn hoặc tải lên một hình ảnh xe.')
-      return
-    }
-    void executeSearch(selectedFile, topK)
-  }
-
-  function handleReset() {
-    setSelectedFile(null)
-    setPreviewUrl(null)
-    setSearchData(null)
-    setError('')
+  function submit(event: FormEvent) { event.preventDefault(); if (selectedFile) void executeSearch(selectedFile) }
+  function reset() {
+    if (locked.current) return
+    setSelectedFile(null); setSearchData(null); setError(''); setFailedSample(null)
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
-  return (
-    <div className="page image-search-page">
-      <header className="image-search-header">
-        <span className="section-kicker">AI Visual Intelligence (CLIP + FAISS)</span>
-        <h1>Tìm kiếm mẫu xe bằng hình ảnh</h1>
-        <p>
-          Tải lên ảnh một chiếc xe ô tô bất kỳ, mô hình CLIP ViT-B/32 sẽ trích xuất vector đặc trưng 512 chiều 
-          và chỉ mục FAISS sẽ so sánh để nhận diện đúng mẫu xe và thông số chỉ trong vài mili-giây.
-        </p>
-      </header>
-
-      {/* Preset sample buttons */}
-      <section className="sample-presets">
-        <span>Thử nhanh với ảnh mẫu có sẵn:</span>
-        <div className="preset-buttons">
-          {SAMPLE_CARS.map((s) => (
-            <button
-              key={s.name}
-              type="button"
-              className="mini-button preset-btn"
-              onClick={() => void loadSampleImage(s)}
-              disabled={loading}
-            >
-              🚗 {s.name}
-            </button>
-          ))}
-        </div>
+  return <div className="page image-search-page">
+    <header className="image-search-header">
+      <div><span className="section-kicker">KHÁM PHÁ XE BẰNG ẢNH</span><h1>Thấy chiếc xe bạn thích?</h1><p>Gửi một bức ảnh, khám phá những mẫu xe tương đồng và hỏi AutoWise để tìm hiểu thêm.</p></div>
+      <Link to="/cars" className="image-catalog-link">Khám phá danh sách xe <span aria-hidden="true">↗</span></Link>
+    </header>
+    <div className="image-search-layout">
+      <aside className="image-search-input">
+        <form onSubmit={submit} className="image-upload-section" aria-label="Tìm xe bằng ảnh">
+          <div className="image-panel-heading"><span className="image-step">01</span><div><h2>Ảnh xe của bạn</h2><p>Ảnh rõ nét giúp tìm xe chính xác hơn.</p></div></div>
+          <input type="file" ref={fileInputRef} hidden accept="image/jpeg,image/png,image/webp" onChange={onFileInputChange} disabled={loading} />
+          <div className={`image-dropzone ${isDragging ? 'dragging' : ''} ${previewUrl ? 'has-image' : ''}`} onDragOver={event => { event.preventDefault(); if (!loading) setIsDragging(true) }} onDragLeave={() => setIsDragging(false)} onDrop={onDrop}>
+            {previewUrl ? <div className="preview-container"><img src={previewUrl} alt="Ảnh xe cần tìm" className="preview-img" /></div> : <div className="dropzone-content"><span className="dropzone-icon"><ImageIcon /></span><strong>Kéo thả ảnh xe vào đây</strong><span>hoặc chọn ảnh từ thiết bị của bạn</span><button type="button" className="button primary" disabled={loading} onClick={() => fileInputRef.current?.click()}>Chọn ảnh xe</button><small>JPG, PNG hoặc WebP</small></div>}
+          </div>
+          {selectedFile && <div className="image-file-summary"><div><strong>{selectedFile.name}</strong><small>{(selectedFile.size / 1024).toLocaleString('vi-VN', { maximumFractionDigits: 0 })} KB · Sẵn sàng tìm kiếm</small></div><button type="button" className="image-text-button" disabled={loading} onClick={() => fileInputRef.current?.click()}>Đổi ảnh</button><button type="button" className="image-text-button" disabled={loading} onClick={reset} aria-label="Xóa ảnh đã chọn">Xóa</button></div>}
+          <div className="search-controls"><label htmlFor="image-result-count">Số kết quả hiển thị</label><select id="image-result-count" value={topK} onChange={event => { setTopK(Number(event.target.value)); setSearchData(null) }} disabled={loading}><option value={3}>3 mẫu xe</option><option value={5}>5 mẫu xe</option><option value={8}>8 mẫu xe</option></select></div>
+          <button type="submit" className="button primary image-search-submit" disabled={loading || !selectedFile}>{loading ? 'Đang tìm mẫu xe…' : 'Tìm xe tương đồng →'}</button>
+          {error && <div className="image-search-error" role="alert"><p>{error}</p>{(selectedFile || failedSample) && <button type="button" className="image-text-button" disabled={loading} onClick={() => { if (failedSample) void loadSampleImage(failedSample); else if (selectedFile) void executeSearch(selectedFile) }}>Thử lại tìm kiếm</button>}</div>}
+          <p className="image-upload-tip">Nên chọn ảnh có một chiếc xe, thấy rõ thân xe và hạn chế vật che khuất.</p>
+        </form>
+        <section className="sample-presets" aria-label="Ảnh mẫu"><h3>Chưa có ảnh? Thử ảnh mẫu</h3><p>Chọn một mẫu xe để xem cách tìm kiếm hoạt động.</p><div className="preset-buttons">{SAMPLE_CARS.map(sample => <button key={sample.name} type="button" className="preset-btn" disabled={loading} onClick={() => void loadSampleImage(sample)}>{sample.name}<span aria-hidden="true">↗</span></button>)}</div></section>
+      </aside>
+      <section className="search-results-section" aria-label="Kết quả tìm kiếm ảnh" aria-busy={loading}>
+        <div className="image-results-heading"><div><span className="section-kicker">GỢI Ý CHO BẠN</span><h2 ref={resultsTitle} tabIndex={-1}>{searchData ? `${searchData.results.length} mẫu xe tương đồng` : 'Tìm chiếc xe trong ảnh'}</h2></div>{searchData && <span className={`image-confidence ${searchData.confidence}`}>Mức tin cậy: {searchData.confidence === 'high' ? 'Cao' : searchData.confidence === 'medium' ? 'Trung bình' : 'Thấp'}</span>}</div>
+        {loading ? <div className="image-results-empty" role="status"><span className="image-search-spinner" aria-hidden="true" /><h3>Đang tìm xe tương đồng</h3><p>Đang đối chiếu ảnh của bạn với các mẫu xe trong danh sách.</p></div> : !searchData ? <div className="image-results-empty"><span className="image-empty-icon"><ImageIcon /></span><h3>Một bức ảnh, thêm nhiều lựa chọn</h3><p>Chọn ảnh ở bên trái để xem những mẫu xe có ngoại hình tương đồng.</p><div className="image-empty-steps"><span><b>1</b>Chọn ảnh xe</span><span><b>2</b>Xem kết quả</span><span><b>3</b>Hỏi trợ lý AI</span></div><Link to="/chat">Bạn đã biết tên xe? Hỏi AutoWise →</Link></div> : <>
+          {searchData.uncertain && <div className="image-search-warning" role="status"><strong>Chưa đủ rõ để nhận diện chắc chắn</strong><p>Các mẫu xe dưới đây là gợi ý tham khảo. Thử ảnh rõ hơn hoặc góc chụp khác để cải thiện kết quả.</p></div>}
+          {!searchData.results.length && <div className="image-results-empty"><h3>Chưa tìm thấy mẫu xe phù hợp</h3><p>Hãy đổi ảnh hoặc thử một ảnh mẫu. Bạn cũng có thể tìm xe theo tên và hãng.</p><Link to="/cars" className="button secondary">Khám phá xe</Link></div>}
+          <div className="image-matches-grid">{searchData.results.map((match, index) => {
+            const name = match.display_name || [match.brand, match.model].filter(Boolean).join(' ') || 'Mẫu xe chưa có tên'
+            const similarity = Number.isFinite(match.similarity) ? Math.round(Math.min(1, Math.max(0, match.similarity)) * 1000) / 10 : null
+            const chatParams = new URLSearchParams({ car: match.car_id, carName: name })
+            return <article key={match.car_id} className="match-card">
+              <div className="match-image-wrap"><span className="match-rank-badge">{index === 0 ? 'Tương đồng nhất' : `Gợi ý ${index + 1}`}</span><img src={match.best_image ? `/api/image-service/${match.best_image}` : placeholder} alt={name} loading="lazy" onError={event => { event.currentTarget.onerror = null; event.currentTarget.src = placeholder }} /></div>
+              <div className="match-card-content"><span className="match-brand">{match.brand || 'Chưa có hãng xe'}</span><h3 className="match-name">{name}</h3><div className="similarity-bar-container"><div className="similarity-labels"><span>Độ tương đồng hình ảnh</span><strong>{similarity === null ? 'Chưa có dữ liệu' : `${similarity.toLocaleString('vi-VN')}%`}</strong></div><div className="progress-track" aria-hidden="true"><div className="progress-fill" style={{ width: `${similarity ?? 0}%` }} /></div></div><div className="match-actions"><Link to={`/cars/${encodeURIComponent(match.car_id)}`} className="button secondary">Xem chi tiết</Link><Link to={`/chat?${chatParams}`} className="button primary">Hỏi AI <span aria-hidden="true">↗</span></Link></div></div>
+            </article>
+          })}</div>
+          {!!searchData.results.length && <p className="image-results-note">Độ tương đồng phản ánh ngoại hình trong ảnh, không phải xác suất nhận diện chính xác.{searchData.latency_ms != null && ` Thời gian xử lý: ${Math.round(searchData.latency_ms).toLocaleString('vi-VN')} ms.`}</p>}
+        </>}
       </section>
-
-      {/* Upload Box */}
-      <form onSubmit={handleSubmit} className="image-upload-section">
-        <div
-          className={`image-dropzone ${isDragging ? 'dragging' : ''} ${previewUrl ? 'has-image' : ''}`}
-          onDragOver={onDragOver}
-          onDragLeave={onDragLeave}
-          onDrop={onDrop}
-          onClick={() => !previewUrl && fileInputRef.current?.click()}
-        >
-          <input
-            type="file"
-            ref={fileInputRef}
-            style={{ display: 'none' }}
-            accept="image/jpeg,image/png,image/webp"
-            onChange={onFileInputChange}
-          />
-
-          {previewUrl ? (
-            <div className="preview-container">
-              <img src={previewUrl} alt="Ảnh cần tìm" className="preview-img" />
-              <div className="preview-overlay">
-                <button
-                  type="button"
-                  className="mini-button"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    fileInputRef.current?.click()
-                  }}
-                >
-                  Đổi ảnh khác
-                </button>
-                <button
-                  type="button"
-                  className="mini-button danger"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleReset()
-                  }}
-                >
-                  Xóa
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="dropzone-content">
-              <span className="dropzone-icon">📷</span>
-              <strong>Kéo thả ảnh xe vào đây hoặc bấm để chọn tệp</strong>
-              <small>Hỗ trợ định dạng JPG, PNG, WebP (Tối đa 10MB)</small>
-            </div>
-          )}
-        </div>
-
-        <div className="search-controls">
-          <label>
-            Số lượng xe hiển thị (Top-K):
-            <select
-              value={topK}
-              onChange={(e) => setTopK(Number(e.target.value))}
-              disabled={loading}
-            >
-              <option value={3}>Top 3</option>
-              <option value={5}>Top 5 (Khuyến nghị)</option>
-              <option value={8}>Top 8</option>
-            </select>
-          </label>
-
-          <button
-            type="submit"
-            className="button primary"
-            disabled={loading || !selectedFile}
-          >
-            {loading ? 'Đang nhận diện vector...' : '🔍 Tìm kiếm xe tương đồng'}
-          </button>
-        </div>
-      </form>
-
-      {error && (
-        <div className="alert-error" role="alert">
-          <strong>Lỗi:</strong> {error}
-        </div>
-      )}
-
-      {/* Loading state */}
-      {loading && (
-        <div style={{ margin: '30px 0' }}>
-          <LoadingSkeleton />
-          <p style={{ textAlign: 'center', color: '#173f38', marginTop: 12 }}>
-            Đang trích xuất đặc trưng CLIP và tìm kiếm lân cận trên FAISS Index...
-          </p>
-        </div>
-      )}
-
-      {/* Results Section */}
-      {searchData && (
-        <section className="search-results-section">
-          {/* Metrics Toolbar */}
-          <div className="metrics-banner">
-            <div className="metric-item">
-              <small>Độ tin cậy</small>
-              <strong className={`badge ${searchData.confidence}`}>
-                {searchData.confidence === 'high'
-                  ? '🟢 Cao (High)'
-                  : searchData.confidence === 'medium'
-                  ? '🟡 Trung bình'
-                  : '🔴 Thấp (Uncertain)'}
-              </strong>
-            </div>
-
-            <div className="metric-item">
-              <small>Độ trễ truy hồi</small>
-              <strong>⚡ {searchData.latency_ms ?? 0} ms</strong>
-            </div>
-
-            <div className="metric-item">
-              <small>Biên độ chênh lệch (Margin)</small>
-              <strong>+{Math.round(searchData.margin * 1000) / 1000}</strong>
-            </div>
-
-            <div className="metric-item">
-              <small>Mô hình trích xuất</small>
-              <strong>CLIP ViT-B/32 (512-dim)</strong>
-            </div>
-          </div>
-
-          {searchData.uncertain && (
-            <div className="alert-warning" role="status">
-              ⚠️ <strong>Cảnh báo ngoài miền / Góc chụp khó:</strong> Hệ thống nhận thấy độ tương đồng thấp 
-              hoặc chênh lệch không rõ rệt. Kết quả dưới đây có thể không phản ánh đúng 100% mẫu xe thực tế.
-            </div>
-          )}
-
-          <h2 className="results-heading">
-            Các mẫu xe khớp nhất ({searchData.results.length} xe duy nhất):
-          </h2>
-
-          <div className="image-matches-grid">
-            {searchData.results.map((match, idx) => {
-              const similarityPercent = Math.round(match.similarity * 1000) / 10
-              return (
-                <article key={match.car_id} className="match-card">
-                  <div className="match-rank-badge">#{idx + 1}</div>
-
-                  <div className="match-image-wrap">
-                    <img
-                      src={`/api/image-service/${match.best_image}`}
-                      alt={match.display_name || match.model || 'Xe'}
-                      onError={(e) => {
-                        // Fallback placeholder if image not loaded
-                        ;(e.target as HTMLImageElement).src =
-                          'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="150" viewBox="0 0 200 150"><rect fill="%23e8efe9" width="200" height="150"/><text fill="%23173f38" font-family="sans-serif" font-size="14" dy="10.5" font-weight="bold" x="50%" y="50%" text-anchor="middle">Ảnh xe</text></svg>'
-                      }}
-                    />
-                  </div>
-
-                  <div className="match-card-content">
-                    <span className="match-brand">{match.brand}</span>
-                    <h3 className="match-name">{match.display_name || match.model}</h3>
-
-                    <div className="similarity-bar-container">
-                      <div className="similarity-labels">
-                        <span>Độ tương đồng</span>
-                        <strong>{similarityPercent}%</strong>
-                      </div>
-                      <div className="progress-track">
-                        <div
-                          className="progress-fill"
-                          style={{
-                            width: `${Math.min(100, Math.max(0, similarityPercent))}%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="match-actions">
-                      <Link
-                        to={`/cars/${encodeURIComponent(match.car_id)}`}
-                        className="button secondary mini"
-                      >
-                        Thông số xe →
-                      </Link>
-
-                      <button
-                        type="button"
-                        className="button primary mini"
-                        onClick={() =>
-                          navigate(
-                            `/chat?question=${encodeURIComponent(
-                              `Tư vấn chi tiết và thông số mẫu xe ${match.display_name || match.model}`
-                            )}`
-                          )
-                        }
-                      >
-                        💬 Hỏi AI về xe này
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              )
-            })}
-          </div>
-        </section>
-      )}
     </div>
-  )
+  </div>
 }

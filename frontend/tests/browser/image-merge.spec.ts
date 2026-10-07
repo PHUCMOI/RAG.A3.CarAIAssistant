@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('guest image retry keeps the attachment and sends it only once on success', async ({ page }) => {
-  await page.route('**/api/orders-service/auth/me', route => route.fulfill({ status: 401, json: {} }));
+  await page.route('**/api/orders-service/me', route => route.fulfill({ status: 401, json: {} }));
   let calls = 0;
   await page.route('**/api/image-service/chat', async route => {
     calls++;
@@ -13,7 +13,7 @@ test('guest image retry keeps the attachment and sends it only once on success',
   await page.goto('/chat');
   await page.locator('input[type=file]').setInputFiles({ name: 'car.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jS1sAAAAASUVORK5CYII=', 'base64') });
   await expect(page.locator('.chat-attachment-name')).toHaveText('car.png');
-  await page.locator('.assistant-composer button').click();
+  await page.locator('.assistant-composer > button').click();
   await expect(page.locator('.assistant-failed')).toBeVisible();
   await expect(page.locator('.chat-attachment-name')).toHaveText('car.png');
   await page.locator('.assistant-failed button').click();
