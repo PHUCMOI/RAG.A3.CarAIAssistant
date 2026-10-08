@@ -98,7 +98,9 @@ class TextSearchResponse(CamelModel):
 
 class ChatRequest(CamelModel):
     question: str = Field(min_length=1, max_length=4000)
+    clarification: Optional[str] = Field(None, max_length=1000)
     image_name: Optional[str] = Field(None, alias="imageName")
+    image_match: Optional[dict] = Field(None, alias="imageMatch")
     filters: Optional[RagFilters] = None
     car_ids: Optional[list[str]] = Field(None, alias="carIds", max_length=100)
     top_k: Optional[int] = Field(5, alias="topK")
@@ -117,6 +119,8 @@ class ChatContext(CamelModel):
     display_name: str = Field(..., alias="displayName")
     description: str = Field(..., alias="description")
     presence_source_id: str = Field(..., alias="presenceSourceId")
+    summary: str | None = None
+    specifications: dict[str, str] = Field(default_factory=dict)
 
 
 class ChatResponse(CamelModel):

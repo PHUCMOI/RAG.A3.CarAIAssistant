@@ -16,6 +16,133 @@ public sealed class ContextDatabaseFactAttribute : FactAttribute
 
 public class ContextDatabaseTests
 {
+    sealed class TitleHandler : HttpMessageHandler
+    {
+        public int Calls { get; private set; }
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            Calls++;
+            return Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content=new StringContent("{\"title\":\"Tư vấn Honda CR-V\"}") });
+        }
+    }
+    [ContextDatabaseFact]
+    public async Task AiTitleIsOwnedPersistentAndGeneratedOnce()
+    {
+        await using var db=Open();
+        var user=new UserRecord {Email=$"title-{Guid.NewGuid():N}@test.invalid",DisplayName="Title test"};
+        db.Users.Add(user);await db.SaveChangesAsync();db.ChangeTracker.Clear();
+        var orders=new OrderAssistant(db,new NoCatalogue());
+        var handler=new TitleHandler();
+        using var http=new HttpClient(handler){BaseAddress=new("http://ai.test/")};
+        var service=new ConversationTitles(db,http);
+        try {
+            var session=await orders.Create(user.Id,Guid.NewGuid(),default);
+            session=await orders.Send(session.Id,user.Id,new(Guid.NewGuid(),session.Version,"Đơn hàng của tôi",null),default);
+            var named=await service.Generate(session.Id,user.Id,default);
+            Assert.Equal("Tư vấn Honda CR-V",named.Title);
+            Assert.Equal(session.Version,named.Version);
+            db.ChangeTracker.Clear();
+            Assert.Equal(named.Title,(await orders.Get(session.Id,user.Id,default)).Title);
+            await service.Generate(session.Id,user.Id,default);
+            Assert.Equal(1,handler.Calls);
+            await Assert.ThrowsAsync<KeyNotFoundException>(()=>service.Generate(session.Id,Guid.NewGuid(),default));
+            using var listed=JsonDocument.Parse(JsonSerializer.Serialize(await orders.List(user.Id,default)));
+            Assert.Equal("Tư vấn Honda CR-V",listed.RootElement[0].GetProperty("Title").GetString());
+        } finally {
+            await db.ChatSessions.Where(s=>s.UserId==user.Id).ExecuteDeleteAsync();
+            await db.Users.Where(u=>u.Id==user.Id).ExecuteDeleteAsync();
+        }
+    }
+    sealed class CatalogueHandler : HttpMessageHandler
+    {
+        public List<string> Bodies { get; } = [];
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            Bodies.Add(await request.Content!.ReadAsStringAsync(ct));
+            return new(System.Net.HttpStatusCode.OK) { Content = new StringContent("{\"answer\":\"Honda CR-V\",\"contexts\":[{\"carId\":\"car_34_3\",\"displayName\":\"Honda CR-V\",\"description\":\"SUV catalogue description\"}]}") };
+        }
+    }
+    [ContextDatabaseFact]
+    public async Task CatalogueContextPersistsAndReplayDoesNotCallProviderAgain()
+    {
+        await using var db = Open();
+        var user = new UserRecord { Email=$"catalogue-{Guid.NewGuid():N}@test.invalid", DisplayName="Catalogue test" };
+        db.Users.Add(user); await db.SaveChangesAsync(); db.ChangeTracker.Clear();
+        var orders = new OrderAssistant(db, new NoCatalogue());
+        var handler = new CatalogueHandler();
+        using var http = new HttpClient(handler) { BaseAddress = new("http://catalogue.test/") };
+        var service = new CatalogueAssistant(db, http, new("http://images.test/"));
+        try {
+            var session = await orders.Create(user.Id, Guid.NewGuid(), default);
+            var input = new CatalogueChatInput(Guid.NewGuid(), session.Version, "Honda CR-V");
+            session = await service.Send(session.Id, user.Id, input, default);
+            db.ChangeTracker.Clear();
+            var restored = await orders.Get(session.Id, user.Id, default);
+            Assert.Equal("car_34_3", restored.Messages.Last().Contexts![0].CarId);
+            Assert.True(restored.Messages.Last().Catalog);
+            Assert.Equal("SUV catalogue description", restored.Messages.Last().Contexts![0].Description);
+            await service.Send(session.Id, user.Id, input, default);
+            Assert.Single(handler.Bodies);
+            await Assert.ThrowsAsync<KeyNotFoundException>(() => service.Send(session.Id, Guid.NewGuid(), input, default));
+            await Assert.ThrowsAsync<VersionConflictException>(() => service.Send(session.Id, user.Id, input with { RequestId=Guid.NewGuid() }, default));
+            session = await service.Send(session.Id, user.Id, new(Guid.NewGuid(), restored.Version, "Xe đó giá bao nhiêu?"), default);
+            Assert.Contains("car_34_3", handler.Bodies.Last());
+            session = await service.Send(session.Id, user.Id, new(Guid.NewGuid(), session.Version, "Ảnh xe", "AQID", "image/png"), default);
+            db.ChangeTracker.Clear();
+            restored = await orders.Get(session.Id, user.Id, default);
+            Assert.Equal("data:image/png;base64,AQID", restored.Messages[^2].ImageUrl);
+            Assert.Equal(6, restored.Messages.Count);
+        } finally {
+            await db.ChatSessions.Where(s=>s.UserId==user.Id).ExecuteDeleteAsync();
+            await db.Users.Where(u=>u.Id==user.Id).ExecuteDeleteAsync();
+        }
+    }
+    [ContextDatabaseFact]
+    public async Task AsksForAnOrderThenUsesOwnedConversationContext()
+    {
+        await using var db=Open();
+        var user=new UserRecord {Email=$"automatic-{Guid.NewGuid():N}@test.invalid",DisplayName="Automatic test"};
+        var other=new UserRecord {Email=$"automatic-{Guid.NewGuid():N}@test.invalid",DisplayName="Other"};
+        var first=new Order {CustomerId=user.Id,Code=$"AW-{Guid.NewGuid():N}".ToUpperInvariant(),CarName="Single car",TotalVnd=1000000};
+        var foreign=new Order {CustomerId=other.Id,Code=$"AW-{Guid.NewGuid():N}".ToUpperInvariant(),CarName="Foreign secret"};
+        var second=new Order {CustomerId=user.Id,Code=$"AW-{Guid.NewGuid():N}".ToUpperInvariant(),CarName="Second car"};
+        OrderRecord Record(Order o)=>new(){Id=o.Id,CustomerId=o.CustomerId,Code=o.Code,Version=1,CreatedAt=o.CreatedAt,Payload=JsonSerializer.Serialize(o,OrderStore.Json)};
+        db.Users.AddRange(user,other);db.Orders.AddRange(Record(first),Record(foreign));await db.SaveChangesAsync();db.ChangeTracker.Clear();
+        var service=new OrderAssistant(db,new NoCatalogue(),null,new BedrockOptions {ContextEnabled=true});
+        try
+        {
+            var single=await service.Create(user.Id,Guid.NewGuid(),default);
+            single=await service.Send(single.Id,user.Id,new(Guid.NewGuid(),single.Version,"Đơn hàng của tôi đến đâu rồi?",null),default);
+            Assert.Null(single.Messages.Last().OrderCode);
+            Assert.Contains(first.Code,single.Messages.Last().Content);
+            single=await service.Send(single.Id,user.Id,new(Guid.NewGuid(),single.Version,first.Code,null),default);
+            Assert.Equal(first.Code,single.Messages.Last().OrderCode);
+            single=await service.Send(single.Id,user.Id,new(Guid.NewGuid(),single.Version,"Còn phải trả bao nhiêu?",null),default);
+            Assert.Equal("GetMyOrderPaymentSummary",single.Messages.Last().Tool);
+            var legacy=new OrderAssistant(db,new NoCatalogue(),null,new BedrockOptions {ContextEnabled=false});
+            var legacySession=await legacy.Create(user.Id,Guid.NewGuid(),default);
+            legacySession=await legacy.Send(legacySession.Id,user.Id,new(Guid.NewGuid(),legacySession.Version,"Khi nào nhận xe?",null),default);
+            Assert.Null(legacySession.Messages.Last().OrderCode);
+            legacySession=await legacy.Send(legacySession.Id,user.Id,new(Guid.NewGuid(),legacySession.Version,first.Code,null),default);
+            Assert.Equal(first.Code,legacySession.Messages.Last().OrderCode);
+            db.Orders.Add(Record(second));await db.SaveChangesAsync();db.ChangeTracker.Clear();
+            var multiple=await service.Create(user.Id,Guid.NewGuid(),default);
+            multiple=await service.Send(multiple.Id,user.Id,new(Guid.NewGuid(),multiple.Version,"Thanh toán đơn hàng của tôi thế nào?",null),default);
+            Assert.Null(multiple.SelectedOrderId);
+            Assert.Contains(first.Code,multiple.Messages.Last().Content);
+            Assert.Contains(second.Code,multiple.Messages.Last().Content);
+            Assert.DoesNotContain(foreign.Code,multiple.Messages.Last().Content);
+            multiple=await service.Send(multiple.Id,user.Id,new(Guid.NewGuid(),multiple.Version,second.Code,null),default);
+            Assert.Equal(second.Code,multiple.Messages.Last().OrderCode);
+            Assert.Equal("GetMyOrderPaymentSummary",multiple.Messages.Last().Tool);
+        }
+        finally
+        {
+            await db.ChatSessions.Where(s=>s.UserId==user.Id).ExecuteDeleteAsync();
+            await db.Orders.Where(o=>o.CustomerId==user.Id||o.CustomerId==other.Id).ExecuteDeleteAsync();
+            await db.Users.Where(u=>u.Id==user.Id||u.Id==other.Id).ExecuteDeleteAsync();
+        }
+    }
     sealed class NoCatalogue : ICommonCatalogue
     {
         public Task<CarSnapshot> GetCar(string id,CancellationToken ct)=>throw new NotSupportedException();

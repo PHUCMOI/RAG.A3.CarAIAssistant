@@ -26,6 +26,10 @@ builder.Services.AddScoped<OrderEvidenceStore>();
 builder.Services.AddScoped<SupportStore>();
 builder.Services.AddScoped<AppointmentStore>();
 builder.Services.AddScoped<IOrderAssistant, OrderAssistant>();
+builder.Services.AddHttpClient<NaturalAnswers>(c => { c.BaseAddress = new(builder.Configuration["PythonApiUrl"] ?? "http://localhost:5080/"); c.Timeout = TimeSpan.FromSeconds(90); });
+builder.Services.AddHttpClient<ConversationTitles>(c => { c.BaseAddress = new(builder.Configuration["PythonApiUrl"] ?? "http://localhost:5080/"); c.Timeout = TimeSpan.FromSeconds(10); });
+builder.Services.AddSingleton(new CatalogueChatOptions(builder.Configuration["ImageApiUrl"] ?? "http://localhost:8000/"));
+builder.Services.AddHttpClient<CatalogueAssistant>(c => { c.BaseAddress = new(builder.Configuration["PythonApiUrl"] ?? "http://localhost:5080/"); c.Timeout = TimeSpan.FromSeconds(90); });
 var bedrockOptions = new BedrockOptions();
 builder.Configuration.GetSection("Bedrock").Bind(bedrockOptions);
 builder.Services.AddSingleton(bedrockOptions);
@@ -71,7 +75,7 @@ app.Use(async (ctx, next) =>
             KeyNotFoundException => (404, "Không tìm thấy bản ghi."),
             DbUpdateConcurrencyException => (409, "Dữ liệu đã thay đổi."),
             DbUpdateException => (409, "Dữ liệu bị trùng hoặc xung đột. Vui lòng tải lại."),
-            HttpRequestException => (503, "API common Python chưa sẵn sàng."),
+            HttpRequestException => (503, "Dịch vụ tư vấn chưa tạo được câu trả lời. Vui lòng thử lại."),
             TaskCanceledException => (503, "API common hết thời gian chờ."),
             _ => (500, "Không thể xử lý yêu cầu.")
         };
@@ -115,6 +119,8 @@ mine.MapGet("/support-tickets",(int? page,int? pageSize,HttpContext ctx,SupportS
 mine.MapGet("/support-tickets/{id:guid}",(Guid id,int? page,HttpContext ctx,SupportStore store,CancellationToken ct)=>store.Get(id,Guid.Parse(Actor(ctx)),page??1,20,ct));
 mine.MapPost("/support-tickets/{id:guid}/replies",(Guid id,TicketReplyInput input,HttpContext ctx,SupportStore store,CancellationToken ct)=>store.Reply(id,Guid.Parse(Actor(ctx)),false,input,Key(ctx),ct));
 var assistant=api.MapGroup("/assistant").RequireAuthorization(p=>p.RequireRole("Customer"));
+assistant.MapPost("/sessions/{id:guid}/title",(Guid id,HttpContext ctx,ConversationTitles service,CancellationToken ct)=>service.Generate(id,Guid.Parse(Actor(ctx)),ct));
+assistant.MapPost("/sessions/{id:guid}/catalogue-messages",(Guid id,CatalogueChatInput input,HttpContext ctx,CatalogueAssistant service,CancellationToken ct)=>service.Send(id,Guid.Parse(Actor(ctx)),input,ct));
 assistant.MapGet("/sessions",(HttpContext ctx,IOrderAssistant service,CancellationToken ct)=>service.List(Guid.Parse(Actor(ctx)),ct));
 assistant.MapPost("/sessions",(CreateChatSessionRequest input,HttpContext ctx,IOrderAssistant service,CancellationToken ct)=>service.Create(Guid.Parse(Actor(ctx)),input.Id,ct));
 assistant.MapGet("/sessions/{id:guid}",(Guid id,HttpContext ctx,IOrderAssistant service,CancellationToken ct)=>service.Get(id,Guid.Parse(Actor(ctx)),ct));

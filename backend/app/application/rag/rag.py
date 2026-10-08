@@ -63,10 +63,12 @@ class RagService:
 
     async def answer(self, question, explicit_filters=None, car_ids=None, top_k=5, image_name=None):
         catalogue = await self.repository.catalogue()
-        analysis = await analyze(question, catalogue, self.generator if hasattr(self.generator, "classify") else None)
+        analysis = await analyze(question, catalogue, self.generator if hasattr(self.generator, "classify") else None, car_ids=car_ids)
         if image_name and not analysis.car_ids and car_ids is None:
             analysis.ambiguities.append("Giao diện đã nhận tên ảnh; tên file không phải dữ liệu nhận diện. Vui lòng nêu mẫu xe hoặc gửi ảnh qua module ảnh.")
         retrieval = await self.retriever.retrieve(analysis, explicit_filters, top_k, car_ids)
+        if car_ids is not None and set(car_ids) - {c.car_id for c in catalogue}:
+            return RagResult("Mẫu xe được chọn chưa có trong catalogue; chưa thể tra cứu dữ liệu.", retrieval, status="no_data")
         if analysis.ambiguities:
             return RagResult(" ".join(dict.fromkeys(analysis.ambiguities)), retrieval, status="needs_clarification")
         package = build_context(retrieval)

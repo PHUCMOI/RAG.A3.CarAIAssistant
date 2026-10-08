@@ -1,0 +1,67 @@
+[
+  {
+    "question": "cai do sao roi",
+    "answer": "Bạn đang hỏi về cái gì vậy? Để tôi giúp bạn tốt hơn, bạn có thể:\n\n• **Nêu rõ xe bạn quan tâm** – tên, hãng, mẫu hoặc mã xe\n• **Cho biết thông tin cần tìm** – giá, thông số kỹ thuật, bảo hành, trạng thái đơn hàng, v.v.\n• **Nêu rõ vấn đề** – nếu liên quan đến đơn hàng hoặc tình trạng nào đó\n\nTôi sẵn sàng trợ giúp khi bạn cung cấp thêm chi tiết!",
+    "status": "pass"
+  },
+  {
+    "question": "tu van suv 5 cho duoi 1 ty",
+    "answer": "Dưới đây là các SUV 5 chỗ có giá tham khảo dưới 1 tỷ VND:\n\n| Mẫu xe | Giá tham khảo | Động cơ | Công suất | Nhiên liệu |\n|--------|---------------|--------|-----------|----------|\n| Mazda CX-3 | 519.000.000 VND | 2.0L | 118 HP | Xăng |\n| Ford EcoSport | 603.000.000 VND | 1.0L | 123 HP | Xăng |\n| Honda HR-V | 669.000.000 VND | 1.6L | 118 HP | Xăng |\n| Hyundai Tucson | 769.000.000 VND | 1.6L | 114 HP | Dầu |\n| Kia Sportage | 769.000.000 VND | 1.7L | 114 HP | Dầu |\n\n**Lựa chọn nổi bật:**\n\n**Mazda CX-3** là lựa chọn tiết kiệm nhất với giá 519.000.000 VND, sở hữu động cơ 2.0L công suất 118 HP, kích thước gọn gàng (dài 4275mm, rộng 1765mm).\n\n**Honda HR-V** ở mức giá 669.000.000 VND, có chiều dài 4294mm và chiều rộng 2019mm, phù hợp nếu bạn ưu tiên không gian nội thất.\n\n**Hyundai Tucson** và **Kia Sportage** cùng giá 769.000.000 VND, sử dụng động cơ dầu với kích thước lớn hơn (Tucson dài 4475mm, Sportage dài 4440mm), phù hợp cho những ai cần xe to và tiết kiệm nhiên liệu.\n\n**Ford EcoSport** có giá tham khảo 603.000.000 VND nhưng từng phân phối chính hãng; chưa xác nhận đang bán.\n\n*Lưu ý: Đây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực. Thông số kỹ thuật từ catalogue thị trường Anh, chưa xác nhận phiên bản tại Việt Nam.*",
+    "status": "pass"
+  },
+  {
+    "question": "so sanh tuscon va xe hrv",
+    "answer": "## So sánh Honda HR-V và Hyundai Tucson\n\nCả hai đều là SUV 5 chỗ với động cơ 1.6L, nhưng có những khác biệt đáng chú ý:\n\n| Tiêu chí | Honda HR-V | Hyundai Tucson |\n|---------|-----------|----------------|\n| **Giá tham khảo** | 669.000.000 VND | 769.000.000 VND |\n| **Nhiên liệu** | Xăng | Dầu |\n| **Công suất** | 118 hp | 114 hp |\n| **Chiều dài** | 4294 mm | 4475 mm |\n| **Chiều rộng** | 2019 mm | 1850 mm |\n| **Chiều cao** | 1605 mm | 1645 mm |\n| **Chiều dài cơ sở** | 2610 mm | 2670 mm |\n| **Bảo hành** | 36 tháng / 100.000 km | 60 tháng / 100.000 km |\n\n**Điểm nổi bật:**\n\n- **HR-V** rộng hơn, công suất cao hơn, giá rẻ hơn 100.000.000 VND\n- **Tucson** dài hơn, cao hơn, có bảo hành lâu gấp đôi (60 tháng)\n\n*Giá tham khảo từ dữ liệu ngày 2026-10-01, không phải báo giá đại lý theo thời gian thực. Thông số catalogue chủ yếu từ thị trường Anh; chưa xác nhận phiên bản kỹ thuật tại Việt Nam. Bảo hành cần xác nhận theo VIN và ngày bán cụ thể.*",
+    "status": "pass"
+  },
+  {
+    "question": "don hag cua toi con phai thanh taon bn",
+    "answer": "Bạn chưa đăng nhập vào tài khoản. Để tra cứu thông tin đơn hàng và tình trạng thanh toán, vui lòng đăng nhập trước. Sau khi đăng nhập, bạn sẽ có thể xem chi tiết các đơn hàng của mình.",
+    "status": "pass"
+  },
+  {
+    "question": "cai do sao roi",
+    "answer": "Bạn đang hỏi về cái gì? Để tôi giúp bạn tốt hơn, vui lòng cho biết:\n\n• **Xe nào** – mẫu xe, biển số hoặc mã đơn hàng\n• **Vấn đề cụ thể** – tình trạng đơn, thông số kỹ thuật, giá cả, hay điều gì khác\n• **Đơn hàng** – nếu bạn đang theo dõi đơn mua/bán\n\nChi tiết càng rõ, tôi càng hỗ trợ nhanh chóng.",
+    "status": "pass"
+  },
+  {
+    "question": "day la xe gi va bao hnah ntn",
+    "answer": "**Ford Edge** là một chiếc SUV 5 chỗ của hãng Ford, hiện có mặt tại Việt Nam qua kênh nhập khẩu.\n\n**Đặc điểm chính:**\n\n• **Động cơ & Hiệu suất:** Động cơ 2.0L dầu, công suất 207 hp, hộp số tự động\n\n• **Kích thước:** Dài 4808 mm, rộng 2184 mm, cao 1692 mm, chiều dài cơ sở 2849 mm\n\n• **Giá tham khảo:** 1.560.000.000 VND (tính đến 2022-01-01)\n\n**Lưu ý:** Thông số kỹ thuật chủ yếu từ dữ liệu thị trường Anh và chưa được xác nhận phiên bản tại Việt Nam. Xe gần giống nhất theo tìm kiếm ảnh với độ tương đồng 95,3%.",
+    "status": "pass"
+  },
+  {
+    "question": "xe do gia bn",
+    "answer": "Ford Edge có giá tham khảo từ **1.560.000.000 VND** (tính đến ngày 01/01/2022).\n\nĐây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực. Ford Edge có mặt qua nhập khẩu tại Việt Nam; không khẳng định phân phối chính hãng.",
+    "status": "pass"
+  },
+  {
+    "question": "don hag cua toi con phai thanh taon bn?",
+    "answer": "Bạn có nhiều đơn hàng. Để tôi có thể kiểm tra số tiền còn phải thanh toán, vui lòng cho biết **mã đơn** của đơn hàng bạn muốn hỏi.\n\nDưới đây là danh sách các đơn gần nhất:\n\n• **AW-467D12CAE02C** · Honda CR-V · Chờ bàn giao\n• **AW-227AC35AD91A** · Honda CR-V · Đang chuẩn bị xe\n• **AW-DEMO-0116** · Mazda CX-5 · Đã hủy\n• **AW-DEMO-0110** · Mazda CX-5 · Chờ bàn giao\n• **AW-DEMO-0104** · Mazda CX-5 · Chờ bàn giao\n\nVà nhiều đơn khác. Hãy nêu mã đơn để tôi tra cứu thông tin thanh toán cho bạn.",
+    "status": "pass"
+  },
+  {
+    "question": "don AW-467D12CAE02C con phai thanh taon bn?",
+    "answer": "Đơn AW-467D12CAE02C còn phải thanh toán **1.000.000 VND**.\n\nThông tin chi tiết:\n- **Giá chốt:** 1.000.000 VND\n- **Đã thu:** 0 VND\n- **Trạng thái đơn:** Chờ bàn giao\n\nHiện chưa có giao dịch thanh toán nào được xác nhận trong hệ thống.",
+    "status": "pass"
+  },
+  {
+    "question": "khi nao nhan xee cua don do?",
+    "answer": "Đơn hàng **AW-467D12CAE02C** của bạn có lịch dự kiến nhận xe vào **16/10/2026** tại **Honda Automobile Mỹ Đình**.\n\n⚠️ **Lưu ý:** Lịch này chưa được đại lý xác nhận chính thức. Bạn nên liên hệ trực tiếp với đại lý để xác nhận ngày và giờ nhận xe cụ thể.",
+    "status": "pass"
+  },
+  {
+    "question": "don do trang thai sao, con no bn va giay to con thieu gi?",
+    "answer": "**Trạng thái đơn hàng: Chờ bàn giao**\n\nXe của bạn đã ở bước chờ bàn giao. Việc nhận xe còn phụ thuộc vào thanh toán và lịch được xác nhận.\n\n**Lịch dự kiến bàn giao:**\n- Ngày: 16/10/2026\n- Địa điểm: Honda Automobile My Dinh\n- Lưu ý: Lịch này chưa được đại lý xác nhận\n\n**Số tiền còn phải trả: 1.000.000 VND**\n\nHiện tại chưa có giao dịch thanh toán nào được ghi nhận trong hệ thống. Bạn cần hoàn tất thanh toán theo hướng dẫn của đại lý trước khi nhận xe.\n\n**Giấy tờ còn thiếu:**\n\nĐại lý chưa cấu hình danh sách giấy tờ cần thiết cho đơn này, nên hiện chưa có dữ liệu để xác định giấy tờ nào còn thiếu. Vui lòng liên hệ trực tiếp với Honda Automobile My Dinh để được hướng dẫn chi tiết về hồ sơ cần chuẩn bị.",
+    "status": "pass"
+  },
+  {
+    "question": "so sanh tucson va hrv",
+    "answer": "## So sánh Honda HR-V và Hyundai Tucson\n\nCả hai đều là SUV 5 chỗ, nhưng có những khác biệt đáng chú ý:\n\n| Tiêu chí | Honda HR-V | Hyundai Tucson |\n|---------|-----------|----------------|\n| **Giá tham khảo** | 669.000.000 VND | 769.000.000 VND |\n| **Nhiên liệu** | Xăng | Dầu |\n| **Động cơ** | 1.6L | 1.6L |\n| **Công suất** | 118 hp | 114 hp |\n| **Chiều dài** | 4294 mm | 4475 mm |\n| **Chiều rộng** | 2019 mm | 1850 mm |\n| **Chiều cao** | 1605 mm | 1645 mm |\n| **Chiều dài cơ sở** | 2610 mm | 2670 mm |\n| **Bảo hành** | 36 tháng / 100.000 km | 60 tháng / 100.000 km |\n\n**Điểm nổi bật:**\n\n• **HR-V** có công suất cao hơn (118 hp), chiều rộng lớn hơn (2019 mm), và giá rẻ hơn 100.000.000 VND\n\n• **Tucson** có chiều dài và chiều dài cơ sở lớn hơn, bảo hành dài gấp đôi (60 tháng), sử dụng dầu thay vì xăng\n\n**Lưu ý:** Giá tham khảo từ ngày 2026-10-01, không phải báo giá đại lý theo thời gian thực. Thông số kỹ thuật chủ yếu từ dữ liệu thị trường Anh, chưa xác nhận phiên bản tại Việt Nam. Bảo hành cần xác nhận theo VIN và ngày bán cụ thể.",
+    "status": "pass"
+  },
+  {
+    "question": "don AW-NOT-MY-ORDER thanh toan bn",
+    "answer": "Không tìm thấy đơn **AW-NOT-MY-ORDER** trong tài khoản của bạn. Vui lòng kiểm tra lại mã đơn hoặc chọn đơn của mình để xem thông tin thanh toán.",
+    "status": "pass"
+  }
+]

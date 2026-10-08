@@ -3,6 +3,8 @@ namespace AutoWise.OwnerFeatures.Application;
 public sealed record ConversationContext
 {
     public int SchemaVersion { get; init; } = 1;
+    public string? Title { get; init; }
+    public bool TitleGenerated { get; init; }
     public List<AssistantDraft> Drafts { get; init; } = [];
     public int LookupFailures { get; init; }
     public Guid? CurrentOrderId { get; init; }

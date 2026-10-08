@@ -18,14 +18,14 @@ export function ChatLayout({ sidebar, children }: { sidebar: ReactNode; children
       <div className="assistant-sidebar" onClick={e => { if ((e.target as HTMLElement).closest('[data-close-history]')) setOpen(false) }}>{sidebar}</div>
     </dialog>
     <section className="assistant-workspace" aria-label="Trợ lý AutoWise">
-      <header className="assistant-header"><button ref={trigger} className="assistant-history-toggle" onClick={() => setOpen(true)} aria-label="Lịch sử" aria-haspopup="dialog" aria-expanded={open}>☰ <span>Lịch sử</span></button><div><strong>AutoWise Assistant</strong><small>Tư vấn xe · Hỗ trợ đơn hàng</small></div><Link to="/search-image" className="assistant-image-link"><ImageIcon /><span>Tìm xe bằng ảnh</span><span aria-hidden="true">↗</span></Link></header>
+      <header className="assistant-header"><button ref={trigger} className="assistant-history-toggle" onClick={() => setOpen(true)} aria-label="Lịch sử" aria-haspopup="dialog" aria-expanded={open}>☰ <span>Lịch sử</span></button><div><strong>AutoWise Assistant</strong><small>Tư vấn xe · Hỗ trợ đơn hàng</small></div><button type="button" onClick={() => document.querySelector<HTMLButtonElement>('.chat-attach-btn')?.click()} className="assistant-image-link"><ImageIcon /><span>Tìm xe bằng ảnh</span><span aria-hidden="true">＋</span></button></header>
       {children}
     </section>
   </div>
 }
 
 export function ChatSidebar({ busy, onNew, children, customer = false }: { busy: boolean; onNew: () => void; children?: ReactNode; customer?: boolean }) {
-  return <><button className="assistant-new" disabled={busy} onClick={onNew} data-close-history>+ Hội thoại mới</button><span className="assistant-sidebar-label">HỘI THOẠI</span><div className="assistant-history-list">{Children.toArray(children).length ? children : <p>Chưa có hội thoại.<br />Bắt đầu bằng một câu hỏi bên cạnh.</p>}</div><div className="assistant-sidebar-footer"><span className="assistant-avatar">A</span><div><strong>Trợ lý của bạn</strong><small>Tư vấn xe lưu trong tab này.</small><Link to={customer ? '/account/orders' : '/login?returnTo=%2Fchat'}>{customer ? 'Xem đơn của tôi →' : 'Đăng nhập tài khoản →'}</Link></div></div></>
+  return <><button className="assistant-new" disabled={busy} onClick={onNew} data-close-history>+ Hội thoại mới</button><span className="assistant-sidebar-label">HỘI THOẠI</span><div className="assistant-history-list">{Children.toArray(children).length ? children : <p>Chưa có hội thoại.<br />Bắt đầu bằng một câu hỏi bên cạnh.</p>}</div><div className="assistant-sidebar-footer"><span className="assistant-avatar">A</span><div><strong>Trợ lý của bạn</strong><small>{customer ? 'Hội thoại lưu trong tài khoản.' : 'Tư vấn xe lưu trong tab này.'}</small><Link to={customer ? '/account/orders' : '/login?returnTo=%2Fchat'}>{customer ? 'Xem đơn của tôi →' : 'Đăng nhập tài khoản →'}</Link></div></div></>
 }
 
 export function ChatWelcome({ onPrompt, busy, customer = false }: { onPrompt: (value: string, topic?: 'cars' | 'orders') => void; busy: boolean; customer?: boolean }) {
@@ -35,7 +35,7 @@ export function ChatWelcome({ onPrompt, busy, customer = false }: { onPrompt: (v
     ['⌖', 'Tìm đại lý gần bạn', 'Đại lý Toyota tại Hà Nội'],
     ['◷', customer ? 'Theo dõi đơn hàng' : 'Tìm hiểu bảo hành', customer ? 'Tiến độ đơn hàng của tôi thế nào?' : 'Xe Toyota được bảo hành như thế nào?'],
   ]
-  return <div className="assistant-welcome"><span className="assistant-welcome-mark">A<span>✦</span></span><h1>Trợ lý AI của bạn.</h1><p>Bạn đang tìm chiếc xe nào?<br />Cùng AutoWise tìm lựa chọn phù hợp và giải đáp mọi thắc mắc.</p><div className="assistant-prompts">{prompts.map(([icon, title, question]) => <button key={title} disabled={busy} onClick={() => onPrompt(question, customer && title === 'Theo dõi đơn hàng' ? 'orders' : 'cars')}><span>{icon}</span><strong>{title}</strong><small>{question}</small></button>)}</div><Link className="assistant-welcome-image" to="/search-image"><ImageIcon /><span>Chưa biết tên xe? Tìm bằng ảnh</span><span aria-hidden="true">↗</span></Link></div>
+  return <div className="assistant-welcome"><span className="assistant-welcome-mark">A<span>✦</span></span><h1>Trợ lý AI của bạn.</h1><p>Bạn đang tìm chiếc xe nào?<br />Cùng AutoWise tìm lựa chọn phù hợp và giải đáp mọi thắc mắc.</p><div className="assistant-prompts">{prompts.map(([icon, title, question]) => <button key={title} disabled={busy} onClick={() => onPrompt(question, customer && title === 'Theo dõi đơn hàng' ? 'orders' : 'cars')}><span>{icon}</span><strong>{title}</strong><small>{question}</small></button>)}</div><button type="button" className="assistant-welcome-image" onClick={() => document.querySelector<HTMLButtonElement>('.chat-attach-btn')?.click()}><ImageIcon /><span>Chưa biết tên xe? Tìm bằng ảnh</span><span aria-hidden="true">＋</span></button></div>
 }
 
 export function ThinkingMessage({ question }: { question: string }) {

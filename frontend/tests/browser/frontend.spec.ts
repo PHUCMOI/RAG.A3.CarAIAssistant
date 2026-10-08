@@ -67,6 +67,7 @@ test('account overview uses server totals, retries independently and links to or
 test('admin header groups working routes and restores keyboard focus', async ({ page }, testInfo) => {
   await mockApi(page, 'Admin');
   await page.goto('/admin/orders');
+  if (page.viewportSize()!.width < 901) await page.getByRole('button', { name: 'Mở menu', exact: true }).click();
   const header = page.locator('.app-header');
   await expect(header.getByRole('link', { name: 'Đơn hàng', exact: true })).toBeVisible();
   await expect(header.getByRole('link', { name: 'Dữ liệu', exact: true })).toHaveCount(0);
@@ -79,6 +80,7 @@ test('admin header groups working routes and restores keyboard focus', async ({ 
   await expect(trigger).toHaveAttribute('aria-expanded', 'false');
   await trigger.click(); await header.getByRole('link', { name: 'Đề nghị thay đổi' }).click();
   await expect(page).toHaveURL(/\/admin\/change-requests$/);
+  if (page.viewportSize()!.width < 901) await page.getByRole('button', { name: 'Mở menu', exact: true }).click();
   await expect(trigger).toHaveClass(/active/);
   await expect(trigger).toHaveAttribute('aria-expanded', 'false');
   await header.getByRole('button', { name: 'Chăm sóc' }).click();
@@ -93,7 +95,7 @@ test('customer header provides account shortcuts and closes on outside click', a
   const trigger = header.getByRole('button', { name: 'Tài khoản', exact: true });
   await trigger.click();
   await expect(header.getByRole('link', { name: 'Đơn hàng của tôi' })).toBeVisible();
-  await page.getByRole('heading', { level: 1 }).click();
+  await page.mouse.click(5, 700);
   await expect(trigger).toHaveAttribute('aria-expanded', 'false');
   await trigger.click(); await fits(page);
   await page.screenshot({ path: testInfo.outputPath('customer-header.png') });
@@ -140,6 +142,7 @@ test('login visibility, failed submission, retry and keyboard focus', async ({ p
 const cars = Array.from({ length: 25 }, (_, i) => car(String(i + 1), { displayName: `Toyota Mẫu ${String(i + 1).padStart(2, '0')}`, priceVndFrom: i === 24 ? null : 500000000 + i * 10000000, fuelType: 'Petrol', transmission: 'Automatic', marketStatusVn: 'official_current' }))
 async function mockApi(page: Page, role: 'Guest' | 'Customer' | 'Admin' = 'Guest', authError = false) {
   let expired = false
+  let chat = { id: 'persisted-session', version: 0, selectedOrderId: null, messages: [] as object[] }
   await page.route('**/api/**', async route => {
     const url = new URL(route.request().url())
     const path = url.pathname
@@ -150,13 +153,20 @@ async function mockApi(page: Page, role: 'Guest' | 'Customer' | 'Admin' = 'Guest
     if (path.endsWith('/auth/login')) { role = 'Customer'; expired = false; return reply({ id: 'customer-a', role, displayName: 'Khách thử nghiệm' }) }
     if (path.endsWith('/auth/logout')) { expired = true; return route.fulfill({ status: 204 }) }
     if (path.endsWith('/my/profile')) return reply({ id: 'customer-a', displayName: 'Khách thử nghiệm', email: 'test@example.com', createdAt: '2026-10-01T00:00:00Z', version: 0 })
-    if (path.endsWith('/assistant/sessions')) return reply([])
+    if (path.endsWith('/assistant/sessions')) return reply(route.request().method() === 'POST' ? chat : [])
+    if (path.endsWith('/catalogue-messages')) {
+      chat = { ...chat, version: chat.version + 1, messages: [...chat.messages, { role: 'user', content: route.request().postDataJSON().content, catalog: true }, { role: 'assistant', content: 'Mẫu xe phù hợp với nhu cầu.', catalog: true, contexts: [{ carId: '1', displayName: cars[0].displayName, presenceSourceId: 'source-presence' }] }] }
+      return reply(chat)
+    }
+    if (path.includes('/assistant/sessions/')) return reply(chat)
     if (path.endsWith('/orders')) return reply({ items: [], pageNumber: 1, pageSize: 20, totalCount: 0 })
     if (path === '/api/cars') return reply({ count: cars.length, items: cars })
     if (path === '/api/cars/compare') return reply({ items: cars.filter(c => url.searchParams.get('ids')?.split(',').includes(c.carId)), missingIds: [] })
     if (path.startsWith('/api/cars/')) return reply(cars.find(c => c.carId === path.split('/').at(-1)) || {}, cars.some(c => c.carId === path.split('/').at(-1)) ? 200 : 404)
     if (path === '/api/warranties') return reply({ items: [{ durationMonths: 36, distanceLimitKm: 100000, conditions: 'Xác nhận theo VIN.', sourceId: 'warranty-source' }] })
     if (path === '/api/dealers') return reply({ items: [{ dealerId: 1, name: 'Đại lý Toyota', supportedBrands: ['Toyota'], address: 'Hà Nội', city: 'Hà Nội', checkedAt: '2026-10-01' }] })
+    if (path === '/api/chat/understand') { const body = route.request().postDataJSON(); return reply({ question: body.question, route: /đơn|thanh toán|AW-/i.test(body.question) ? 'orders' : 'catalogue', needsClarification: false, clarification: null }) }
+    if (path === '/api/chat/compose') return reply({ answer: 'Bạn cần đăng nhập để tra cứu và xử lý đơn hàng của mình.', generationMode: 'bedrock-natural' })
     if (path === '/api/chat') return reply({ answer: 'Mẫu xe phù hợp với nhu cầu.', contexts: [{ carId: '1', displayName: cars[0].displayName, presenceSourceId: 'source-presence' }] })
     return reply({ items: [], count: 0 })
   })
@@ -194,7 +204,7 @@ test('catalogue, mobile menu, filters, comparison and detail', async ({ page }, 
   await fits(page)
   await page.screenshot({ path: info.outputPath('catalogue.png'), fullPage: true })
   await page.getByRole('link', { name: 'So sánh (3)' }).click()
-  await expect(page.getByRole('table')).toBeVisible(); await fits(page)
+  await expect(page.getByRole('table').first()).toBeVisible(); await fits(page)
   await page.screenshot({ path: info.outputPath('compare.png'), fullPage: true })
   await page.goto('/cars/1')
   await expect(page.getByRole('heading', { name: cars[0].displayName, exact: true })).toBeVisible()
@@ -263,7 +273,7 @@ test('comparison picker, differences, missing price and saved selection', async 
   test.skip(page.viewportSize()!.width < 900, 'Desktop improvement scope')
   await mockApi(page)
   await page.goto('/compare?ids=1,2')
-  await expect(page.getByRole('table')).toBeVisible()
+  await expect(page.getByRole('table').first()).toBeVisible()
   const replace = page.getByRole('button', { name: 'Thay Toyota Mẫu 01', exact: true })
   await replace.click()
   const dialog = page.getByRole('dialog', { name: 'Bộ chọn xe' })
@@ -310,15 +320,14 @@ test('desktop chat formats answers and preserves drafting during a request', asy
   await mockApi(page, 'Customer')
   let release!: () => void
   const waiting = new Promise<void>(resolve => { release = resolve })
-  await page.route('**/api/chat', async route => {
+  await page.route('**/catalogue-messages', async route => {
     await waiting
-    await route.fulfill({ json: { answer: '## Xe phù hợp\n- **Toyota**: dễ sử dụng\n- Mazda: nhiều trang bị\n\n| Xe | Giá tham khảo |\n| --- | --- |\n| Toyota | 800 triệu |', contexts: [{ carId: '1', displayName: 'Toyota', presenceSourceId: 's1' }] } })
+    await route.fulfill({ json: { id: 'persisted-session', version: 1, selectedOrderId: null, messages: [{ role: 'assistant', catalog: true, content: '## Xe phù hợp\n- **Toyota**: dễ sử dụng\n- Mazda: nhiều trang bị\n\n| Xe | Giá tham khảo |\n| --- | --- |\n| Toyota | 800 triệu |', contexts: [{ carId: '1', displayName: 'Toyota', presenceSourceId: 's1' }] }] } })
   })
   await page.goto('/chat')
-  const topic = page.getByRole('combobox', { name: 'Chủ đề câu hỏi' })
-  await topic.selectOption('orders')
+  await expect(page.getByRole('combobox', { name: 'Chủ đề câu hỏi' })).toHaveCount(0)
+  await expect(page.getByRole('combobox', { name: 'Đơn cần tra cứu' })).toHaveCount(0)
   await page.getByRole('button', { name: /Tìm chiếc xe phù hợp/ }).click()
-  await expect(topic).toHaveValue('cars')
   await page.getByRole('button', { name: 'Gửi câu hỏi', exact: true }).click()
   await expect(page.getByRole('status').filter({ hasText: 'Đang tìm câu trả lời' })).toBeVisible()
   const input = page.getByRole('textbox', { name: 'Câu hỏi' })
@@ -333,6 +342,61 @@ test('desktop chat formats answers and preserves drafting during a request', asy
   await expect(page.getByRole('link', { name: 'Xem nguồn tham khảo' })).toHaveAttribute('href', '/sources/s1')
   await fits(page)
   await page.screenshot({ path: info.outputPath('chat-enhancements.png'), fullPage: true })
+})
+test('car answers display grouped facts and caveats without mobile overflow', async ({ page }, info) => {
+  await mockApi(page)
+  await page.route('**/api/chat', route => route.fulfill({ json: {
+    answer: 'Honda CR-V — Hộp số: Tự động.\n\nHonda CR-V có 5 chỗ.\n\nHonda CR-V có giá tham khảo từ 998.000.000 VND.\n\nToyota RAV4 — Hộp số: Tự động.\n\nToyota RAV4 có 5 chỗ.\n\nĐây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.', contexts: [],
+  } }))
+  await page.goto('/chat')
+  await page.getByRole('textbox', { name: 'Câu hỏi' }).fill('So sánh Honda CR-V với Toyota RAV4')
+  await page.getByRole('button', { name: 'Gửi →' }).click()
+  await expect(page.getByRole('columnheader', { name: 'Honda CR-V', exact: true }).first()).toBeVisible()
+  await expect(page.locator('.assistant-answer-facts')).toHaveCount(0)
+  await expect(page.locator('.assistant-comparison')).toHaveCount(1)
+  const headers = page.locator('.assistant-comparison thead th')
+  const left = await headers.nth(1).boundingBox()
+  const right = await headers.nth(2).boundingBox()
+  expect(left!.y).toBe(right!.y)
+  expect(right!.x).toBeGreaterThanOrEqual(left!.x + left!.width - 1)
+  await expect(page.locator('.assistant-comparison tbody tr').filter({ hasText: 'Hộp số' }).locator('td')).toHaveText(['Tự động', 'Tự động'])
+  await expect(page.getByLabel('Lưu ý')).toContainText('không phải báo giá')
+  await expect(page.getByRole('table').first()).toBeVisible()
+  await fits(page)
+  await page.screenshot({ path: info.outputPath('answer-formatted.png'), fullPage: true })
+})
+test('Bedrock prose and horizontal comparisons render without duplicate templates', async ({ page }, info) => {
+  await mockApi(page)
+  await page.route('**/api/chat', route => route.fulfill({ json: {
+    answer: '**Ford Edge** là mẫu SUV 5 chỗ.\n\n### So sánh xe\n| Tiêu chí | Ford Edge | Honda CR-V |\n| --- | --- | --- |\n| Số chỗ | 5 | 7 |\n\n• **Hộp số:** Tự động\n• **Nhiên liệu:** Diesel\n\n*Giá chỉ mang tính tham khảo.*',
+    generationMode: 'bedrock-natural', contexts: [{ carId: 'car_29_5', displayName: 'Ford Edge', description: 'Original English description' }],
+  } }))
+  await page.goto('/chat')
+  await page.getByRole('textbox', { name: 'Câu hỏi' }).fill('So sánh Ford Edge với Honda CR-V')
+  await page.getByRole('button', { name: 'Gửi →' }).click()
+  await expect(page.getByRole('columnheader', { name: 'Honda CR-V' })).toBeVisible()
+  await expect(page.locator('.assistant-car-result')).toHaveCount(0)
+  await expect(page.getByText('Original English description')).toHaveCount(0)
+  await expect(page.locator('.assistant-answer-natural li')).toHaveCount(2)
+  await fits(page)
+  await page.screenshot({ path: info.outputPath('bedrock-natural.png'), fullPage: true })
+})
+
+test('single car answer uses narrative sections without repeated price', async ({ page }, info) => {
+  await mockApi(page)
+  await page.route('**/api/chat', route => route.fulfill({ json: {
+    answer: 'Xe gần giống nhất trong ảnh: **Ford Edge** (độ tương đồng 95.3%).\n\nFord Edge có giá tham khảo từ 1.560.000.000 VND.\n\nGiá tham khảo của Ford Edge.\nGiá từ: 1560000000 VND.\nNgày giá tham khảo: 2022-01-01.\nĐây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.\nFord Edge: Có mặt qua nhập khẩu; không khẳng định phân phối chính hãng.',
+    contexts: [{ carId: 'car_29_5', displayName: 'Ford Edge' }],
+  } }))
+  await page.goto('/chat')
+  await page.getByRole('textbox', { name: 'Câu hỏi' }).fill('Xe trong ảnh giá bao nhiêu?')
+  await page.getByRole('button', { name: 'Gửi →' }).click()
+  await expect(page.getByText('Ford Edge', { exact: true })).toBeVisible()
+  await expect(page.getByText('1.560.000.000 ₫', { exact: true })).toHaveCount(1)
+  await expect(page.getByText('01/01/2022')).toBeVisible()
+  await expect(page.locator('.assistant-car-result')).toHaveCount(1)
+  await fits(page)
+  await page.screenshot({ path: info.outputPath('single-car-template.png'), fullPage: true })
 })
 test('public remains usable during account outage and private route offers retry', async ({ page }) => {
   await mockApi(page, 'Guest', true); await page.goto('/cars')

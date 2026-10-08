@@ -67,6 +67,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       OrdersDatabase: Host=postgres;Database=car_rag;Username=car_rag;Password=car_rag_dev
       PythonApiUrl: http://api:8080/
+      ImageApiUrl: http://image-service:8000/
       MigrateOnStartup: "true"
       SeedDemo: "true"
     ports:
@@ -97,6 +98,7 @@ services:
       - "8000:8000"
     environment:
       PORT: 8000
+      IMAGE_SERVICE_RAG_API_URL: http://api:8080
       INDEXES_DIR: /app/image_service/indexes
       DATA_DIR: /app/image_service/data
       DATASET_DIR: /app/dataset
