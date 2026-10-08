@@ -11,12 +11,14 @@ import { OrderProgressCard, type OrderProgress } from "./OrderProgressCard";
 import { AssistantDraftCard, type Draft } from "./AssistantDraftCard";
 import { SupportDraftCard, type SupportDraft } from "./SupportDraftCard";
 import { PaymentDetailsCard, DocumentDetailsCard, type PaymentDetails, type DocumentDetails } from "./OrderEvidenceCards";
-import { apiPost } from "../../shared/api/client";
-import { isOrderQuestion } from "../chat/routing";
+import { isOrderQuestion, understandQuestion } from "../chat/routing";
 import { AnswerContent, CopyAnswer, FailedQuestion, ChatComposer } from "../chat/ChatContent";
 import { ChatStream, ContextLinks } from "../chat/ChatUtilities";
-import { readCache, writeCache, restoreCatalog, saveCatalog, type CatalogContext } from "../chat/storage";
+import { readCache, writeCache, restoreCatalog, type CatalogContext } from "../chat/storage";
 type Message = {
+  imageUrl?: string;
+  uncertain?: boolean;
+  generationMode?: string;
   contexts?: CatalogContext[];
   catalog?: boolean;
   role: string;
@@ -42,6 +44,7 @@ const topicNames: Record<string, string> = {
   car: "Thông tin xe", warranty: "Bảo hành", documents: "Hồ sơ",
 };
 type Session = {
+  title?: string | null;
   id: string;
   version: number;
   selectedOrderId: string | null;
@@ -49,25 +52,32 @@ type Session = {
   draft?: Draft | null;
   supportSuggested?: boolean;
 };
-type SessionItem = { id: string; updatedAt: string };
+type SessionItem = { id: string; updatedAt: string; title?: string | null };
 export function UnifiedAssistantChat() {
   const { user } = useOrdersSession();
   const owner = user?.id || 'guest';
   const carQuestion = useCarQuestion();
   useEffect(() => { if (carQuestion) setText(current => current || carQuestion); }, [carQuestion]);
-  const [mode, setMode] = useState("auto");
   const [orderContext, setOrderContext] = useState(false);
   const [searchParams] = useSearchParams();
   const referencedOrder = searchParams.get("orderId") || "";
   const [sessions, setSessions] = useState<SessionItem[]>([]);
   const [session, setSession] = useState<Session | null>(null);
-  const [orders, setOrders] = useState<Order[]>([]);
   const [selected, setSelected] = useState("");
   const [text, setText] = useState(() => {
     const pendingQuestion = readCache<unknown>('guest', 'pending-question');
     const composer = readCache<unknown>(owner, 'composer');
     return typeof pendingQuestion === 'string' && pendingQuestion ? pendingQuestion : typeof composer === 'string' ? composer : '';
   });
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [preview, setPreview] = useState('');
+  const photoInput = useRef<HTMLInputElement>(null);
+  const failedPhoto = useRef<{ file: File; preview: string; text: string } | null>(null);
+  useEffect(() => {
+    if (!photo) { setPreview(''); return; }
+    const url = URL.createObjectURL(photo); setPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [photo]);
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -81,12 +91,14 @@ export function UnifiedAssistantChat() {
   const [cacheReady, setCacheReady] = useState(false);
   const [retry, setRetry] = useState(0);
   const newSessionId = useRef<string | null>(null);
+  const pendingCatalogue = useRef<{ sessionId: string; requestId: string; version: number; content: string; originalContent?: string; clarification?: string | null; imageBase64?: string; mimeType?: string } | null>(null);
   const pending = useRef<{
     sessionId: string;
     requestId: string;
     version: number;
     content: string;
     orderId: string | null;
+    originalContent?: string;
   } | null>(null);
   useEffect(() => {
     let active = true;
@@ -97,10 +109,9 @@ export function UnifiedAssistantChat() {
       request<Page>("/my/orders?pageSize=100"),
       referencedOrder ? request<Order>("/my/orders/" + encodeURIComponent(referencedOrder)) : Promise.resolve(null),
     ])
-      .then(async ([items, page, reference]) => {
+      .then(async ([items, , reference]) => {
         if (active) {
           setSessions(items);
-          setOrders(reference && !page.items.some(o => o.id === reference.id) ? [reference, ...page.items] : page.items);
           if (reference && appliedReference.current !== reference.id) {
             appliedReference.current = reference.id;
             setSelected(reference.id); setOrderContext(true);
@@ -111,8 +122,8 @@ export function UnifiedAssistantChat() {
             if (!reference && typeof savedId === 'string' && savedId) {
               const saved = await request<Session>('/assistant/sessions/' + encodeURIComponent(savedId));
               if (!active) return;
-              setSession({ ...saved, messages: restoreCatalog(owner, saved.id, saved.messages) });
-              setSelected(saved.selectedOrderId || ''); setOrderContext(Boolean(saved.selectedOrderId));
+              setSession(saved); nameConversation(saved);
+              setSelected(saved.selectedOrderId || ''); setOrderContext(Boolean(saved.messages.length && !saved.messages.at(-1)?.catalog));
             } else if (!reference) {
               setSession({ id: '', version: 0, selectedOrderId: null, messages: restoreCatalog<Message>(owner, 'local', []) });
             }
@@ -134,17 +145,19 @@ export function UnifiedAssistantChat() {
       active = false;
     };
   }, [retry, referencedOrder, owner]);
+  function nameConversation(result: Session) {
+    if (!result.id || !result.messages.length) return;
+    request<Session>(`/assistant/sessions/${result.id}/title`, 'POST', {}).then(named => {
+      setSession(current => current?.id === named.id ? { ...current, title: named.title } : current);
+      return request<SessionItem[]>('/assistant/sessions');
+    }).then(setSessions).catch(() => { /* Naming never blocks an accepted message. */ });
+  }
   function updateSession(result: Session) {
-    setSession(current => {
-      if (!current || current.id !== result.id) return result;
-      let index = 0;
-      const messages = current.messages.flatMap(message => message.catalog ? [message] : result.messages[index] ? [result.messages[index++]] : []);
-      return { ...result, messages: [...messages, ...result.messages.slice(index)] };
-    });
+    setSession(result);
+    nameConversation(result);
   }
   useEffect(() => {
     if (cacheReady && session) {
-      saveCatalog(owner, session.id || 'local', session.messages);
       writeCache(owner, 'active', session.id);
     }
   }, [session, owner, cacheReady]);
@@ -154,11 +167,11 @@ export function UnifiedAssistantChat() {
     setError("");
     try {
       const result = await request<Session>("/assistant/sessions/" + id);
-      const messages = restoreCatalog(owner, id, result.messages);
-      setSession({ ...result, messages });
+      const messages = result.messages;
+      setSession({ ...result, messages }); nameConversation(result);
       setSelected(result.selectedOrderId || "");
-      setOrderContext(true);
-      pending.current = null;
+      setOrderContext(Boolean(messages.length && !messages.at(-1)?.catalog));
+      pending.current = null; pendingCatalogue.current = null; failedPhoto.current = null; setPhoto(null);
       setFailed(null); setCacheReady(true); restored.current = true;
       setText("");
     } catch (e) {
@@ -169,36 +182,67 @@ export function UnifiedAssistantChat() {
   }
   function create() {
     if (locked.current || busy) return;
-    setError(''); setFailed(null); pending.current = null; newSessionId.current = null;
+    setError(''); setFailed(null); pending.current = null; pendingCatalogue.current = null; newSessionId.current = null;
     setSession({ id: '', version: 0, selectedOrderId: null, messages: [] });
-    setMode('auto'); setOrderContext(Boolean(referencedOrder));
-    setSelected(orders.some(order => order.id === referencedOrder) ? referencedOrder : '');
-    setText(''); setCacheReady(true); restored.current = true;
+    setOrderContext(Boolean(referencedOrder));
+    setSelected(referencedOrder);
+    setPhoto(null); failedPhoto.current = null; setText(''); setCacheReady(true); restored.current = true;
     writeCache('guest', 'pending-question', '');
   }
   async function sendQuestion(content: string, previous?: { orders: boolean; orderId: string }) {
     content = content.trim();
     const draftAtStart = input.current?.value || '';
-    if (!content || locked.current || busy) return;
-    locked.current = true; setBusy(true); setError(''); setFailed(null); setPendingText(content);
-    const routeToOrders = previous?.orders ?? (mode === 'orders' || (mode === 'auto' && isOrderQuestion(content, orderContext || Boolean(selected))));
-    const orderId = previous?.orderId ?? selected;
+    const image = previous && failedPhoto.current ? failedPhoto.current : photo ? { file: photo, preview, text: content } : null;
+    if ((!content && !image) || locked.current || busy) return;
+    locked.current = true; setBusy(true); setError(''); setFailed(null); setPendingText(content || 'Nhận diện xe trong ảnh');
+    let routeToOrders = !image && (previous?.orders ?? isOrderQuestion(content, orderContext));
+    const explicitReference = /\bAW-[A-Z0-9-]+\b/i.test(content) || /don truoc/.test(content.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').toLowerCase());
+    const orderId = previous?.orderId ?? (explicitReference || session?.id ? '' : selected);
+    const originalContent = content;
     try {
+      const understanding = await understandQuestion(content || 'Nhận diện xe trong ảnh', {
+        lastRoute: orderContext ? 'orders' : 'catalogue', hasImage: Boolean(image),
+        recentQuestions: (session?.messages || []).filter(m => m.role === 'user').slice(-3).map(m => m.content),
+        lastAnswer: session?.messages.at(-1)?.content.slice(0, 1800),
+      });
+      content = understanding.question;
+      routeToOrders = !image && understanding.route === 'orders';
+      let activeSession = session;
+      if (!activeSession?.id) {
+        newSessionId.current ||= crypto.randomUUID();
+        activeSession = await request<Session>('/assistant/sessions', 'POST', { id: newSessionId.current });
+        newSessionId.current = null;
+        setSession(activeSession);
+      }
       if (!routeToOrders) {
-        const result = await apiPost<{ answer: string; contexts: Message['contexts'] }, { question: string }>('/api/chat', { question: content });
-        const base = { at: new Date().toISOString(), tool: null, orderCode: null, detailUrl: null, retrievedAt: null, catalog: true };
-        setSession(current => ({ ...(current || { id: '', version: 0, selectedOrderId: null, messages: [] }), messages: [...(current?.messages || []), { ...base, role: 'user', content }, { ...base, role: 'assistant', content: result.answer, contexts: result.contexts }] }));
-        setOrderContext(false);
-      } else {
-        let activeSession = session;
-        if (!activeSession?.id) {
-          newSessionId.current ||= crypto.randomUUID();
-          activeSession = await request<Session>('/assistant/sessions', 'POST', { id: newSessionId.current });
-          newSessionId.current = null;
-          setSession({ ...activeSession, messages: session?.messages || [] });
+        if (!previous || !pendingCatalogue.current) {
+          let imageBase64: string | undefined;
+          if (image) {
+            const data = await new Promise<string>((resolve, reject) => {
+              const reader = new FileReader(); reader.onload = () => resolve(String(reader.result)); reader.onerror = () => reject(new Error('Không đọc được ảnh.')); reader.readAsDataURL(image.file);
+            });
+            imageBase64 = data.slice(data.indexOf(',') + 1);
+          }
+          pendingCatalogue.current = { sessionId: activeSession.id, requestId: crypto.randomUUID(), version: activeSession.version, content, originalContent, clarification: understanding.needsClarification ? understanding.clarification : null, imageBase64, mimeType: image?.file.type };
         }
+        const { sessionId, ...body } = pendingCatalogue.current;
+        try {
+          const result = await request<Session>(`/assistant/sessions/${sessionId}/catalogue-messages`, 'POST', body);
+          updateSession(result); pendingCatalogue.current = null; pending.current = null;
+          if (image && photo === image.file) setPhoto(null);
+          failedPhoto.current = null; setOrderContext(false);
+          request<SessionItem[]>('/assistant/sessions').then(setSessions).catch(() => setLoadError('Tin nhắn đã gửi; chưa cập nhật được danh sách hội thoại.'));
+        } catch (e) {
+          if (e instanceof ApiError && e.status === 409) {
+            pendingCatalogue.current = null;
+            try { updateSession(await request<Session>('/assistant/sessions/' + activeSession.id)); } catch { /* Preserve original error. */ }
+          }
+          throw e;
+        }
+      } else {
+        pendingCatalogue.current = null; failedPhoto.current = null;
         if (!pending.current || pending.current.sessionId !== activeSession.id || pending.current.content !== content || pending.current.orderId !== (orderId || null)) {
-          pending.current = { sessionId: activeSession.id, requestId: crypto.randomUUID(), version: activeSession.version, content, orderId: orderId || null };
+          pending.current = { sessionId: activeSession.id, requestId: crypto.randomUUID(), version: activeSession.version, content, originalContent, orderId: orderId || null };
         }
         const { sessionId, ...body } = pending.current;
         try {
@@ -219,7 +263,8 @@ export function UnifiedAssistantChat() {
       setFailed(null); setText(current => current === draftAtStart && draftAtStart.trim() === content ? '' : current); setCacheReady(true); restored.current = true;
       writeCache('guest', 'pending-question', '');
     } catch (e) {
-      setFailed({ content, orders: routeToOrders, orderId });
+      if (image) failedPhoto.current = image;
+      setFailed({ content: originalContent || 'Nhận diện xe trong ảnh', orders: routeToOrders, orderId });
       setError(e instanceof Error ? e.message : 'Không gửi được câu hỏi.');
     } finally { locked.current = false; setBusy(false); setPendingText(''); input.current?.focus(); }
   }
@@ -230,16 +275,11 @@ export function UnifiedAssistantChat() {
         <LoadingSkeleton />
       </div>
     );
-  function choose(value: string, topic?: 'cars' | 'orders') { if (topic) setMode(topic); setText(value); input.current?.focus(); }
+  function choose(value: string) { setText(value); input.current?.focus(); }
   return <ChatLayout sidebar={<ChatSidebar busy={busy} customer onNew={create}>
     {session?.messages.length && !session.id ? <div className="assistant-local-session">Hội thoại hiện tại</div> : null}
-    {sessions.length > 0 && <ChatHistory items={sessions} currentId={session?.id} currentTitle={session?.messages.find(message => message.role === 'user')?.content} busy={busy} onOpen={id => void open(id)} />}
+    {sessions.length > 0 && <ChatHistory items={sessions} currentId={session?.id} currentTitle={session?.title || undefined} busy={busy} onOpen={id => void open(id)} />}
   </ChatSidebar>}>
-    <div className="assistant-controls">
-      <label>Chủ đề<select aria-label="Chủ đề câu hỏi" value={mode} disabled={busy} onChange={e => setMode(e.target.value)}><option value="auto">Tự động nhận diện</option><option value="cars">Tư vấn xe</option><option value="orders">Đơn hàng & hỗ trợ</option></select></label>
-      <label>Đơn cần tra cứu<select aria-label="Đơn cần tra cứu" value={selected} onChange={e => setSelected(e.target.value)} disabled={busy}><option value="">Chưa chọn đơn</option>{orders.map(o => <option key={o.id} value={o.id}>{o.code} · {o.carName}</option>)}</select></label>
-      <button className="mini-button" disabled={busy} onClick={() => { setMode('orders'); choose('Tôi muốn gặp nhân viên hỗ trợ'); }}>Chuẩn bị phiếu hỗ trợ</button>
-    </div>
     <ChatStream className="assistant-thread" revision={`${session?.messages.length}:${busy}:${failed?.content}:${Boolean(session?.draft)}`}>
       {!session?.messages.length && !pendingText && !failed && <ChatWelcome busy={busy} customer onPrompt={choose} />}
                 {session?.messages.map((m, index) => (
@@ -250,7 +290,8 @@ export function UnifiedAssistantChat() {
                     <strong>
                       {m.role === "user" ? "Bạn" : "Trợ lý AI"}
                     </strong>
-                    {m.sections?.length ? m.sections.map((section) => (
+                    {m.generationMode === 'bedrock-natural' && <AnswerContent content={m.content} natural />}
+                    {m.sections?.length ? <details open={m.generationMode !== 'bedrock-natural'} className="assistant-tool-details"><summary>Chi tiết dữ liệu đã tra cứu</summary>{m.sections.map((section) => (
                       <section key={section.topic} className="order-chat-section">
                         <h3>{topicNames[section.topic] || section.topic}</h3>
                         {section.resultStatus !== "success" && (
@@ -262,9 +303,11 @@ export function UnifiedAssistantChat() {
                           <div><Link to={section.detailUrl}>Xem đơn {m.orderCode} →</Link></div>
                         )}
                       </section>
-                    )) : m.role === "user" ? <p>{m.content}</p> : <AnswerContent content={m.content} />}
+                    ))}</details> : m.role === "user" ? <p>{m.content}</p> : m.generationMode !== 'bedrock-natural' ? <AnswerContent contexts={m.contexts} content={m.content} /> : null}
+                    {m.imageUrl && <img className="chat-image-preview-bubble" src={m.imageUrl} alt="Ảnh xe đã gửi" />}
+                    {m.uncertain && <p className="chat-uncertain-warning">Kết quả nhận diện chưa chắc chắn. Hãy kiểm tra thông tin xe.</p>}
                     <ContextLinks contexts={m.contexts} />
-                    {m.role !== "user" && <CopyAnswer content={m.sections?.length ? m.sections.map(section => `${topicNames[section.topic] || section.topic}\n${section.content}`).join("\n\n") : m.content} />}
+                    {m.role !== "user" && <CopyAnswer content={m.generationMode === 'bedrock-natural' ? m.content : m.sections?.length ? m.sections.map(section => `${topicNames[section.topic] || section.topic}\n${section.content}`).join("\n\n") : m.content} />}
                     {!m.sections?.length && m.retrievedAt && (
                       <small>
                         Tra cứu:{" "}
@@ -285,7 +328,7 @@ export function UnifiedAssistantChat() {
       {loadError && <div className="assistant-error" role="alert"><p>{loadError}</p><button className="mini-button" disabled={loading} onClick={() => setRetry(v => v + 1)}>Thử lại tải dữ liệu</button></div>}
       {loading && <p className="assistant-data-loading" role="status">Đang cập nhật lịch sử và đơn hàng…</p>}
       {error && !failed && <div className="assistant-error" role="alert">{error}</div>}
-      <ChatComposer inputRef={input} value={text} onChange={setText} busy={busy} onSubmit={send} sendLabel="Gửi câu hỏi" placeholder="Hỏi về xe, đơn hàng hoặc điều bạn cần hỗ trợ…" notice="Yêu cầu thay đổi chỉ được gửi khi bạn xác nhận." />
+      <ChatComposer canSend={!!photo} tools={<button type="button" className="chat-attach-btn" disabled={busy} onClick={() => photoInput.current?.click()} aria-label="Đính kèm ảnh xe">▧</button>} attachment={<div className="assistant-attachments"><input ref={photoInput} type="file" hidden disabled={busy} accept="image/jpeg,image/png,image/webp" onChange={event => { const file = event.target.files?.[0]; event.target.value = ''; if (!file) return; if (file.size > 10_000_000) { setError('Chọn ảnh nhỏ hơn 10 MB.'); return; } if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) { setError('Chọn ảnh JPEG, PNG hoặc WebP.'); return; } setPhoto(file); setError(''); }} />{photo && <div className="chat-attachment-bar">{preview && <img className="chat-attachment-thumb" src={preview} alt="Ảnh xe đính kèm" />}<span className="chat-attachment-name">{photo.name}</span><button type="button" disabled={busy} onClick={() => setPhoto(null)} aria-label="Bỏ ảnh đính kèm">×</button></div>}</div>} inputRef={input} value={text} onChange={setText} busy={busy} onSubmit={send} sendLabel="Gửi câu hỏi" placeholder="Hỏi về xe, đơn hàng hoặc điều bạn cần hỗ trợ…" notice="Yêu cầu thay đổi chỉ được gửi khi bạn xác nhận." />
     </div>
   </ChatLayout>;
 

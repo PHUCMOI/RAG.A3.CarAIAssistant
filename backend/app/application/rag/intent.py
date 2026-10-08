@@ -1,5 +1,6 @@
 import re
 import unicodedata
+from difflib import SequenceMatcher
 from decimal import Decimal
 from app.application.rag.contracts import QueryAnalysis, RagFilters
 
@@ -39,7 +40,7 @@ def matches_filters(car, filters: RagFilters) -> bool:
     return True
 
 
-async def analyze(question: str, catalogue, classifier=None) -> QueryAnalysis:
+async def analyze(question: str, catalogue, classifier=None, car_ids=None) -> QueryAnalysis:
     question = " ".join(question.split())
     q = normalize(question)
     result = QueryAnalysis(question=question)
@@ -110,6 +111,7 @@ async def analyze(question: str, catalogue, classifier=None) -> QueryAnalysis:
             result.ambiguities.append("Khoảng giá không có giá trị phù hợp.")
 
     matches = []
+    tokens = list(re.finditer(r"[a-z0-9]+", q))
     for c in catalogue:
         model_name = re.sub(r"\s+(?:19|20)\d{2}\b", "", c.display_name)
         short_name = re.sub(r"^" + re.escape(c.brand) + r"\s+", "", model_name, flags=re.I)
@@ -118,14 +120,33 @@ async def analyze(question: str, catalogue, classifier=None) -> QueryAnalysis:
             if len(n) >= 3:
                 for m in re.finditer(r"(?<!\w)" + re.escape(n) + r"(?!\w)", q):
                     matches.append((m.start(), m.end(), c.car_id))
+        # Resolve punctuation/spacing variants and small spelling errors against
+        # catalogue model names only. Short names require an exact compact match.
+        compact = re.sub(r"[^a-z0-9]", "", normalize(short_name))
+        if len(compact) >= 3:
+            for i in range(len(tokens)):
+                for width in range(1, min(4, len(tokens) - i) + 1):
+                    window = tokens[i:i + width]
+                    candidate = ''.join(t.group() for t in window)
+                    exact = candidate == compact
+                    fuzzy = (len(compact) >= 5 and abs(len(candidate)-len(compact)) <= 1
+                             and candidate[:1] == compact[:1]
+                             and SequenceMatcher(None, candidate, compact).ratio() >= .8)
+                    if exact or fuzzy:
+                        matches.append((window[0].start(), window[-1].end(), c.car_id))
     selected = []
     for start, end, cid in sorted(matches, key=lambda item: (-(item[1] - item[0]), item[0], item[2])):
         overlapping = [(a, b, c) for a, b, c in selected if start < b and end > a]
         if not overlapping:
             selected.append((start, end, cid))
-        elif any(a == start and b == end and c != cid for a, b, c in overlapping):
+        elif car_ids is None and any(a == start and b == end and c != cid for a, b, c in overlapping):
             result.ambiguities.append("Tên xe khớp nhiều mẫu; vui lòng ghi rõ hãng và model.")
     result.car_ids = list(dict.fromkeys(cid for _, _, cid in sorted(selected)))
+    if car_ids is not None:
+        known = {c.car_id for c in catalogue}
+        result.car_ids = list(dict.fromkeys(cid for cid in car_ids if cid in known))
+        if set(car_ids) - known:
+            result.ambiguities.append("Mẫu xe được chọn chưa có trong catalogue; chưa thể tra cứu dữ liệu.")
     if "so sanh" in q or "compare" in q:
         result.intent = "compare_cars"
         if len(result.car_ids) < 2:

@@ -3,10 +3,31 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { UnifiedAssistantChat } from '../src/features/orders/OrderAssistantPage'
 import { request } from '../src/features/orders/api'
-import { json } from './fixtures'
 vi.mock('../src/features/orders/Session', () => ({ useOrdersSession: () => ({ user: { id: 'alice', role: 'Customer' } }) }))
 vi.mock('../src/features/orders/api', async importOriginal => ({ ...await importOriginal<object>(), request: vi.fn() }))
+vi.mock('../src/features/chat/routing', async importOriginal => { const actual = await importOriginal<typeof import('../src/features/chat/routing')>(); return { ...actual, understandQuestion: vi.fn(async (question: string, context: { lastRoute?: string }) => ({ question, route: actual.isOrderQuestion(question, context.lastRoute === 'orders') ? 'orders' : 'catalogue', needsClarification: false, clarification: null })) } })
 const initial = { id: 's1', version: 0, selectedOrderId: null, messages: [] }
+it('lets a typed order code override the order linked to the chat', async () => {
+  const bodies: Array<{ orderId?: string | null; content?: string }> = []
+  vi.mocked(request).mockImplementation(async (path, method, body) => {
+    if (path === '/my/orders?pageSize=100') return { items: [{ id: 'old', code: 'AW-OLD', carName: 'Old car' }] }
+    if (path === '/my/orders/old') return { id: 'old', code: 'AW-OLD', carName: 'Old car' }
+    if (path === '/assistant/sessions') return method === 'POST' ? initial : []
+    if (path.endsWith('/messages')) {
+      bodies.push(body as typeof bodies[number])
+      return { ...initial, version: 1, messages: [{ role: 'assistant', content: 'Đã tra cứu đơn mới' }] }
+    }
+    throw new Error(path)
+  })
+  render(<MemoryRouter initialEntries={['/chat?orderId=old']}><UnifiedAssistantChat /></MemoryRouter>)
+  const input = await screen.findByRole('textbox', { name: 'Câu hỏi' })
+  await waitFor(() => expect(input).toHaveValue('Tiến độ, lịch giao, thanh toán và hồ sơ hiện tại của đơn này?'))
+  expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
+  fireEvent.change(input, { target: { value: 'Thanh toán đơn AW-NEW thế nào?' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Gửi câu hỏi' }))
+  await screen.findByText('Đã tra cứu đơn mới')
+  expect(bodies[0].orderId).toBeNull()
+})
 it('retries an order question with the original request ID and no duplicate messages', async () => {
   let attempts = 0
   const bodies: unknown[] = []
@@ -29,33 +50,36 @@ it('retries an order question with the original request ID and no duplicate mess
   expect(bodies[1]).toEqual(bodies[0])
   expect(screen.getAllByText('Đơn hàng của tôi')).toHaveLength(1)
 })
-it('restores catalogue-only chat after refresh without needing a server session', async () => {
-  vi.mocked(request).mockImplementation(async path => path === '/my/orders?pageSize=100' ? { items: [] } : [])
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(json({ answer: 'Xe phù hợp', contexts: [] })))
+it('restores catalogue chat from the server after refresh', async () => {
+  vi.mocked(request).mockImplementation(async (path, method) => {
+    if (path === '/my/orders?pageSize=100') return { items: [] }
+    if (path === '/assistant/sessions') return method === 'POST' ? initial : []
+    return { ...initial, version: 1, messages: [{ role: 'assistant', content: 'Xe phù hợp', catalog: true }] }
+  })
   const first = render(<MemoryRouter><UnifiedAssistantChat /></MemoryRouter>)
   fireEvent.change(await screen.findByRole('textbox'), { target: { value: 'Tư vấn SUV' } })
   fireEvent.click(screen.getByRole('button', { name: 'Gửi câu hỏi' }))
   await screen.findByText('Xe phù hợp'); first.unmount()
   render(<MemoryRouter><UnifiedAssistantChat /></MemoryRouter>)
   expect(await screen.findByText('Xe phù hợp')).toBeInTheDocument()
-  fireEvent.change(screen.getByRole('combobox', { name: 'Chủ đề câu hỏi' }), { target: { value: 'cars' } })
-  fireEvent.click(screen.getByRole('button', { name: 'Chuẩn bị phiếu hỗ trợ' }))
-  expect(screen.getByRole('combobox', { name: 'Chủ đề câu hỏi' })).toHaveValue('orders')
+  expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: '+ Hội thoại mới' }))
   await waitFor(() => expect(screen.queryByText('Xe phù hợp')).not.toBeInTheDocument())
   expect(screen.getByRole('textbox')).toHaveValue('')
 })
-it('sets the correct topic for prompts even when an order topic was selected', async () => {
-  vi.mocked(request).mockImplementation(async path => path === '/my/orders?pageSize=100' ? { items: [] } : [])
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(json({ answer: 'Gợi ý SUV', contexts: [] })))
+it('automatically routes catalogue prompts without topic controls', async () => {
+  vi.mocked(request).mockImplementation(async (path, method) => {
+    if (path === '/my/orders?pageSize=100') return { items: [] }
+    if (path === '/assistant/sessions') return method === 'POST' ? initial : []
+    return { ...initial, version: 1, messages: [{ role: 'assistant', content: 'Gợi ý SUV', catalog: true }] }
+  })
   render(<MemoryRouter><UnifiedAssistantChat /></MemoryRouter>)
-  const topic = await screen.findByRole('combobox', { name: 'Chủ đề câu hỏi' })
-  fireEvent.change(topic, { target: { value: 'orders' } })
+  await screen.findByRole('textbox')
   fireEvent.click(screen.getByRole('button', { name: /Tìm chiếc xe phù hợp/ }))
-  expect(topic).toHaveValue('cars')
+  expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Gửi câu hỏi' }))
   await screen.findByText('Gợi ý SUV')
-  expect(vi.mocked(request).mock.calls.some(([, method]) => method === 'POST')).toBe(false)
+  expect(vi.mocked(request).mock.calls.some(([path, method]) => path.endsWith('/catalogue-messages') && method === 'POST')).toBe(true)
 })
 it('keeps the chat and draft visible during a retry of order data', async () => {
   let retryStarted = false

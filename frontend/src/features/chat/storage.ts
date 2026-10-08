@@ -18,9 +18,10 @@ export function clearChatCache(owner: string) {
 export function clearLegacyChatCache() {
   try { Object.keys(sessionStorage).filter(k => k.startsWith('unified-assistant-') || k === 'assistant-pending-question').forEach(k => sessionStorage.removeItem(k)) } catch { /* optional storage */ }
 }
-export type CatalogContext = { carId: string; displayName: string; presenceSourceId?: string }
+export type CatalogContext = { carId: string; displayName: string; presenceSourceId?: string; description?: string; summary?: string; specifications?: Record<string, string> }
 export type IdentifiedCarItem = { car_id: string; brand?: string; model?: string; similarity?: number }
 export type CatalogMessage = {
+  generationMode?: string;
   role: string;
   content: string;
   catalog?: boolean;

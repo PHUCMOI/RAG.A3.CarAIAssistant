@@ -3,11 +3,13 @@ using System.Text;
 using System.Text.RegularExpressions;
 namespace AutoWise.OwnerFeatures.Application;
 public record CreateChatSessionRequest(Guid Id);
-public record ChatInput(Guid RequestId, long Version, string Content, Guid? OrderId);
+public record ChatInput(Guid RequestId, long Version, string Content, Guid? OrderId, string? OriginalContent=null);
 public record ChatSection(string Topic, string Content, string ResultStatus, DateTimeOffset RetrievedAt, string? DetailUrl=null, OrderProgressSnapshot? Progress=null, PaymentDetails? Payment=null, DocumentDetails? Documents=null);
-public record ChatMessage(string Role, string Content, DateTimeOffset At, string? Tool=null, string? OrderCode=null, string? DetailUrl=null, DateTimeOffset? RetrievedAt=null, List<ChatSection>? Sections=null);
+public record CatalogContext(string CarId, string DisplayName, string? PresenceSourceId=null, string? Description=null, string? Summary=null, Dictionary<string,string>? Specifications=null);
+public record CatalogueChatInput(Guid RequestId, long Version, string Content, string? ImageBase64=null, string? MimeType=null, string? OriginalContent=null, string? Clarification=null);
+public record ChatMessage(string Role, string Content, DateTimeOffset At, string? Tool=null, string? OrderCode=null, string? DetailUrl=null, DateTimeOffset? RetrievedAt=null, List<ChatSection>? Sections=null, bool Catalog=false, List<CatalogContext>? Contexts=null, string? ImageUrl=null, bool? Uncertain=null, string? GenerationMode=null);
 public record ChatTurn(Guid RequestId, string Hash, List<ChatMessage> Messages);
-public record ChatSession(Guid Id, long Version, Guid? SelectedOrderId, List<ChatMessage> Messages, AssistantDraft? Draft=null, bool SupportSuggested=false);
+public record ChatSession(Guid Id, long Version, Guid? SelectedOrderId, List<ChatMessage> Messages, AssistantDraft? Draft=null, bool SupportSuggested=false, string? Title=null);
 public interface IOrderAssistant
 {
     Task<object> List(Guid userId, CancellationToken ct);
@@ -58,7 +60,7 @@ public static class AssistantIntent
         if(new[]{"nhan xe","ban giao","khi nao","lich giao","giao xe"}.Any(t.Contains)) return "delivery";
         if(new[]{"thong tin xe","thong so","xe gi","xe trong don"}.Any(t.Contains)) return "car";
         if(new[]{"nhung don","danh sach","cac don","don nao"}.Any(t.Contains)) return "list";
-        if(new[]{"trang thai","tien do","den dau","don do","don nay","buoc tiep theo","can lam gi","dang cho gi","ly do cho","chuan bi xe","cho xac nhan","cho ban giao"}.Any(t.Contains) || OrderCode(text)!=null) return "status";
+        if(new[]{"trang thai","tien do","den dau","don do","don nay","don hang cua toi","don cua toi","buoc tiep theo","can lam gi","dang cho gi","ly do cho","chuan bi xe","cho xac nhan","cho ban giao"}.Any(t.Contains) || OrderCode(text)!=null) return "status";
         return "help";
     }
 }

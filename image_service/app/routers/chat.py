@@ -14,7 +14,7 @@ from image_service.app.core.image_retriever import (
     ImageTooLargeError,
     InvalidImageError,
 )
-from image_service.app.core.rag_adapter import answer_rag
+from image_service.app.core.rag_adapter import answer_rag, compose_image_answer
 from image_service.app.models.schemas import ChatResponse, ContextChunk, IdentifiedCar
 from image_service.app.routers.image_search import get_retriever
 
@@ -73,7 +73,7 @@ async def chat(
         try:
             search_res = retriever.search(img_bytes, top_k=5)
             uncertain_flag = search_res.get("uncertain", False)
-            for item in search_res.get("results", []):
+            for item in search_res.get("results", [])[:1]:
                 identified_cars.append(
                     IdentifiedCar(
                         car_id=item["car_id"],
@@ -93,42 +93,35 @@ async def chat(
     # 2. Text inquiry & RAG coordination
     text_query = user_message or "Xe trong ảnh là xe gì?"
     contexts_res: list[ContextChunk] = []
+    catalog_contexts = []
 
     try:
-        rag_out = answer_rag(
+        if img_bytes and (image_err_msg or not candidate_car_ids):
+            answer = await compose_image_answer(text_query, {"retrievedAnswer": "Chưa xác định chắc chắn mẫu xe trong ảnh. Hãy gửi ảnh rõ hơn hoặc nêu tên xe để tra cứu thông tin.", "status": "needs_clarification"})
+            return ChatResponse(answer=answer, generation_mode="bedrock-natural", intent="needs_clarification", identified_cars=identified_cars, contexts=[], uncertain=True, latency_ms=round((time.perf_counter()-start_time)*1000,2))
+        rag_out = await answer_rag(
             question=text_query,
-            car_ids=candidate_car_ids if candidate_car_ids else None,
+            car_ids=candidate_car_ids[:1] if candidate_car_ids else None,
             top_k=5,
+            image_match={"carId": identified_cars[0].car_id, "name": f"{identified_cars[0].brand or ''} {identified_cars[0].model or ''}".strip(), "similarityPercent": round(identified_cars[0].similarity * 100, 1), "uncertain": uncertain_flag} if identified_cars else None,
         )
         answer_text = rag_out.get("answer", "")
+        catalog_contexts = rag_out.get("catalog_contexts", [])
         intent_detected = rag_out.get("intent", "general_car_inquiry")
         for c in rag_out.get("contexts", []):
             contexts_res.append(ContextChunk(**c))
     except Exception as e:
         logger.error("Lỗi RAG: %s", e)
-        if identified_cars:
-            top_c = identified_cars[0]
-            answer_text = f"Đã nhận diện mẫu xe gần nhất là {top_c.brand} {top_c.model} (độ tương đồng {top_c.similarity*100:.1f}%)."
-        else:
-            answer_text = "Hệ thống đang bận. Vui lòng thử lại sau."
-        uncertain_flag = True
-        intent_detected = "error_fallback"
-
-    if image_err_msg:
-        answer_text = f"[Cảnh báo: {image_err_msg}] {answer_text}"
-
-    if img_bytes and uncertain_flag and identified_cars:
-        answer_text = (
-            "Hệ thống không hoàn toàn chắc chắn về mẫu xe này (độ tương đồng thấp hoặc góc chụp khó). "
-            + answer_text
-        )
+        raise HTTPException(503, "Bedrock chưa tạo được câu trả lời. Vui lòng thử lại.") from e
 
     latency = round((time.perf_counter() - start_time) * 1000, 2)
     return ChatResponse(
         answer=answer_text,
+        generation_mode=rag_out.get("generation_mode"),
         intent=intent_detected,
         identified_cars=identified_cars,
         contexts=contexts_res,
+        catalog_contexts=catalog_contexts,
         uncertain=uncertain_flag,
         latency_ms=latency,
     )

@@ -6,20 +6,22 @@ using AutoWise.OwnerFeatures.Application;
 using AutoWise.OwnerFeatures.Domain;
 using Microsoft.EntityFrameworkCore;
 namespace AutoWise.OwnerFeatures.Infrastructure;
-public sealed class OrderAssistant(OrdersDb db,ICommonCatalogue common, BedrockAssistant? bedrock = null, BedrockOptions? options = null) : IOrderAssistant
+public sealed class OrderAssistant(OrdersDb db,ICommonCatalogue common, BedrockAssistant? bedrock = null, BedrockOptions? options = null, NaturalAnswers? naturalAnswers = null) : IOrderAssistant
 {
     static List<ChatTurn> Turns(ChatSessionRecord row)=>JsonSerializer.Deserialize<List<ChatTurn>>(row.Payload,OrderStore.Json)!;
     internal static ChatSession View(ChatSessionRecord row) {
         var draft=JsonSerializer.Deserialize<ConversationContext>(row.Context,OrderStore.Json)?.Drafts.LastOrDefault();
         if(draft is {Status:"draft"} && draft.ExpiresAt<=DateTimeOffset.UtcNow) draft=draft with {Status="expired"};
-        return new(row.Id,row.Version,row.SelectedOrderId,Turns(row).SelectMany(t=>t.Messages).ToList(),draft,JsonSerializer.Deserialize<ConversationContext>(row.Context,OrderStore.Json)?.LookupFailures>=2);
+        return new(row.Id,row.Version,row.SelectedOrderId,Turns(row).SelectMany(t=>t.Messages).ToList(),draft,JsonSerializer.Deserialize<ConversationContext>(row.Context,OrderStore.Json)?.LookupFailures>=2,JsonSerializer.Deserialize<ConversationContext>(row.Context,OrderStore.Json)?.Title);
     }
-    public async Task<object> List(Guid userId,CancellationToken ct)=>await db.ChatSessions.AsNoTracking().Where(s=>s.UserId==userId).OrderByDescending(s=>s.UpdatedAt).Take(50).Select(s=>new{s.Id,s.UpdatedAt}).ToListAsync(ct);
+    public async Task<object> List(Guid userId,CancellationToken ct) {
+        var rows=await db.ChatSessions.AsNoTracking().Where(s=>s.UserId==userId).OrderByDescending(s=>s.UpdatedAt).Take(50).Select(s=>new{s.Id,s.UpdatedAt,s.Context}).ToListAsync(ct);
+        return rows.Select(s=>new{s.Id,s.UpdatedAt,Title=JsonSerializer.Deserialize<ConversationContext>(s.Context,OrderStore.Json)?.Title}).ToList();
+    }
     public async Task<ChatSession> Create(Guid userId,Guid sessionId,CancellationToken ct) {
         if(sessionId==Guid.Empty)throw new BusinessRuleException("Cần id hội thoại hợp lệ.");
         var existing=await db.ChatSessions.AsNoTracking().SingleOrDefaultAsync(s=>s.Id==sessionId,ct);
         if(existing!=null){if(existing.UserId!=userId)throw new KeyNotFoundException();return View(existing);}
-        if(await db.ChatSessions.CountAsync(s=>s.UserId==userId,ct)>=50) throw new BusinessRuleException("Đã đạt giới hạn 50 hội thoại demo.");
         var row=new ChatSessionRecord{Id=sessionId,UserId=userId};db.ChatSessions.Add(row);await db.SaveChangesAsync(ct);return View(row);
     }
     async Task<ChatSessionRecord> Owned(Guid id,Guid userId,CancellationToken ct)=>await db.ChatSessions.AsNoTracking().SingleOrDefaultAsync(s=>s.Id==id&&s.UserId==userId,ct)??throw new KeyNotFoundException();
@@ -32,7 +34,7 @@ public sealed class OrderAssistant(OrdersDb db,ICommonCatalogue common, BedrockA
         if(turns.FirstOrDefault(t=>t.RequestId==input.RequestId) is {} existing) {if(existing.Hash!=hash)throw new VersionConflictException();return View(row);}
         if(row.Version!=input.Version)throw new VersionConflictException();
         if(turns.Count>=100)throw new BusinessRuleException("Hội thoại đạt 100 lượt; hãy tạo hội thoại mới.");
-        var contextEnabled = options?.ContextEnabled == true;
+        var contextEnabled = true; // Local order references are always conversational.
         var context = row.Context == "{}" ? ConversationContext.Recover(row.SelectedOrderId, turns)
             : JsonSerializer.Deserialize<ConversationContext>(row.Context, OrderStore.Json) ?? new();
         // Validate stored references before any provider sees context.
@@ -48,7 +50,7 @@ public sealed class OrderAssistant(OrdersDb db,ICommonCatalogue common, BedrockA
         var draftAcknowledgement=context.Drafts.LastOrDefault() is {Status:"draft"} &&
             System.Text.RegularExpressions.Regex.IsMatch(AssistantIntent.Normalize(input.Content).Trim(),@"^(dong y|ok|xac nhan|gui di|yes)[.!]?$ ".TrimEnd());
         if(draftAcknowledgement) intent="readonly";
-        if(contextEnabled && bedrock != null) context=await bedrock.Summarize(context,turns,row.Version,ct);
+        if(options?.ContextEnabled == true && bedrock != null) context=await bedrock.Summarize(context,turns,row.Version,ct);
         // Modification requests remain read-only even if the model misclassifies them.
         var decision = ConversationReferences.Fallback(input.Content, context);
         if(bedrock != null && intent != "readonly" && BedrockAssistant.Route(intent) == null) decision=await bedrock.ResolveContext(input.Content,
@@ -81,7 +83,6 @@ public sealed class OrderAssistant(OrdersDb db,ICommonCatalogue common, BedrockA
             string.Equals(input.Content.Trim(),AssistantIntent.OrderCode(input.Content),StringComparison.OrdinalIgnoreCase))
             decision=decision with {Intent=context.PendingIntents?.FirstOrDefault() ?? context.PendingIntent,
                 Intents=context.PendingIntents ?? [context.PendingIntent],OrderReference="explicit",NeedsClarification=false,ClarificationKind=null};
-        if(!contextEnabled) decision=decision with {OrderReference=AssistantIntent.OrderCode(input.Content)!=null ? "explicit" : "current"};
         if(intent != "readonly") intent=decision.Intent;
         var navigation=BedrockAssistant.Route(intent);
         var code=AssistantIntent.OrderCode(input.Content);
@@ -99,6 +100,19 @@ public sealed class OrderAssistant(OrdersDb db,ICommonCatalogue common, BedrockA
             var match=await db.Orders.AsNoTracking().SingleOrDefaultAsync(o=>o.Id==id&&o.CustomerId==userId,ct);
             order=match==null?null:OrderStore.Read(match);if(order==null)selected=null;
         }
+        string? orderPrompt=null;
+        // Ask for an order when the conversation has no resolved reference.
+        if(order==null && code==null && input.OrderId==null &&
+            localReference.OrderReference!="previous" && context.PendingClarification==null &&
+            (ConversationContext.IsBusinessIntent(intent) || DraftParser.Kind(input.Content)!=null))
+        {
+            var candidates=await db.Orders.AsNoTracking().Where(o=>o.CustomerId==userId)
+                .OrderByDescending(o=>o.CreatedAt).Take(21).ToListAsync(ct);
+            orderPrompt=candidates.Count==0 ? "Bạn chưa có đơn mua xe trong tài khoản."
+                : "Bạn muốn hỏi đơn nào? Hãy trả lời bằng mã đơn trong hội thoại:\n"+
+                  string.Join("\n",candidates.Take(20).Select(o=>{var item=OrderStore.Read(o);return item.Code+" · "+item.CarName+" · "+Status(item.Status);}))+
+                  (candidates.Count>20?"\nĐang hiển thị 20 đơn gần nhất.":"");
+        }
         if(supportRequested && AssistantIntent.OrderCodes(input.Content).Count<=1 &&
             (code==null&&input.OrderId==null || order!=null&&(input.OrderId==null||order.Id==input.OrderId))) {
             if(context.Drafts.Count>=20) throw new BusinessRuleException("Tối đa 20 bản nháp mỗi hội thoại; hãy mở hội thoại mới.");
@@ -113,6 +127,8 @@ public sealed class OrderAssistant(OrdersDb db,ICommonCatalogue common, BedrockA
         }
         else if(AssistantIntent.OrderCodes(input.Content).Count>1)
         {answer="Bạn nêu nhiều mã đơn. Hãy chọn một đơn hoặc hỏi từng mã để tránh nhầm thông tin.";selected=row.SelectedOrderId;order=null;context=context with {PendingClarification="order"};}
+        else if(orderPrompt!=null)
+        {answer=orderPrompt;context=context with {PendingClarification="order"};}
         else if(decision.NeedsClarification && code == null &&
             (input.OrderId == null || decision.OrderReference == "previous" && input.OrderId == row.SelectedOrderId))
         {answer=decision.ClarificationKind=="topic"?"Bạn muốn hỏi trạng thái, thanh toán hay lịch bàn giao?":"Bạn muốn hỏi đơn nào và nội dung gì? Hãy nêu mã đơn và điều bạn cần tra cứu.";order=null;context=context with {PendingClarification=decision.ClarificationKind};}
@@ -137,7 +153,7 @@ public sealed class OrderAssistant(OrdersDb db,ICommonCatalogue common, BedrockA
             }
         }
         else if(intent=="readonly") answer="Bạn cần liên hệ đại lý để thay đổi thanh toán, giá hoặc trạng thái đơn. Tôi có thể chuẩn bị yêu cầu đổi lịch hoặc hủy đơn để bạn xác nhận.";
-        else if(intent=="help") answer="Bạn có thể hỏi: những đơn nào của tôi, trạng thái đơn, còn phải trả bao nhiêu, khi nào nhận xe, thông tin xe hoặc bảo hành. Chọn đơn trước để hỏi chi tiết.";
+        else if(intent=="help") answer="Bạn có thể hỏi: những đơn nào của tôi, trạng thái đơn, còn phải trả bao nhiêu, khi nào nhận xe, thông tin xe hoặc bảo hành. Nếu có nhiều đơn, hãy nêu mã đơn trong tin nhắn.";
         else if(intent=="list") {
             var list=await db.Orders.AsNoTracking().Where(o=>o.CustomerId==userId).OrderByDescending(o=>o.CreatedAt).Take(20).ToListAsync(ct);
             tool="ListMyOrders";answer=list.Count==0?"Bạn chưa có đơn mua xe.":"Tối đa 20 đơn gần nhất của bạn:\n"+string.Join("\n",list.Select(o=>{var item=OrderStore.Read(o);return item.Code+" · "+item.CarName+" · "+Status(item.Status);}))+"\nChọn đơn hoặc nhập mã đơn để xem chi tiết.";
@@ -160,7 +176,12 @@ public sealed class OrderAssistant(OrdersDb db,ICommonCatalogue common, BedrockA
             if(context.PendingClarification != null && ConversationContext.IsBusinessIntent(intent))
                 context=context with {PendingIntent=decision.Topics[0],PendingIntents=decision.Topics.Where(ConversationContext.IsBusinessIntent).Distinct().ToList()};
         }
-        var messages=new List<ChatMessage>{new("user",input.Content.Trim(),DateTimeOffset.UtcNow),new("assistant",answer,DateTimeOffset.UtcNow,tool,order?.Code,tool=="NavigateAccount"?navigation:order==null?null:"/account/orders/"+order.Id,retrieved,sections)};
+        if(naturalAnswers != null)
+            answer=await naturalAnswers.Compose(input.Content,new { RetrievedAnswer=answer, Sections=sections,
+                OrderCode=order?.Code, OrderStatusLabel=order == null ? null : Status(order.Status), PendingClarification=context.PendingClarification,
+                Tool=tool, DraftPrepared=tool is "PrepareChangeDraft" or "PrepareSupportDraft",
+                ActionExecuted=false },ct);
+        var messages=new List<ChatMessage>{new("user",(input.OriginalContent ?? input.Content).Trim(),DateTimeOffset.UtcNow),new("assistant",answer,DateTimeOffset.UtcNow,tool,order?.Code,tool=="NavigateAccount"?navigation:order==null?null:"/account/orders/"+order.Id,retrieved,sections,GenerationMode:naturalAnswers != null ? "bedrock-natural" : null)};
         await using var tx=await db.Database.BeginTransactionAsync(ct);
         await db.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock(hashtextextended({sessionId.ToString()},0))",ct);
         var current=await db.ChatSessions.SingleOrDefaultAsync(s=>s.Id==sessionId&&s.UserId==userId,ct)??throw new KeyNotFoundException();

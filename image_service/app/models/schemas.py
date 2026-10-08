@@ -90,7 +90,9 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     """Kết quả trả về của endpoint POST /chat."""
     answer: str = Field(..., description="Câu trả lời từ RAG assistant")
+    generation_mode: Optional[str] = None
     intent: str = Field("unknown", description="Ý định câu hỏi được phát hiện")
+    catalog_contexts: List[Dict[str, Any]] = Field(default_factory=list)
     identified_cars: List[IdentifiedCar] = Field(
         default_factory=list, description="Danh sách các xe nhận diện được từ ảnh"
     )

@@ -11,7 +11,7 @@ def test_chat_has_evidence_and_grounded_template(client):
     response = client.post("/api/chat", json={"question": "Giá CRV"})
     assert response.status_code == 200
     data = response.json()
-    assert data["generationMode"] == "template" and data["grounded"]
+    assert data["generationMode"] == "bedrock-natural" and data["grounded"]
     assert data["intent"] == "ask_price" and data["citations"]
     assert data["contexts"][0]["carId"]
     assert len({c["carId"] for c in data["contexts"]}) == len(data["contexts"])

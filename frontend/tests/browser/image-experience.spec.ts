@@ -88,7 +88,7 @@ test('image search rejects unsupported files and blocks replacing or resubmittin
 test('chat keeps image controls compact and validates attachments visibly', async ({ page }, testInfo) => {
   await guest(page)
   await page.goto('/chat')
-  await expect(page.locator('.assistant-image-link')).toHaveAttribute('href', '/search-image')
+  await expect(page.locator('.assistant-image-link')).toHaveText(/Tìm xe bằng ảnh/)
   await page.locator('input[type=file]').setInputFiles({ name: 'wrong.gif', mimeType: 'image/gif', buffer: Buffer.from('test') })
   await expect(page.getByRole('alert')).toContainText('JPEG, PNG hoặc WebP')
   await page.locator('input[type=file]').setInputFiles(image)

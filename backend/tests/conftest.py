@@ -102,7 +102,9 @@ def client(mock_db):
     app.dependency_overrides[get_db_connection] = override_get_db
     try:
         with patch("app.main.init_db_pool", new_callable=AsyncMock), patch("app.main.close_db_pool", new_callable=AsyncMock), patch("app.application.rag.dependencies.providers", return_value=(None, None)):
-            with TestClient(app) as test_client:
+            async def compose_for_test(question, verified_data):
+                return verified_data['retrievedAnswer']
+            with patch('app.routers.chat.compose_answer', side_effect=compose_for_test), TestClient(app) as test_client:
                 yield test_client
     finally:
         app.dependency_overrides.clear()

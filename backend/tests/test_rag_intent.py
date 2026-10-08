@@ -77,3 +77,10 @@ def test_model_subject_attributes_are_not_discovery_filters():
 def test_long_fuel_alias_does_not_conflict_with_nested_petrol_word():
     r = parse("Tìm xe lai xăng điện dưới 1 tỷ")
     assert r.filters.fuel_type == "Hybrid" and not r.ambiguities
+
+@pytest.mark.parametrize("question", ["so sánh tucson và xe hrv", "so sánh tuscon với hr v", "so sánh tucsson và hr-v"])
+def test_near_model_names_resolve_both_comparison_subjects(question):
+    result = parse(question, [car("t", "Hyundai Tucson", [], brand_name="Hyundai"), car("h", "Honda HR-V", [], brand_name="Honda")])
+    assert set(result.car_ids) == {"t", "h"}
+    assert result.intent == "compare_cars"
+    assert not result.ambiguities

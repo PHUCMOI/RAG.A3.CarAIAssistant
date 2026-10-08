@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { GuestChat } from '../src/pages/ChatPage'
 import { json } from './fixtures'
+vi.mock('../src/features/chat/routing', () => ({ understandQuestion: vi.fn(async (question: string) => ({ question, route: 'catalogue', needsClarification: false, clarification: null })) }))
 const mount = () => render(<MemoryRouter><GuestChat /></MemoryRouter>)
 it('retains the failed question and retries it without duplicate messages', async () => {
   const fetchMock = vi.fn().mockRejectedValueOnce(new Error('offline')).mockResolvedValue(json({ answer: 'Đây là xe phù hợp.', contexts: [{ carId: 'c1', displayName: 'Toyota', presenceSourceId: 's1' }] }))
@@ -16,7 +17,7 @@ it('retains the failed question and retries it without duplicate messages', asyn
   fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Nội dung khác' } })
   fireEvent.click(screen.getByRole('button', { name: 'Gửi lại câu hỏi' }))
   expect(await screen.findByText('Đây là xe phù hợp.')).toBeInTheDocument()
-  expect(fetchMock.mock.calls[1][1].body).toBe(JSON.stringify({ question: 'Tư vấn SUV' }))
+  expect(fetchMock.mock.calls[1][1].body).toBe(JSON.stringify({ question: 'Tư vấn SUV', clarification: null }))
   expect(screen.getAllByText('Tư vấn SUV')).toHaveLength(1)
   expect(screen.getByRole('link', { name: 'Xem nguồn tham khảo' })).toHaveAttribute('href', '/sources/s1')
   expect(screen.getByRole('textbox')).toHaveValue('Nội dung khác')
@@ -55,7 +56,7 @@ it('allows drafting while waiting and preserves the new draft after the answer a
   expect(screen.getByRole('button', { name: 'Gửi →' })).toBeDisabled()
   fireEvent.change(input, { target: { value: 'Còn xe 7 chỗ thì sao?' } })
   fireEvent.keyDown(input, { key: 'Enter' })
-  expect(fetch).toHaveBeenCalledTimes(1)
+  await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1))
   resolve(json({ answer: 'Có các lựa chọn SUV.', contexts: [] }))
   await screen.findByText('Có các lựa chọn SUV.')
   expect(input).toHaveValue('Còn xe 7 chỗ thì sao?')
