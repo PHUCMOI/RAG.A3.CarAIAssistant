@@ -18,6 +18,9 @@ và evidence bên dưới; không tuyên bố đã đủ điều kiện nộp ch
 - Release đã đủ 200; ba lỗi được sửa và kiểm 11/11 regression + 5/5 smoke.
 - Slide/report có baseline, release và regression riêng; không gộp lỗi cũ với runtime mới.
 - Kiểm 17 slide render và package/layout; source giải nén và DB mới có scope riêng.
+- Checkout sạch commit `549ffa0`: 194 backend tests trên DB mới từ SQL checkout,
+  npm ci/build và 122 C# tests đạt (25 opt-in skips). Evidence:
+  `evidence/committed-checkout-verification.json`. Python/SDK host được dùng lại.
 
 ## Phần nhóm cần làm
 

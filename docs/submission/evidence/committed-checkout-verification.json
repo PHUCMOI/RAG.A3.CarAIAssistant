@@ -1,0 +1,22 @@
+{
+  "recorded_at_utc": "2026-10-11T12:39:23.938227+00:00",
+  "git_commit": "549ffa08732066d7d642c3cc16bb49f624359f70",
+  "checkout": "C:/RAG-A3/.local/submission/committed-checkout",
+  "backend_fresh_database": {
+    "passed": 194,
+    "evidence": "committed-checkout-database.json"
+  },
+  "frontend": {
+    "npm_ci": true,
+    "npm_vulnerabilities": 0,
+    "typescript_vite_build": true,
+    "bundle_warning_kb": 508.54
+  },
+  "csharp": {
+    "passed": 122,
+    "skipped": 25,
+    "failed": 0,
+    "scope": "default suite; PostgreSQL/AWS/HTTP opt-in skipped"
+  },
+  "scope": "Local clean Git clone; fresh database from checkout SQL; existing host Python and SDK reused; not full new-machine deployment"
+}
