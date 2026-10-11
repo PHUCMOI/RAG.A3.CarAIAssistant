@@ -1,0 +1,17 @@
+{
+  "valid": true,
+  "errors": [],
+  "cases": 200,
+  "assigned_members": {
+    "1": 50,
+    "2": 50,
+    "3": 50,
+    "4": 50
+  },
+  "review_status_counts": {
+    "pending": 200
+  },
+  "independent_human_review_complete": false,
+  "unique_holdout_photos": 44,
+  "scope": "Structural and seed/index consistency, not human fact verification"
+}

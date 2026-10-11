@@ -5,7 +5,8 @@ from __future__ import annotations
 import base64
 import logging
 import time
-from pathlib import Path
+import binascii
+from image_service.app.config import get_settings
 from typing import Optional
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, status
 
@@ -34,28 +35,43 @@ async def chat(
     img_bytes: Optional[bytes] = None
     user_message: Optional[str] = message
 
+    max_bytes = get_settings().max_image_size_mb * 1024 * 1024
     content_type = request.headers.get("content-type", "")
     if "application/json" in content_type:
+        # Bound streamed JSON before parsing/decoding; never interpret a client string as a local path.
+        chunks = bytearray()
+        async for chunk in request.stream():
+            chunks.extend(chunk)
+            if len(chunks) > ((max_bytes + 2) // 3) * 4 + 8192:
+                raise HTTPException(413, "Ảnh quá lớn.")
+        import json
         try:
-            body = await request.json()
+            body = json.loads(chunks)
+            if not isinstance(body, dict):
+                raise ValueError()
+            if "image_url" in body:
+                raise HTTPException(422, "Chỉ nhận ảnh upload hoặc image_base64.")
             user_message = body.get("message")
             b64_str = body.get("image_base64")
-            if b64_str:
-                if "," in b64_str:
+            if b64_str is not None:
+                if not isinstance(b64_str, str):
+                    raise ValueError()
+                if b64_str.startswith("data:"):
                     b64_str = b64_str.split(",", 1)[1]
-                img_bytes = base64.b64decode(b64_str)
-            elif body.get("image_url"):
-                url_p = Path(body["image_url"])
-                if url_p.exists():
-                    img_bytes = url_p.read_bytes()
-        except Exception as e:
-            logger.warning("Không thể parse JSON: %s", e)
+                if len(b64_str) > ((max_bytes + 2) // 3) * 4:
+                    raise HTTPException(413, "Ảnh quá lớn.")
+                img_bytes = base64.b64decode(b64_str, validate=True)
+                if not img_bytes:
+                    raise ValueError()
+        except (ValueError, TypeError, IndexError, binascii.Error):
+            raise HTTPException(422, "JSON hoặc ảnh base64 không hợp lệ.")
 
     if file is not None:
-        try:
-            img_bytes = await file.read()
-        except Exception as e:
-            raise HTTPException(status_code=400, detail=f"Lỗi đọc file: {e}")
+        img_bytes = await file.read(max_bytes + 1)
+    if img_bytes is not None and len(img_bytes) > max_bytes:
+        raise HTTPException(413, "Ảnh quá lớn.")
+    if user_message is not None and (not isinstance(user_message, str) or len(user_message) > 4000):
+        raise HTTPException(422, "Câu hỏi không hợp lệ hoặc quá dài.")
 
     if not user_message and not img_bytes:
         raise HTTPException(
@@ -97,8 +113,8 @@ async def chat(
 
     try:
         if img_bytes and (image_err_msg or not candidate_car_ids):
-            answer = await compose_image_answer(text_query, {"retrievedAnswer": "Chưa xác định chắc chắn mẫu xe trong ảnh. Hãy gửi ảnh rõ hơn hoặc nêu tên xe để tra cứu thông tin.", "status": "needs_clarification"})
-            return ChatResponse(answer=answer, generation_mode="bedrock-natural", intent="needs_clarification", identified_cars=identified_cars, contexts=[], uncertain=True, latency_ms=round((time.perf_counter()-start_time)*1000,2))
+            final = await compose_image_answer(text_query, {"retrievedAnswer": "Chưa xác định chắc chắn mẫu xe trong ảnh. Hãy gửi ảnh rõ hơn hoặc nêu tên xe để tra cứu thông tin.", "status": "needs_clarification"})
+            return ChatResponse(answer=final['answer'], generation_mode="bedrock-natural", status=final['status'], grounded=final['grounded'], evidence=final['evidence'], citations=final['citations'], intent="needs_clarification", identified_cars=identified_cars, contexts=[], uncertain=True, latency_ms=round((time.perf_counter()-start_time)*1000,2))
         rag_out = await answer_rag(
             question=text_query,
             car_ids=candidate_car_ids[:1] if candidate_car_ids else None,
@@ -122,6 +138,9 @@ async def chat(
         identified_cars=identified_cars,
         contexts=contexts_res,
         catalog_contexts=catalog_contexts,
+        evidence=rag_out.get("evidence", []), citations=rag_out.get("citations", []),
+        retrieved_context_ids=rag_out.get("retrieved_context_ids", []),
+        status=rag_out.get("status", "no_data"), grounded=rag_out.get("grounded", False),
         uncertain=uncertain_flag,
         latency_ms=latency,
     )

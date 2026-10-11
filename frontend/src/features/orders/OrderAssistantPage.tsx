@@ -11,11 +11,12 @@ import { OrderProgressCard, type OrderProgress } from "./OrderProgressCard";
 import { AssistantDraftCard, type Draft } from "./AssistantDraftCard";
 import { SupportDraftCard, type SupportDraft } from "./SupportDraftCard";
 import { PaymentDetailsCard, DocumentDetailsCard, type PaymentDetails, type DocumentDetails } from "./OrderEvidenceCards";
-import { isOrderQuestion, understandQuestion } from "../chat/routing";
-import { AnswerContent, CopyAnswer, FailedQuestion, ChatComposer } from "../chat/ChatContent";
+import { AnswerContent, CopyAnswer, FailedQuestion, ChatComposer, AnswerSources } from "../chat/ChatContent";
 import { ChatStream, ContextLinks } from "../chat/ChatUtilities";
-import { readCache, writeCache, restoreCatalog, type CatalogContext } from "../chat/storage";
-type Message = {
+import { NextSteps } from "../chat/NextSteps";
+import { loadPendingTurn, clearPendingTurn } from "../chat/pendingTurn";
+import { readCache, writeCache, restoreCatalog, type CatalogContext, type GroundingMetadata } from "../chat/storage";
+type Message = GroundingMetadata & {
   imageUrl?: string;
   uncertain?: boolean;
   generationMode?: string;
@@ -70,6 +71,15 @@ export function UnifiedAssistantChat() {
     return typeof pendingQuestion === 'string' && pendingQuestion ? pendingQuestion : typeof composer === 'string' ? composer : '';
   });
   const [photo, setPhoto] = useState<File | null>(null);
+  const [attachmentReady, setAttachmentReady] = useState(false);
+  useEffect(() => {
+    let active = true;
+    loadPendingTurn().then(turn => {
+      if (active && turn) { setText(turn.text); setPhoto(turn.file); }
+    }).catch(() => { if (active) setError('Không khôi phục được ảnh đính kèm. Vui lòng chọn lại ảnh.'); })
+      .finally(() => { if (active) setAttachmentReady(true); });
+    return () => { active = false; };
+  }, [owner]);
   const [preview, setPreview] = useState('');
   const photoInput = useRef<HTMLInputElement>(null);
   const failedPhoto = useRef<{ file: File; preview: string; text: string } | null>(null);
@@ -91,14 +101,9 @@ export function UnifiedAssistantChat() {
   const [cacheReady, setCacheReady] = useState(false);
   const [retry, setRetry] = useState(0);
   const newSessionId = useRef<string | null>(null);
-  const pendingCatalogue = useRef<{ sessionId: string; requestId: string; version: number; content: string; originalContent?: string; clarification?: string | null; imageBase64?: string; mimeType?: string } | null>(null);
   const pending = useRef<{
-    sessionId: string;
-    requestId: string;
-    version: number;
-    content: string;
-    orderId: string | null;
-    originalContent?: string;
+    sessionId: string; requestId: string; version: number; content: string;
+    orderId: string | null; imageBase64?: string; mimeType?: string;
   } | null>(null);
   useEffect(() => {
     let active = true;
@@ -171,7 +176,7 @@ export function UnifiedAssistantChat() {
       setSession({ ...result, messages }); nameConversation(result);
       setSelected(result.selectedOrderId || "");
       setOrderContext(Boolean(messages.length && !messages.at(-1)?.catalog));
-      pending.current = null; pendingCatalogue.current = null; failedPhoto.current = null; setPhoto(null);
+      pending.current = null; failedPhoto.current = null; setPhoto(null);
       setFailed(null); setCacheReady(true); restored.current = true;
       setText("");
     } catch (e) {
@@ -182,12 +187,13 @@ export function UnifiedAssistantChat() {
   }
   function create() {
     if (locked.current || busy) return;
-    setError(''); setFailed(null); pending.current = null; pendingCatalogue.current = null; newSessionId.current = null;
+    setError(''); setFailed(null); pending.current = null; newSessionId.current = null;
     setSession({ id: '', version: 0, selectedOrderId: null, messages: [] });
     setOrderContext(Boolean(referencedOrder));
     setSelected(referencedOrder);
     setPhoto(null); failedPhoto.current = null; setText(''); setCacheReady(true); restored.current = true;
     writeCache('guest', 'pending-question', '');
+    void clearPendingTurn().catch(() => {});
   }
   async function sendQuestion(content: string, previous?: { orders: boolean; orderId: string }) {
     content = content.trim();
@@ -195,76 +201,48 @@ export function UnifiedAssistantChat() {
     const image = previous && failedPhoto.current ? failedPhoto.current : photo ? { file: photo, preview, text: content } : null;
     if ((!content && !image) || locked.current || busy) return;
     locked.current = true; setBusy(true); setError(''); setFailed(null); setPendingText(content || 'Nhận diện xe trong ảnh');
-    let routeToOrders = !image && (previous?.orders ?? isOrderQuestion(content, orderContext));
     const explicitReference = /\bAW-[A-Z0-9-]+\b/i.test(content) || /don truoc/.test(content.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').toLowerCase());
     const orderId = previous?.orderId ?? (explicitReference || session?.id ? '' : selected);
     const originalContent = content;
     try {
-      const understanding = await understandQuestion(content || 'Nhận diện xe trong ảnh', {
-        lastRoute: orderContext ? 'orders' : 'catalogue', hasImage: Boolean(image),
-        recentQuestions: (session?.messages || []).filter(m => m.role === 'user').slice(-3).map(m => m.content),
-        lastAnswer: session?.messages.at(-1)?.content.slice(0, 1800),
-      });
-      content = understanding.question;
-      routeToOrders = !image && understanding.route === 'orders';
       let activeSession = session;
       if (!activeSession?.id) {
         newSessionId.current ||= crypto.randomUUID();
         activeSession = await request<Session>('/assistant/sessions', 'POST', { id: newSessionId.current });
-        newSessionId.current = null;
-        setSession(activeSession);
+        newSessionId.current = null; setSession(activeSession);
       }
-      if (!routeToOrders) {
-        if (!previous || !pendingCatalogue.current) {
-          let imageBase64: string | undefined;
-          if (image) {
-            const data = await new Promise<string>((resolve, reject) => {
-              const reader = new FileReader(); reader.onload = () => resolve(String(reader.result)); reader.onerror = () => reject(new Error('Không đọc được ảnh.')); reader.readAsDataURL(image.file);
-            });
-            imageBase64 = data.slice(data.indexOf(',') + 1);
-          }
-          pendingCatalogue.current = { sessionId: activeSession.id, requestId: crypto.randomUUID(), version: activeSession.version, content, originalContent, clarification: understanding.needsClarification ? understanding.clarification : null, imageBase64, mimeType: image?.file.type };
+      if (!previous || !pending.current) {
+        let imageBase64: string | undefined;
+        if (image) {
+          const data = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader(); reader.onload = () => resolve(String(reader.result)); reader.onerror = () => reject(new Error('Không đọc được ảnh.')); reader.readAsDataURL(image.file);
+          });
+          imageBase64 = data.slice(data.indexOf(',') + 1);
         }
-        const { sessionId, ...body } = pendingCatalogue.current;
-        try {
-          const result = await request<Session>(`/assistant/sessions/${sessionId}/catalogue-messages`, 'POST', body);
-          updateSession(result); pendingCatalogue.current = null; pending.current = null;
-          if (image && photo === image.file) setPhoto(null);
-          failedPhoto.current = null; setOrderContext(false);
-          request<SessionItem[]>('/assistant/sessions').then(setSessions).catch(() => setLoadError('Tin nhắn đã gửi; chưa cập nhật được danh sách hội thoại.'));
-        } catch (e) {
-          if (e instanceof ApiError && e.status === 409) {
-            pendingCatalogue.current = null;
-            try { updateSession(await request<Session>('/assistant/sessions/' + activeSession.id)); } catch { /* Preserve original error. */ }
-          }
-          throw e;
-        }
-      } else {
-        pendingCatalogue.current = null; failedPhoto.current = null;
-        if (!pending.current || pending.current.sessionId !== activeSession.id || pending.current.content !== content || pending.current.orderId !== (orderId || null)) {
-          pending.current = { sessionId: activeSession.id, requestId: crypto.randomUUID(), version: activeSession.version, content, originalContent, orderId: orderId || null };
-        }
-        const { sessionId, ...body } = pending.current;
-        try {
-          const result = await request<Session>(`/assistant/sessions/${sessionId}/messages`, 'POST', body);
-          updateSession(result);
-          setOrderContext(true); setSelected(result.selectedOrderId || '');
+        pending.current = { sessionId: activeSession.id, requestId: crypto.randomUUID(), version: activeSession.version,
+          content, orderId: orderId || null, imageBase64, mimeType: image?.file.type };
+      }
+      const { sessionId, ...body } = pending.current;
+      try {
+        const result = await request<Session>(`/assistant/sessions/${sessionId}/turns`, 'POST', body);
+        updateSession(result); pending.current = null;
+        if (image && photo === image.file) setPhoto(null);
+        failedPhoto.current = null; setOrderContext(Boolean(result.messages.length && !result.messages.at(-1)?.catalog));
+        setSelected(result.selectedOrderId || '');
+        request<SessionItem[]>('/assistant/sessions').then(setSessions).catch(() => setLoadError('Tin nhắn đã gửi; chưa cập nhật được danh sách hội thoại.'));
+      } catch (e) {
+        if (e instanceof ApiError && e.status === 409) {
           pending.current = null;
-          // A list refresh failure must never turn an accepted message into a retry.
-          request<SessionItem[]>('/assistant/sessions').then(setSessions).catch(() => setLoadError('Tin nhắn đã gửi; chưa cập nhật được danh sách hội thoại.'));
-        } catch (e) {
-          if (e instanceof ApiError && e.status === 409) {
-            pending.current = null;
-            try { updateSession(await request<Session>('/assistant/sessions/' + activeSession.id)); } catch { /* Preserve original error. */ }
-          }
-          throw e;
+          try { updateSession(await request<Session>('/assistant/sessions/' + activeSession.id)); } catch { /* Preserve original error. */ }
         }
+        throw e;
       }
       setFailed(null); setText(current => current === draftAtStart && draftAtStart.trim() === content ? '' : current); setCacheReady(true); restored.current = true;
       writeCache('guest', 'pending-question', '');
+    void clearPendingTurn().catch(() => {});
     } catch (e) {
       if (image) failedPhoto.current = image;
-      setFailed({ content: originalContent || 'Nhận diện xe trong ảnh', orders: routeToOrders, orderId });
+      setFailed({ content: originalContent || 'Nhận diện xe trong ảnh', orders: false, orderId });
       setError(e instanceof Error ? e.message : 'Không gửi được câu hỏi.');
     } finally { locked.current = false; setBusy(false); setPendingText(''); input.current?.focus(); }
   }
@@ -307,6 +285,8 @@ export function UnifiedAssistantChat() {
                     {m.imageUrl && <img className="chat-image-preview-bubble" src={m.imageUrl} alt="Ảnh xe đã gửi" />}
                     {m.uncertain && <p className="chat-uncertain-warning">Kết quả nhận diện chưa chắc chắn. Hãy kiểm tra thông tin xe.</p>}
                     <ContextLinks contexts={m.contexts} />
+                    {m.role === "assistant" && <AnswerSources metadata={m} />}
+                    {m.role === "assistant" && <NextSteps context={{ ...m, role: 'customer' }} busy={busy} onPrompt={step => { if (step.prompt) choose(step.prompt); }} />}
                     {m.role !== "user" && <CopyAnswer content={m.generationMode === 'bedrock-natural' ? m.content : m.sections?.length ? m.sections.map(section => `${topicNames[section.topic] || section.topic}\n${section.content}`).join("\n\n") : m.content} />}
                     {!m.sections?.length && m.retrievedAt && (
                       <small>
@@ -320,15 +300,15 @@ export function UnifiedAssistantChat() {
                   </article>
                 ))}
       {pendingText && <ThinkingMessage question={pendingText} />}
-      {failed && !pendingText && <FailedQuestion content={failed.content} error={error} busy={busy} onRetry={() => void sendQuestion(failed.content, failed)} />}
+      {failed && !pendingText && <FailedQuestion role="customer" content={failed.content} error={error} busy={busy} onRetry={() => void sendQuestion(failed.content, failed)} />}
       {session?.supportSuggested && <p>Vấn đề chưa được giải quyết? Bạn có thể chuẩn bị phiếu hỗ trợ để gặp nhân viên.</p>}
               {session?.draft && (session.draft.type === "support" ? <SupportDraftCard key={session.id} draft={session.draft as SupportDraft} sessionId={session.id} version={session.version} busy={busy} setBusy={setBusy} update={updateSession} error={setError} /> : <AssistantDraftCard key={session.id} draft={session.draft} sessionId={session.id} version={session.version} busy={busy} setBusy={setBusy} update={updateSession} error={setError} />)}
     </ChatStream>
     <div className="assistant-composer-area">
-      {loadError && <div className="assistant-error" role="alert"><p>{loadError}</p><button className="mini-button" disabled={loading} onClick={() => setRetry(v => v + 1)}>Thử lại tải dữ liệu</button></div>}
+      {loadError && <div className="assistant-error" role="alert"><p>{loadError}</p><button className="mini-button" disabled={loading} onClick={() => setRetry(v => v + 1)}>Thử lại tải dữ liệu</button><NextSteps context={{ role: 'customer', status: 'error' }} /></div>}
       {loading && <p className="assistant-data-loading" role="status">Đang cập nhật lịch sử và đơn hàng…</p>}
-      {error && !failed && <div className="assistant-error" role="alert">{error}</div>}
-      <ChatComposer canSend={!!photo} tools={<button type="button" className="chat-attach-btn" disabled={busy} onClick={() => photoInput.current?.click()} aria-label="Đính kèm ảnh xe">▧</button>} attachment={<div className="assistant-attachments"><input ref={photoInput} type="file" hidden disabled={busy} accept="image/jpeg,image/png,image/webp" onChange={event => { const file = event.target.files?.[0]; event.target.value = ''; if (!file) return; if (file.size > 10_000_000) { setError('Chọn ảnh nhỏ hơn 10 MB.'); return; } if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) { setError('Chọn ảnh JPEG, PNG hoặc WebP.'); return; } setPhoto(file); setError(''); }} />{photo && <div className="chat-attachment-bar">{preview && <img className="chat-attachment-thumb" src={preview} alt="Ảnh xe đính kèm" />}<span className="chat-attachment-name">{photo.name}</span><button type="button" disabled={busy} onClick={() => setPhoto(null)} aria-label="Bỏ ảnh đính kèm">×</button></div>}</div>} inputRef={input} value={text} onChange={setText} busy={busy} onSubmit={send} sendLabel="Gửi câu hỏi" placeholder="Hỏi về xe, đơn hàng hoặc điều bạn cần hỗ trợ…" notice="Yêu cầu thay đổi chỉ được gửi khi bạn xác nhận." />
+      {error && !failed && <div className="assistant-error" role="alert">{error}<NextSteps context={{ role: 'customer', status: 'error' }} /></div>}
+      <ChatComposer canSend={!!photo} tools={<button type="button" className="chat-attach-btn" disabled={busy} onClick={() => photoInput.current?.click()} aria-label="Đính kèm ảnh xe">▧</button>} attachment={<div className="assistant-attachments"><input ref={photoInput} type="file" hidden disabled={busy} accept="image/jpeg,image/png,image/webp" onChange={event => { const file = event.target.files?.[0]; event.target.value = ''; if (!file) return; if (file.size > 10_000_000) { setError('Chọn ảnh nhỏ hơn 10 MB.'); return; } if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) { setError('Chọn ảnh JPEG, PNG hoặc WebP.'); return; } setPhoto(file); setError(''); }} />{photo && <div className="chat-attachment-bar">{preview && <img className="chat-attachment-thumb" src={preview} alt="Ảnh xe đính kèm" />}<span className="chat-attachment-name">{photo.name}</span><button type="button" disabled={busy} onClick={() => setPhoto(null)} aria-label="Bỏ ảnh đính kèm">×</button></div>}</div>} inputRef={input} value={text} onChange={setText} busy={busy || !attachmentReady} onSubmit={send} sendLabel="Gửi câu hỏi" placeholder="Hỏi về xe, đơn hàng hoặc điều bạn cần hỗ trợ…" notice="Yêu cầu thay đổi chỉ được gửi khi bạn xác nhận." />
     </div>
   </ChatLayout>;
 

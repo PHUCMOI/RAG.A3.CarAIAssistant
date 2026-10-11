@@ -9,13 +9,15 @@ def test_image_consultation_forwards_question_and_recognized_car_to_common_rag()
     captured = []
     def handler(request):
         captured.append(json.loads(request.content))
-        return httpx.Response(200, json={"answer": "Dữ liệu đã tra cứu", "intent": "ask_warranty", "contexts": [{"carId": "car_34_3", "displayName": "Honda CR-V", "description": "Catalogue description"}]})
+        return httpx.Response(200, json={"answer": "Dữ liệu đã tra cứu", "intent": "ask_warranty", "grounded": True, "status": "partial", "evidence": [{"contextId": "warranty"}], "citations": [{"contextId": "warranty", "title": "Warranty source"}], "contexts": [{"carId": "car_34_3", "displayName": "Honda CR-V", "description": "Catalogue description"}]})
     result = asyncio.run(answer_rag("Xe này bảo hành bao lâu?", ["car_34_3"], transport=httpx.MockTransport(handler)))
     assert captured == [{"question": "Xe này bảo hành bao lâu?", "topK": 5, "carIds": ["car_34_3"]}]
     assert result["answer"] == "Dữ liệu đã tra cứu"
     assert result["contexts"][0]["car_id"] == "car_34_3"
     assert "score" not in result["contexts"][0]
     assert result["catalog_contexts"][0]["description"] == "Catalogue description"
+    assert result['grounded'] and result['status'] == 'partial'
+    assert result['evidence'][0]['contextId'] == result['citations'][0]['contextId'] == 'warranty'
 
 
 def test_unknown_text_does_not_choose_a_default_car():

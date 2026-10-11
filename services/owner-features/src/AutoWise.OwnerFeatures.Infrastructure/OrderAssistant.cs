@@ -26,14 +26,16 @@ public sealed class OrderAssistant(OrdersDb db,ICommonCatalogue common, BedrockA
     }
     async Task<ChatSessionRecord> Owned(Guid id,Guid userId,CancellationToken ct)=>await db.ChatSessions.AsNoTracking().SingleOrDefaultAsync(s=>s.Id==id&&s.UserId==userId,ct)??throw new KeyNotFoundException();
     public async Task<ChatSession> Get(Guid sessionId,Guid userId,CancellationToken ct)=>View(await Owned(sessionId,userId,ct));
-    public async Task<ChatSession> Send(Guid sessionId,Guid userId,ChatInput input,CancellationToken ct) {
+    public async Task<ChatSession> Send(Guid sessionId,Guid userId,ChatInput input,CancellationToken ct,string? trustedRequestHash=null) {
         if(input.RequestId==Guid.Empty||string.IsNullOrWhiteSpace(input.Content)||input.Content.Length>1000) throw new BusinessRuleException("Tin nhắn cần 1–1000 ký tự và requestId hợp lệ.");
         var row=await Owned(sessionId,userId,ct);
-        var hash=Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(input,OrderStore.Json))));
+        var hash=trustedRequestHash ?? Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(input,OrderStore.Json))));
         var turns=Turns(row);
         if(turns.FirstOrDefault(t=>t.RequestId==input.RequestId) is {} existing) {if(existing.Hash!=hash)throw new VersionConflictException();return View(row);}
         if(row.Version!=input.Version)throw new VersionConflictException();
         if(turns.Count>=100)throw new BusinessRuleException("Hội thoại đạt 100 lượt; hãy tạo hội thoại mới.");
+        if (RestrictedAdminQuestions.Matches(input.Content) || RestrictedAdminQuestions.Matches(input.OriginalContent ?? ""))
+            return await RestrictedAdminQuestions.Reject(db, sessionId, userId, input.RequestId, input.Version, input.OriginalContent ?? input.Content, hash, ct);
         var contextEnabled = true; // Local order references are always conversational.
         var context = row.Context == "{}" ? ConversationContext.Recover(row.SelectedOrderId, turns)
             : JsonSerializer.Deserialize<ConversationContext>(row.Context, OrderStore.Json) ?? new();
@@ -176,19 +178,39 @@ public sealed class OrderAssistant(OrdersDb db,ICommonCatalogue common, BedrockA
             if(context.PendingClarification != null && ConversationContext.IsBusinessIntent(intent))
                 context=context with {PendingIntent=decision.Topics[0],PendingIntents=decision.Topics.Where(ConversationContext.IsBusinessIntent).Distinct().ToList()};
         }
-        if(naturalAnswers != null)
-            answer=await naturalAnswers.Compose(input.Content,new { RetrievedAnswer=answer, Sections=sections,
+        if(input.ImageMatch is {} image) {
+            var content = image.CarId == null ? "Chưa xác định được mẫu xe trong ảnh; không thể đối chiếu với đơn." :
+                order == null ? "Chưa xác định đơn thuộc tài khoản để đối chiếu ảnh." :
+                $"Xe gần giống nhất trong ảnh: {image.DisplayName}, độ tương đồng {image.SimilarityPercent}%" +
+                (image.Uncertain ? "; kết quả chưa chắc chắn." : ".") +
+                (image.CarId == order.CarId ? " Mẫu xe khớp carId catalogue trên đơn." : " Mẫu xe không khớp carId catalogue trên đơn.") +
+                " Chỉ đối chiếu mẫu xe; ảnh không xác minh chiếc xe thực tế hoặc số VIN của đơn.";
+            sections ??= [];
+            sections.Add(new("image",content,order == null || image.CarId == null || image.Uncertain ? "missing" : "success",retrieved,order == null ? null : "/account/orders/"+order.Id));
+            answer += "\n\n" + content;
+        }
+        NaturalAnswers.Result? final=null;
+        if(naturalAnswers != null) {
+            final=await naturalAnswers.ComposeGrounded(input.Content,new { RetrievedAnswer=answer, Sections=sections,
+                status=context.PendingClarification != null ? "needs_clarification" :
+                    sections is {Count:>0} ? sections.All(s=>s.ResultStatus=="success") ? "ok" : "partial" :
+                    order == null && tool == null ? "no_data" : "ok",
                 OrderCode=order?.Code, OrderStatusLabel=order == null ? null : Status(order.Status), PendingClarification=context.PendingClarification,
                 Tool=tool, DraftPrepared=tool is "PrepareChangeDraft" or "PrepareSupportDraft",
-                ActionExecuted=false },ct);
-        var messages=new List<ChatMessage>{new("user",(input.OriginalContent ?? input.Content).Trim(),DateTimeOffset.UtcNow),new("assistant",answer,DateTimeOffset.UtcNow,tool,order?.Code,tool=="NavigateAccount"?navigation:order==null?null:"/account/orders/"+order.Id,retrieved,sections,GenerationMode:naturalAnswers != null ? "bedrock-natural" : null)};
+                imageOrderComparison=input.ImageMatch, ActionExecuted=false },ct);
+            answer=final.Answer;
+        }
+        var messages=new List<ChatMessage>{new("user",(input.OriginalContent ?? input.Content).Trim(),DateTimeOffset.UtcNow,ImageUrl:input.ImageUrl),new("assistant",answer,DateTimeOffset.UtcNow,tool,order?.Code,tool=="NavigateAccount"?navigation:order==null?null:"/account/orders/"+order.Id,retrieved,sections,Uncertain:input.ImageMatch?.Uncertain,GenerationMode:naturalAnswers != null ? "bedrock-natural" : null,Grounded:final?.Grounded,Status:final?.Status,Evidence:final?.Evidence,Citations:final?.Citations)};
         await using var tx=await db.Database.BeginTransactionAsync(ct);
         await db.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock(hashtextextended({sessionId.ToString()},0))",ct);
         var current=await db.ChatSessions.SingleOrDefaultAsync(s=>s.Id==sessionId&&s.UserId==userId,ct)??throw new KeyNotFoundException();
         var currentTurns=Turns(current);
         if(currentTurns.FirstOrDefault(t=>t.RequestId==input.RequestId) is {} replay) {if(replay.Hash!=hash)throw new VersionConflictException();return View(current);}
         if(current.Version!=input.Version)throw new VersionConflictException();
+        var storedImage = await ChatAttachments.Store(db,sessionId,input.RequestId,input.ImageUrl,ct);
+        messages[0] = messages[0] with { ImageUrl = storedImage };
         currentTurns.Add(new(input.RequestId,hash,messages));current.Payload=JsonSerializer.Serialize(currentTurns,OrderStore.Json);current.SelectedOrderId=selected;current.Version++;current.UpdatedAt=DateTimeOffset.UtcNow;
+        ChatAttachments.CheckHistory(current.Payload);
         current.Context=JsonSerializer.Serialize(context,OrderStore.Json);
         await db.SaveChangesAsync(ct);await tx.CommitAsync(ct);return View(current);
     }

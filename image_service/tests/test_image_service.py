@@ -138,7 +138,14 @@ def test_api_search_text(client):
     assert data["total_found"] > 0
 
 
-def test_api_chat_text_only(client):
+def test_api_chat_text_only(client, monkeypatch):
+    async def rag_fixture(**kwargs):
+        assert kwargs['question'] == 'Mazda CX-5 bảo hành bao lâu?'
+        assert kwargs['car_ids'] is None
+        return dict(answer='Bảo hành tham khảo 60 tháng.', intent='ask_warranty',
+                    generation_mode='bedrock-natural', status='ok', grounded=True,
+                    evidence=[], citations=[], retrieved_context_ids=['warranty:car:car_57_7:v1'])
+    monkeypatch.setattr('image_service.app.routers.chat.answer_rag', rag_fixture)
     res = client.post(
         "/chat",
         data={"message": "Mazda CX-5 bảo hành bao lâu?"},
@@ -148,9 +155,17 @@ def test_api_chat_text_only(client):
     assert "answer" in data
     assert "intent" in data
     assert "bảo hành" in data["answer"].lower() or "tháng" in data["answer"].lower()
+    assert data['retrieved_context_ids'] == ['warranty:car:car_57_7:v1']
 
 
-def test_api_chat_with_image(client, sample_valid_image_bytes):
+def test_api_chat_with_image(client, sample_valid_image_bytes, monkeypatch):
+    async def rag_fixture(**kwargs):
+        assert kwargs['car_ids'] and len(kwargs['car_ids']) == 1
+        assert kwargs['image_match']['carId'] == kwargs['car_ids'][0]
+        return dict(answer='Mẫu xe gần giống nhất có giá tham khảo từ dữ liệu.', intent='ask_price',
+                    generation_mode='bedrock-natural', status='ok', grounded=True,
+                    evidence=[], citations=[], retrieved_context_ids=['price:fixture'])
+    monkeypatch.setattr('image_service.app.routers.chat.answer_rag', rag_fixture)
     res = client.post(
         "/chat",
         data={"message": "Xe trong ảnh giá bao nhiêu?"},

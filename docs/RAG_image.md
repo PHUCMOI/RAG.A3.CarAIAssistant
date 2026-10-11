@@ -1,4 +1,4 @@
-> Backend runtime đã chuyển sang Python/FastAPI (2026-10-02). Các cấu trúc RAG bên dưới là mục tiêu; hiện API chính chỉ structured retrieval. Image service là prototype tùy chọn, chưa tích hợp frontend hoặc pgvector.
+> Cập nhật runtime 11/10/2026: image service CLIP/FAISS đã tích hợp frontend tìm ảnh và unified chat. Text retrieval dùng SQL/lexical/pgvector; Bedrock viết và audit câu trả lời cuối. Image vectors vẫn ở FAISS riêng, chưa chuyển vào pgvector. Các thiết kế fusion/reranker bên dưới là hướng mở rộng; xem `chat-pipeline-bedrock.md` và `RAG_STATUS.md` cho runtime.
 
 # AutoWise Image RAG — Business logic và implementation specification
 

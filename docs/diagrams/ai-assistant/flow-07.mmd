@@ -1,0 +1,11 @@
+flowchart TD
+    D["VerifiedData: facts / sections / sources / qualifiers"] --> W["Bedrock viết câu trả lời tiếng Việt"]
+    W --> C["Backend kiểm số, đơn vị, URL/HTML, giá đúng xe, giới hạn ảnh"]
+    C --> R["Bedrock review: từng claim, chủ thể, trạng thái, phủ định, điều kiện"]
+    R --> VALID{"References và nội dung hợp lệ?"}
+    VALID -->|Có| META["Lọc sources theo contextIds thực sự hỗ trợ câu trả lời"]
+    META --> OUT["answer / grounded / status / evidence / citations"]
+    VALID -->|Không, lượt đầu| FIX["Feedback rồi viết lại một lần"]
+    C -->|Sai, lượt đầu| FIX
+    FIX --> W
+    VALID -->|Vẫn sai| ERR["503"]

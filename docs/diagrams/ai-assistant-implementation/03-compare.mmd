@@ -1,0 +1,12 @@
+flowchart TD
+    A["So sánh giá và số chỗ hai mẫu xe"] --> B["Resolve 2–3 carIds, bỏ brand filter"]
+    B --> C{"Tên xe và điều kiện rõ?"}
+    C -->|không| D["Yêu cầu làm rõ"]
+    C -->|có| E["SQL đúng các xe + retrieval"]
+    E --> F["Dành evidence từng xe, ưu tiên price/specs"]
+    F --> G["Coverage các cặp carId / field được hỏi"]
+    G --> H["Draft kiểm facts và subject, ghi missing/partial"]
+    H --> I["Backend tính chênh lệch giá có nguồn"]
+    I --> J["Bedrock viết bảng từng xe"]
+    J --> K["Kiểm số, giá đúng cột + semantic review"]
+    K --> L["Bảng + citations thực dùng + contexts xe"]

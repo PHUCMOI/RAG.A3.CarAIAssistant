@@ -1,0 +1,15 @@
+flowchart TD
+    A["Câu hỏi + filters + carIds"] --> B["SQL có tham số: chọn xe đúng điều kiện"]
+    B --> C["Snapshot và documents hiện tại theo sections"]
+    C --> D["Phạm vi document IDs được phép"]
+    D --> L["Lexical: tsquery / ts_rank_cd, top 30"]
+    D --> Q["E5 query prefix, L2, 768 chiều"]
+    Q --> V["pgvector cosine distance, đúng model/version, top 30"]
+    L --> F["Loại chunks sai content hash"]
+    V --> F
+    F --> R["RRF: tổng 1 / (60 + rank)"]
+    C --> S["Bổ sung facts SQL khi chưa có trong ranking"]
+    R --> T["Ưu tiên sections và dành slot từng xe"]
+    S --> T
+    T --> K["topK 1–20: evidence + cars + sources"]
+    K --> P["Context: subjectId / contextId / factId"]

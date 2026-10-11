@@ -1,13 +1,18 @@
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 namespace AutoWise.OwnerFeatures.Application;
 public record CreateChatSessionRequest(Guid Id);
-public record ChatInput(Guid RequestId, long Version, string Content, Guid? OrderId, string? OriginalContent=null);
+public record ImageOrderEvidence(string? CarId, string? DisplayName, double? SimilarityPercent, bool Uncertain);
+public record ChatGrounding(bool Grounded, string Status, List<JsonElement> Evidence, List<JsonElement> Citations);
+public record ChatInput(Guid RequestId, long Version, string Content, Guid? OrderId, string? OriginalContent=null, [property: JsonIgnore] ImageOrderEvidence? ImageMatch=null, [property: JsonIgnore] string? ImageUrl=null);
+public record UnifiedChatInput(Guid RequestId, long Version, string Content, Guid? OrderId=null, string? ImageBase64=null, string? MimeType=null);
 public record ChatSection(string Topic, string Content, string ResultStatus, DateTimeOffset RetrievedAt, string? DetailUrl=null, OrderProgressSnapshot? Progress=null, PaymentDetails? Payment=null, DocumentDetails? Documents=null);
 public record CatalogContext(string CarId, string DisplayName, string? PresenceSourceId=null, string? Description=null, string? Summary=null, Dictionary<string,string>? Specifications=null);
-public record CatalogueChatInput(Guid RequestId, long Version, string Content, string? ImageBase64=null, string? MimeType=null, string? OriginalContent=null, string? Clarification=null);
-public record ChatMessage(string Role, string Content, DateTimeOffset At, string? Tool=null, string? OrderCode=null, string? DetailUrl=null, DateTimeOffset? RetrievedAt=null, List<ChatSection>? Sections=null, bool Catalog=false, List<CatalogContext>? Contexts=null, string? ImageUrl=null, bool? Uncertain=null, string? GenerationMode=null);
+public record CatalogueChatInput(Guid RequestId, long Version, string Content, string? ImageBase64=null, string? MimeType=null, string? OriginalContent=null, [property: JsonIgnore] string? Clarification=null);
+public record ChatMessage(string Role, string Content, DateTimeOffset At, string? Tool=null, string? OrderCode=null, string? DetailUrl=null, DateTimeOffset? RetrievedAt=null, List<ChatSection>? Sections=null, bool Catalog=false, List<CatalogContext>? Contexts=null, string? ImageUrl=null, bool? Uncertain=null, string? GenerationMode=null, bool? Grounded=null, string? Status=null, List<JsonElement>? Evidence=null, List<JsonElement>? Citations=null);
 public record ChatTurn(Guid RequestId, string Hash, List<ChatMessage> Messages);
 public record ChatSession(Guid Id, long Version, Guid? SelectedOrderId, List<ChatMessage> Messages, AssistantDraft? Draft=null, bool SupportSuggested=false, string? Title=null);
 public interface IOrderAssistant
@@ -15,7 +20,7 @@ public interface IOrderAssistant
     Task<object> List(Guid userId, CancellationToken ct);
     Task<ChatSession> Create(Guid userId, Guid sessionId, CancellationToken ct);
     Task<ChatSession> Get(Guid sessionId, Guid userId, CancellationToken ct);
-    Task<ChatSession> Send(Guid sessionId, Guid userId, ChatInput input, CancellationToken ct);
+    Task<ChatSession> Send(Guid sessionId, Guid userId, ChatInput input, CancellationToken ct, string? trustedRequestHash=null);
 }
 public static class AssistantIntent
 {

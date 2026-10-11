@@ -13,7 +13,6 @@ from app.application.rag.documents import build_documents, make_document
 from app.application.rag.indexing import IndexStore, split_documents, sync_documents, embed_pending
 from app.infrastructure.ai.embedding import E5EmbeddingProvider, validate_vector
 import asyncpg
-import httpx
 
 
 async def validate_index(conn, expected_cars=50, require_embeddings=True, expected_model=None, expected_version=None):
@@ -104,16 +103,9 @@ async def run(args):
             await provider.resolve_version()
         report["validation"] = await validate_index(conn, args.expected_cars, require_embeddings,
             provider.model if require_embeddings else None, provider.version if require_embeddings else None)
-        report["generationProvider"] = {"model": settings.ollama_model, "digest": None, "status": "unavailable"}
-        try:
-            async with httpx.AsyncClient(timeout=3) as client:
-                response = await client.get(settings.ollama_url.rstrip("/") + "/api/tags")
-                response.raise_for_status()
-                model = next((m for m in response.json()["models"] if m.get("name") == settings.ollama_model), None)
-                report["generationProvider"].update(digest=model.get("digest") if model else None,
-                    status="installed" if model else "not_installed")
-        except (httpx.HTTPError, ValueError, KeyError):
-            pass  # Text index readiness is independent of the generation server.
+        report["generationProvider"] = {"provider": "bedrock", "model": settings.bedrock_model_id,
+            "region": settings.aws_region, "status": "not_probed"}
+        # Index validation does not invoke the model; live smoke verifies generation.
         (ROOT / "data").mkdir(exist_ok=True)
         (ROOT / "data" / "text_index_report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
         print(json.dumps(report, ensure_ascii=False, indent=2))

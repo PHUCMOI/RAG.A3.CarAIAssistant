@@ -16,3 +16,5 @@ Endpoint compose nhận tối đa 60.000 ký tự dữ liệu. Nó chỉ diễn 
 ## Hiểu câu hỏi trước khi chọn công cụ
 
 Chat khách và chat tài khoản gọi `/api/chat/understand` qua Bedrock trước khi chọn catalogue hoặc đơn hàng. Đầu vào gồm câu gốc, ba câu hỏi gần nhất, câu trả lời gần nhất và chủ đề hiện tại. Model sửa lỗi chính tả, thiếu dấu và viết tắt khi đủ rõ; câu mơ hồ đi vào luồng hỏi lại. Không tự sửa mã đơn hoặc thêm số tiền/ngày. Backend kiểm tra các tham chiếu số và mã đơn trong câu đã diễn đạt; bản gốc vẫn được lưu trong lịch sử tài khoản. Việc chọn đơn và quyền truy cập vẫn do công cụ xác thực quyết định. Khả năng hiểu ngôn ngữ là xác suất, không bảo đảm mọi lỗi gõ đều được giải quyết chính xác.
+
+Các endpoint Python `/api/chat/compose`, `/api/chat/understand`, `/api/chat/title` chỉ dành cho dịch vụ nội bộ và yêu cầu header `X-AutoWise-Internal-Token`. Frontend gửi input thô đến `/api/chat/turns` (guest) hoặc endpoint `/assistant/sessions/{id}/turns` đã đăng nhập; token không được gửi xuống browser.

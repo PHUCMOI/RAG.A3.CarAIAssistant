@@ -11,7 +11,7 @@ Các lệnh dưới đây chạy từ root repository.
 ## Chuẩn bị và indexing
 
 Runtime gồm Python 3.12, PostgreSQL 17/pgvector, multilingual E5 768 chiều và
-Claude Haiku 4.5 qua Bedrock hoặc Ollama `qwen2.5:3b`, chọn bằng `LLM_PROVIDER`.
+Claude Haiku 4.5 trên Bedrock (`LLM_PROVIDER=bedrock`, provider duy nhất).
 Xem [cấu hình Bedrock](../../../../docs/BEDROCK.md). Cài dependencies bằng `backend/requirements-rag.txt`.
 Với database volume đã tồn tại, áp dụng migration trước khi tạo index:
 
@@ -57,7 +57,7 @@ Response giữ `results` là CarDto, bổ sung `intent`, `filters`, `evidence` v
 ```
 
 Response giữ `answer`, `contexts`, `grounded`, bổ sung `intent`, `filters`,
-`evidence`, `citations`, `status`, `generationMode` và `retrieval`.
+`evidence`, `citations`, `status`, `generationMode`, `retrieval` và `retrievedContextIds`.
 `contexts` có một card mỗi xe; evidence có thể gồm nhiều chunks mỗi xe.
 
 Module ảnh có thể truyền candidate IDs vào `carIds`; IDs phải tồn tại và thỏa
@@ -65,7 +65,7 @@ SQL filters. Tên file trong `imageName` không phải bằng chứng nhận di�
 Citation URL và `/sources/{id}` lấy từ database. Field chưa có nguồn riêng dẫn
 tới context ID của bản ghi, không được gắn nhãn nguồn official.
 
-## Grounded generation và fallback
+## Draft nội bộ và câu trả lời cuối
 
 Model chọn `statementIds` từ statements đã xác minh. Backend dựng Draft gồm
 answer/factIds/contextIds và kiểm tra exact statements, subject, field, units
@@ -73,18 +73,20 @@ và references. Với so sánh, Draft phải có dữ kiện cho mỗi xe và c�
 được hỏi có dữ liệu. Model bỏ sót sẽ được repair một lần rồi fallback template.
 Nếu evidence budget thiếu thuộc tính có trong catalogue, status là `partial`.
 
-Backend thêm cảnh báo về giá tham khảo, DVM-CAR/thị trường Anh, năm/phiên bản,
-thị trường phân phối và điều kiện bảo hành. Đây là generation extractive; chưa
-chấp nhận paraphrase tự do có claim chưa kiểm chứng. Faithfulness/completeness
-vẫn cần review theo claim, không suy ra từ việc có citations.
+Draft này là đầu vào nội bộ. Public chat tiếp tục gọi Bedrock viết lời tự nhiên;
+backend đính kèm requiredQualifiers rồi kiểm số/đơn vị/subject và gọi audit ngữ nghĩa.
+Audit chọn context IDs hỗ trợ lời trả lời cuối để lọc evidence/citations.
+`retrievedContextIds` giữ thứ tự trước lọc cho evaluation. Faithfulness/completeness
+cần review theo claim, không suy ra từ citations hoặc verdict của model.
 
-Generation có tối đa một repair trong timeout chung: `BEDROCK_TIMEOUT` mặc định
-30 giây hoặc `OLLAMA_TIMEOUT` mặc định 90 giây.
-`generationMode=template` là fallback; `llm` là output được model chọn và validate.
-`RAG_ENABLED=false` tắt model providers và giữ structured/template hoạt động.
+Mỗi lần gọi Bedrock có timeout `BEDROCK_TIMEOUT`, mặc định 30 giây. Câu trả lời cuối có bước kiểm chứng ngữ nghĩa và tối đa một lần sửa.
+`template`/`llm` là draft mode nội bộ; public chat thành công trả `bedrock-natural`.
+Nếu presentation/audit không đạt sau một repair hoặc AWS lỗi, trả 503, không trả draft
+template như thành công AI. `RAG_ENABLED=false` tắt retrieval providers nhưng public
+presentation vẫn cần Bedrock; chế độ này không phải chat offline.
 Các retrieval modes phản ánh nhánh thực tế: structured, lexical, vector, hybrid.
 
-Xem [vận hành Ollama](../../../../docs/OLLAMA.md) khi timeout hoặc chạy CPU.
+Xem [vận hành Bedrock](../../../../docs/BEDROCK.md) khi timeout hoặc chạy CPU.
 Thay generation provider không yêu cầu rebuild text embeddings.
 
 ## Kiểm thử và evaluation
@@ -101,7 +103,7 @@ Integration tạo schema UUID trong database test riêng và dọn đúng schema
 Không đặt TEST_DATABASE_URL vào database nghiệp vụ. Không có URL thì test skip.
 Sau kiểm thử, `docker compose -f docker-compose.rag-test.yml down` dừng DB test.
 
-Smoke yêu cầu API, E5 và provider đang chọn hoạt động thật: vector/hybrid và generationMode=llm cho
+Smoke yêu cầu API, E5 và provider đang chọn hoạt động thật: vector/hybrid và generationMode=bedrock-natural cho
 năm intent. Fallback khiến lệnh trả exit code 1; report ghi SHA/digest và latency.
 
 Quy trình ground truth, seed diagnostics và HTTP evaluation nằm trong

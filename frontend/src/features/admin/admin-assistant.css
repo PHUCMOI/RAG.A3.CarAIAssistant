@@ -1,0 +1,18 @@
+.admin-assistant .admin-ai-layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:24px;align-items:start}
+.admin-assistant .admin-ai-filters,.admin-assistant .admin-ai-chat{border:1px solid #dde5e0;border-radius:16px;background:#fff;padding:20px}
+.admin-assistant .admin-ai-filters label{display:flex;flex-direction:column;gap:8px;margin:18px 0}
+.admin-assistant .admin-ai-filters input,.admin-assistant select,.admin-assistant textarea{width:100%;border:1px solid #bccbc2;border-radius:8px;padding:10px;font:inherit}
+.admin-assistant .admin-ai-filters .admin-ai-checkbox{flex-direction:row;align-items:center}
+.admin-assistant .admin-ai-checkbox input{width:auto}
+.admin-assistant .admin-ai-filters p,.admin-assistant small{color:#52675d;font-size:13px;line-height:1.6}
+.admin-assistant .admin-ai-messages{max-height:60vh;min-height:260px;overflow:auto;overflow-wrap:anywhere}
+.admin-assistant .admin-ai-question{background:#edf6f1;padding:14px;border-radius:12px;display:flex;flex-direction:column;gap:8px;margin-left:24px;white-space:pre-wrap}
+.admin-assistant .admin-ai-answer{padding:16px 0;border-bottom:1px solid #e4ebe6}
+.admin-assistant .admin-ai-answer p{white-space:pre-wrap;line-height:1.7}
+.admin-assistant .admin-ai-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.admin-assistant .admin-ai-links a{padding:5px 9px;border:1px solid #c6ddd0;border-radius:6px}
+.admin-assistant .admin-ai-welcome button{display:block;margin:12px 0;text-align:left;white-space:normal}
+.admin-assistant .admin-ai-composer{display:grid;gap:10px;border-top:1px solid #e4ebe6;padding-top:16px;margin-top:16px}
+.admin-assistant .admin-ai-composer button{justify-self:end}
+.admin-assistant [role=alert]{color:#b42318}
+@media(max-width:850px){.admin-assistant .admin-ai-layout{grid-template-columns:1fr}.admin-assistant .admin-ai-messages{max-height:65vh}.admin-assistant .admin-ai-question{margin-left:0}}

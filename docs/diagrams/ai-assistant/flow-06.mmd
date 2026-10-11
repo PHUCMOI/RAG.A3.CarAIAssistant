@@ -1,0 +1,14 @@
+flowchart TD
+    A["Câu hỏi + scope + filters từ /admin/assistant"] --> P["Cookie auth + role Admin + CSRF + 10 lượt/phút"]
+    P --> V["Validate scope, status, query, dates"]
+    V --> R["Luật chọn tool: mã AW, doanh thu, kỳ thống kê"]
+    R --> T{"Tool cố định"}
+    T --> O["Overview: aggregate toàn hệ thống"]
+    T --> L["Orders / customers / support: tối đa 20 + totalCount"]
+    T --> F["Revenue: kỳ UTC+7, aggregate toàn bộ"]
+    O --> D["Projection an toàn + qualifiers + links backend"]
+    L --> D
+    F --> D
+    D --> N["NaturalAnswers gọi Python /api/chat/compose"]
+    N --> G["Bedrock viết + kiểm chứng cuối"]
+    G --> UI["Trả answer + data + links; private, no-store"]

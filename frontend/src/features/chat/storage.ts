@@ -20,7 +20,14 @@ export function clearLegacyChatCache() {
 }
 export type CatalogContext = { carId: string; displayName: string; presenceSourceId?: string; description?: string; summary?: string; specifications?: Record<string, string> }
 export type IdentifiedCarItem = { car_id: string; brand?: string; model?: string; similarity?: number }
-export type CatalogMessage = {
+export type GroundingMetadata = {
+  grounded?: boolean;
+  status?: string;
+  evidence?: Array<{ contextId: string; section: string; content: string }>;
+  citations?: Array<{ contextId: string; title: string; sourceId?: string | null; sourceDetailPath?: string | null }>;
+}
+export type CatalogMessage = GroundingMetadata & {
+  requiresLogin?: boolean;
   generationMode?: string;
   role: string;
   content: string;

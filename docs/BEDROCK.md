@@ -1,6 +1,6 @@
 # Claude Haiku 4.5 trên Amazon Bedrock
 
-Chatbot tư vấn xe Python hỗ trợ `LLM_PROVIDER=bedrock` và `LLM_PROVIDER=ollama`.
+Chatbot Python chỉ dùng Amazon Bedrock (`LLM_PROVIDER=bedrock`).
 Trợ lý đơn hàng C# đã hỗ trợ Bedrock; Docker override bên dưới bật cả hai dịch vụ.
 Embedding vẫn dùng multilingual E5 và index hiện có, không cần rebuild index khi
 chỉ đổi model sinh câu trả lời.
@@ -18,6 +18,7 @@ Chỉ dùng credentials mới, thu hồi các key từng được chia sẻ tron
 key vào frontend, appsettings, `.env.example` hoặc Git.
 
 ```dotenv
+AI_INTERNAL_TOKEN=<token-noi-bo-ngau-nhien>
 LLM_PROVIDER=bedrock
 AWS_REGION=us-east-1
 BEDROCK_MODEL_ID=us.anthropic.claude-haiku-4-5-20251001-v1:0
@@ -61,8 +62,11 @@ environment. `restart` đơn thuần không nạp lại environment đã thay đ
 
 Backend tư vấn xe dùng Converse để phân loại ý định và chọn `statementIds` từ
 dữ kiện đã xác minh. Backend dựng câu trả lời và citations, kiểm tra dữ kiện rồi
-repair tối đa một lần. AWS lỗi, timeout hoặc JSON không hợp lệ thì dùng template.
-SDK không retry tự động; generation và repair dùng chung `BEDROCK_TIMEOUT`.
+repair tối đa một lần ở bước chọn dữ kiện. Câu trả lời cuối được viết và kiểm chứng
+ngữ nghĩa bằng Bedrock; nếu không kiểm chứng được sau một lần sửa, API trả 503.
+Template chỉ phục vụ dữ liệu trung gian, không được trả như câu trả lời AI thành công.
+SDK không retry tự động. Mỗi lần gọi có timeout `BEDROCK_TIMEOUT`;
+proxy và HTTP giữa các dịch vụ dành đủ thời gian cho cả chuỗi gọi.
 
 ## Kiểm tra
 
@@ -74,13 +78,9 @@ docker compose -f docker-compose.yml -f docker-compose.bedrock-env.yml logs --ta
 
 Log Python `Bedrock model=... request_id=...` chứng minh đã nhận phản hồi từ AWS;
 log C# dùng `Bedrock inference completed` hoặc `Bedrock context inference completed`.
-Không log prompt hoặc credentials. `generationMode=template` báo fallback;
+Không log prompt hoặc credentials. `generationMode=bedrock-natural` là bước cuối;
 HTTP 200 riêng lẻ không chứng minh model hoạt động. Smoke kiểm tra embedding thật
-và năm ý định qua HTTP, yêu cầu `generationMode=llm` và vector/hybrid retrieval.
-
-Chuyển về model local: đặt `LLM_PROVIDER=ollama`, chạy Ollama và khởi động lại
-Python hoặc `docker compose up -d api` bằng file compose chính. Override Bedrock
-luôn ép Python dùng Bedrock.
+và năm ý định qua HTTP, yêu cầu `generationMode=bedrock-natural` và vector/hybrid retrieval.
 
 ## Xác minh ngày 2026-10-06
 

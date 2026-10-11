@@ -1,0 +1,42 @@
+{
+  "passed": true,
+  "counts": {
+    "cars": 50,
+    "images": 215,
+    "dealers": 22,
+    "warranties": 9,
+    "sources": 61,
+    "documents": 0
+  },
+  "initialization_files": [
+    "000_extensions.sql",
+    "001_schema.sql",
+    "seed.sql",
+    "002_add_descriptions.sql",
+    "003_enrich_missing_data.sql",
+    "004_seed_dealers.sql",
+    "005_use_curated_image_paths.sql",
+    "006_verify_seed.sql",
+    "007_text_rag.sql"
+  ],
+  "isolation": "Own temporary database/volume; random port bound to localhost only",
+  "scope": "Extracted-source backend tests and fresh SQL initialization; host Python dependencies reused; not full deployment",
+  "initialization_hashes": {
+    "000_extensions.sql": "a6eb818a81bfe115ac0848c3cc73e4d79b669dfcded03cd7dcaab59d16de01d0",
+    "001_schema.sql": "d2b6e6410a1b04dc8e2bd06f2f65ed22acefebca25de4e87f6bdbc446fd26d94",
+    "seed.sql": "0c125b7ea4d40f1a0b5be7f829f5e82a8f70cfce2151deba63d93b3dc2b81eae",
+    "002_add_descriptions.sql": "bd9de26f8250d396dbf359e5dd241109c3c509caaa488118026716ac35d3cede",
+    "003_enrich_missing_data.sql": "bf67cc52e42102169b7a91070fd252626e7e7f5b185efde66eae27cfc8b8211a",
+    "004_seed_dealers.sql": "dbb3d105ed34732eda1cfe7d963dec64cd5d0d0885596f67194a5f8ca289c3fe",
+    "005_use_curated_image_paths.sql": "4e0dd61bd96f5cdcbc4a424026b99db58ab8b2eafd967f257bd4f5544562bb17",
+    "006_verify_seed.sql": "f75993e20d3fe4863dec078ff3f4df5a5add36164b852bd76e9c7650dfabb40a",
+    "007_text_rag.sql": "67d8b05f361677da44cf807372469e1c01b5790dce8080015c5109e53a32f091"
+  },
+  "backend_tests": {
+    "passed": 194,
+    "source": "C:\\RAG-A3\\.local\\submission\\final-reference-source\\AutoWise",
+    "log": "fresh-source-backend-tests.txt",
+    "python": "C:\\Users\\ADMIN\\AppData\\Local\\Programs\\Python\\Python313\\python.exe"
+  },
+  "source_manifest_sha256": "317e055b1e843dd4f9a9ffcfe0611ff96ff4301a02df23b3353875e20777c957"
+}

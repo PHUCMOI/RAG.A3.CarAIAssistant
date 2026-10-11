@@ -1,7 +1,7 @@
 import asyncio
 import json
 import threading
-from unittest.mock import Mock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
@@ -99,6 +99,24 @@ def test_bedrock_sdk_errors_are_sanitized_and_classification_can_fall_back():
     assert "sensitive upstream details" not in str(exc.value)
 
 
+@pytest.mark.parametrize('recover', [True, False])
+def test_bedrock_throttling_retry_is_bounded(recover):
+    from botocore.exceptions import ClientError
+    from app.infrastructure.ai.bedrock import BedrockProvider
+    throttle = ClientError({'Error': {'Code': 'ThrottlingException'}}, 'Converse')
+    client = Mock()
+    client.converse.side_effect = [throttle, throttle, response() if recover else throttle]
+    provider = BedrockProvider('us-east-1', MODEL, client=client)
+    with patch('app.infrastructure.ai.bedrock.asyncio.sleep', new_callable=AsyncMock) as sleep:
+        if recover:
+            assert asyncio.run(provider.generate(package())).fact_ids == ['a:price']
+        else:
+            with pytest.raises(RuntimeError, match='Bedrock request unavailable'):
+                asyncio.run(provider.generate(package()))
+        assert client.converse.call_count == 3
+        assert [call.args[0] for call in sleep.call_args_list] == [1, 2]
+
+
 def test_bedrock_reads_dotenv_credentials_without_exposing_them(tmp_path):
     from app.infrastructure.ai.bedrock import BedrockProvider
     env = tmp_path / ".env"
@@ -123,20 +141,18 @@ def test_bedrock_reads_dotenv_credentials_without_exposing_them(tmp_path):
         session.return_value.client.return_value.close.assert_called_once()
 
 
-@pytest.mark.parametrize("name", ["ollama", "bedrock"])
-def test_provider_selection_keeps_embeddings_and_uses_provider_timeout(name):
+def test_provider_selection_keeps_embeddings_and_uses_provider_timeout():
     from app.application.rag import dependencies
     from app.infrastructure.ai.bedrock import BedrockProvider
-    from app.infrastructure.ai.ollama import OllamaProvider
-    settings = Settings(_env_file=None, llm_provider=name, bedrock_timeout=25, ollama_timeout=75)
+    settings = Settings(_env_file=None, bedrock_timeout=25)
     dependencies.providers.cache_clear()
     try:
         with patch.object(dependencies, "get_settings", return_value=settings), \
              patch.object(dependencies, "E5EmbeddingProvider") as embedding:
             _, generator = dependencies.providers()
-            assert isinstance(generator, BedrockProvider if name == "bedrock" else OllamaProvider)
+            assert isinstance(generator, BedrockProvider)
             embedding.assert_called_once()
-            assert dependencies.get_rag_service(Mock()).timeout == (25 if name == "bedrock" else 75)
+            assert dependencies.get_rag_service(Mock()).timeout == 25
     finally:
         dependencies.providers.cache_clear()
 

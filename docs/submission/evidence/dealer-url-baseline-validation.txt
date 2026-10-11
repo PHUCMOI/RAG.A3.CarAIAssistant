@@ -1,0 +1,9 @@
+api-1  | 2026-10-11 07:13:12,193 [WARNING] app.infrastructure.ai.natural_answers: Natural answer validation failed: Empty answer or generated URL/HTML
+api-1  | 2026-10-11 07:13:43,661 [WARNING] app.infrastructure.ai.natural_answers: Natural answer validation failed: Empty answer or generated URL/HTML
+api-1  | 2026-10-11 07:13:47,363 [WARNING] app.infrastructure.ai.natural_answers: Natural answer validation failed: Empty answer or generated URL/HTML
+api-1  | 2026-10-11 07:14:04,990 [WARNING] app.infrastructure.ai.natural_answers: Natural answer validation failed: Empty answer or generated URL/HTML
+api-1  | 2026-10-11 07:14:34,649 [WARNING] app.infrastructure.ai.natural_answers: Natural answer validation failed: Empty answer or generated URL/HTML
+api-1  | 2026-10-11 07:15:07,188 [WARNING] app.infrastructure.ai.natural_answers: Natural answer validation failed: Empty answer or generated URL/HTML
+api-1  | 2026-10-11 07:15:34,567 [WARNING] app.infrastructure.ai.natural_answers: Natural answer validation failed: Empty answer or generated URL/HTML
+api-1  | 2026-10-11 07:16:06,956 [WARNING] app.infrastructure.ai.natural_answers: Natural answer validation failed: Empty answer or generated URL/HTML
+api-1  | 2026-10-11 07:16:42,679 [WARNING] app.infrastructure.ai.natural_answers: Natural answer validation failed: Empty answer or generated URL/HTML

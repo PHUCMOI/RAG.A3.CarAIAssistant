@@ -1,0 +1,60 @@
+﻿id,split,input_type,intent_correct,status_correct,http_status_correct,context_precision_at_5,context_recall_at_5,image_recall_at_1,image_recall_at_5,image_mrr_at_5,faithfulness,answer_completeness,human_review,error,http_status,generation_mode,retrieval_mode,grounded,answer,retrieved_context_ids,answer_context_ids,image_ranked_car_ids,citations,required_answer_facts,response_seconds
+Q085,evaluation,text,1,1,1,0.2,0.2,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"Các mẫu xe phù hợp:
+
+**Honda Jazz** – 5 chỗ, 544.000.000 VND (ngày giá: 2020-08-01)
+
+**Honda HR-V** – 5 chỗ, 669.000.000 VND (ngày giá: 2026-10-01)
+
+**Honda Civic** – 5 chỗ, 789.000.000 VND (ngày giá: 2026-10-01)
+
+**Honda CR-V** – 5 chỗ, 1.039.000.000 VND (ngày giá: 2026-10-01)
+
+**Honda Accord** – 5 chỗ, 1.319.000.000 VND (ngày giá: 2024-04-01)
+
+Giá là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.
+
+Đây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.
+
+Thông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.
+
+Honda Jazz: Từng phân phối chính hãng; chưa xác nhận đang bán.
+
+Honda HR-V: Được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.
+
+Honda Civic: Được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.
+
+Honda CR-V: Được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.
+
+Honda Accord: Từng phân phối chính hãng; chưa xác nhận đang bán.","[""car:car_34_8:overview:v1"", ""car:car_34_1:overview:v1"", ""car:car_34_2:price:v1"", ""car:car_34_11:overview:v1"", ""car:car_34_3:overview:v1""]","[""car:car_34_8:overview:v1"", ""car:car_34_1:overview:v1"", ""car:car_34_2:price:v1"", ""car:car_34_11:overview:v1"", ""car:car_34_3:overview:v1"", ""sql:car:car_34_1:price:v1"", ""sql:car:car_34_11:price:v1"", ""sql:car:car_34_3:price:v1"", ""sql:car:car_34_8:price:v1""]",[],"[{""contextId"": ""car:car_34_8:overview:v1"", ""sourceId"": ""honda_products_2026"", ""title"": ""Honda Vietnam automobiles"", ""url"": ""https://www.honda.com.vn/o-to/san-pham"", ""sourceDetailPath"": ""/sources/honda_products_2026""}, {""contextId"": ""car:car_34_1:overview:v1"", ""sourceId"": ""honda_vn_recall"", ""title"": ""Honda Vietnam recall archive"", ""url"": ""https://www.honda.com.vn/o-to/trieu-hoi"", ""sourceDetailPath"": ""/sources/honda_vn_recall""}, {""contextId"": ""car:car_34_2:price:v1"", ""sourceId"": ""honda_products_2026"", ""title"": ""Honda Vietnam automobiles"", ""url"": ""https://www.honda.com.vn/o-to/san-pham"", ""sourceDetailPath"": ""/sources/honda_products_2026""}, {""contextId"": ""car:car_34_11:overview:v1"", ""sourceId"": ""honda_vn_recall"", ""title"": ""Honda Vietnam recall archive"", ""url"": ""https://www.honda.com.vn/o-to/trieu-hoi"", ""sourceDetailPath"": ""/sources/honda_vn_recall""}, {""contextId"": ""car:car_34_3:overview:v1"", ""sourceId"": ""honda_products_2026"", ""title"": ""Honda Vietnam automobiles"", ""url"": ""https://www.honda.com.vn/o-to/san-pham"", ""sourceDetailPath"": ""/sources/honda_products_2026""}, {""contextId"": ""sql:car:car_34_1:price:v1"", ""sourceId"": ""honda_historical_prices"", ""title"": ""Honda Accord and Jazz historical Vietnam prices"", ""url"": ""https://www.danhgiaxe.com/danh-gia/danh-gia-so-bo-xe-honda-jazz-2020-29023"", ""sourceDetailPath"": ""/sources/honda_historical_prices""}, {""contextId"": ""sql:car:car_34_11:price:v1"", ""sourceId"": ""honda_historical_prices"", ""title"": ""Honda Accord and Jazz historical Vietnam prices"", ""url"": ""https://www.danhgiaxe.com/danh-gia/danh-gia-so-bo-xe-honda-jazz-2020-29023"", ""sourceDetailPath"": ""/sources/honda_historical_prices""}, {""contextId"": ""sql:car:car_34_3:price:v1"", ""sourceId"": ""honda_products_2026"", ""title"": ""Honda Vietnam automobiles"", ""url"": ""https://www.honda.com.vn/o-to/san-pham"", ""sourceDetailPath"": ""/sources/honda_products_2026""}, {""contextId"": ""sql:car:car_34_8:price:v1"", ""sourceId"": ""honda_products_2026"", ""title"": ""Honda Vietnam automobiles"", ""url"": ""https://www.honda.com.vn/o-to/san-pham"", ""sourceDetailPath"": ""/sources/honda_products_2026""}]","[""Honda Jazz: price_as_of=2020-08-01"", ""Honda Jazz: price_vnd_from=544000000"", ""Honda HR-V: price_as_of=2026-10-01"", ""Honda HR-V: price_vnd_from=669000000"", ""Honda Civic: price_as_of=2026-10-01"", ""Honda Civic: price_vnd_from=789000000"", ""Honda CR-V: price_as_of=2026-10-01"", ""Honda CR-V: price_vnd_from=1039000000"", ""Honda Accord: price_as_of=2024-04-01"", ""Honda Accord: price_vnd_from=1319000000""]",25.99434069999984
+Q089,evaluation,text,1,1,1,0.2,0.25,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"Các mẫu xe phù hợp:
+
+**Ford Fiesta** — 5 chỗ, giá tham khảo 545.000.000 VND (ngày 2018-01-01)
+
+**Ford EcoSport** — 5 chỗ, giá tham khảo 603.000.000 VND (ngày 2021-11-01)
+
+**Ford Focus** — 5 chỗ, giá tham khảo 626.000.000 VND (ngày 2018-01-01)
+
+**Ford Ranger** — 5 chỗ, giá tham khảo 707.000.000 VND (ngày 2026-10-01)
+
+Đây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực. Ford Fiesta, Ford EcoSport và Ford Focus từng phân phối chính hãng; chưa xác nhận đang bán. Ford Ranger được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.
+
+Thông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.
+
+Ford Fiesta: Từng phân phối chính hãng; chưa xác nhận đang bán.
+
+Ford EcoSport: Từng phân phối chính hãng; chưa xác nhận đang bán.
+
+Ford Focus: Từng phân phối chính hãng; chưa xác nhận đang bán.
+
+Ford Ranger: Được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.","[""car:car_29_13:overview:v1"", ""car:car_29_14:overview:v1"", ""car:car_29_4:overview:v1"", ""car:car_29_30:overview:v1"", ""car:car_29_13:price:v1""]","[""car:car_29_13:overview:v1"", ""car:car_29_14:overview:v1"", ""car:car_29_4:overview:v1"", ""car:car_29_30:overview:v1"", ""car:car_29_13:price:v1"", ""sql:car:car_29_14:price:v1"", ""sql:car:car_29_30:price:v1"", ""sql:car:car_29_4:price:v1""]",[],"[{""contextId"": ""car:car_29_13:overview:v1"", ""sourceId"": ""ford_owner_manuals"", ""title"": ""Ford Vietnam owner manual archive"", ""url"": ""https://www.ford.com.vn/support/owner-manuals/owner-manuals-sitemap/"", ""sourceDetailPath"": ""/sources/ford_owner_manuals""}, {""contextId"": ""car:car_29_14:overview:v1"", ""sourceId"": ""ford_owner_manuals"", ""title"": ""Ford Vietnam owner manual archive"", ""url"": ""https://www.ford.com.vn/support/owner-manuals/owner-manuals-sitemap/"", ""sourceDetailPath"": ""/sources/ford_owner_manuals""}, {""contextId"": ""car:car_29_4:overview:v1"", ""sourceId"": ""ford_owner_manuals"", ""title"": ""Ford Vietnam owner manual archive"", ""url"": ""https://www.ford.com.vn/support/owner-manuals/owner-manuals-sitemap/"", ""sourceDetailPath"": ""/sources/ford_owner_manuals""}, {""contextId"": ""car:car_29_30:overview:v1"", ""sourceId"": ""ford_prices_2026"", ""title"": ""Ford Vietnam price list"", ""url"": ""https://www.ford.com.vn/shopping/price-list/"", ""sourceDetailPath"": ""/sources/ford_prices_2026""}, {""contextId"": ""car:car_29_13:price:v1"", ""sourceId"": ""ford_historical_prices"", ""title"": ""Ford historical Vietnam price references"", ""url"": ""https://xe.chotot.com/oto-ford-ecosport-sd6a0e"", ""sourceDetailPath"": ""/sources/ford_historical_prices""}, {""contextId"": ""sql:car:car_29_14:price:v1"", ""sourceId"": ""ford_historical_prices"", ""title"": ""Ford historical Vietnam price references"", ""url"": ""https://xe.chotot.com/oto-ford-ecosport-sd6a0e"", ""sourceDetailPath"": ""/sources/ford_historical_prices""}, {""contextId"": ""sql:car:car_29_30:price:v1"", ""sourceId"": ""ford_prices_2026"", ""title"": ""Ford Vietnam price list"", ""url"": ""https://www.ford.com.vn/shopping/price-list/"", ""sourceDetailPath"": ""/sources/ford_prices_2026""}, {""contextId"": ""sql:car:car_29_4:price:v1"", ""sourceId"": ""ford_historical_prices"", ""title"": ""Ford historical Vietnam price references"", ""url"": ""https://xe.chotot.com/oto-ford-ecosport-sd6a0e"", ""sourceDetailPath"": ""/sources/ford_historical_prices""}]","[""Ford Fiesta: price_as_of=2018-01-01"", ""Ford Fiesta: price_vnd_from=545000000"", ""Ford EcoSport: price_as_of=2021-11-01"", ""Ford EcoSport: price_vnd_from=603000000"", ""Ford Focus: price_as_of=2018-01-01"", ""Ford Focus: price_vnd_from=626000000"", ""Ford Ranger: price_as_of=2026-10-01"", ""Ford Ranger: price_vnd_from=707000000""]",20.488175100000035
+Q152,development,text,1,1,1,1.0,1.0,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"**Đại lý Toyota tại Thành phố Hồ Chí Minh:**
+
+**Tên:** Toyota An Suong
+
+**Số điện thoại:** 1900 7339
+
+**Địa chỉ:** 382 Le Quang Dao Street, Trung My Tay Ward
+
+**Website:** http://www.toyota-ansuong.vn/
+
+(Thông tin kiểm tra ngày 01/10/2026)","[""dealer:2:profile:v1""]","[""dealer:2:profile:v1""]",[],"[{""contextId"": ""dealer:2:profile:v1"", ""sourceId"": ""toyota_dealers"", ""title"": ""Toyota Vietnam dealer locator"", ""url"": ""https://www.toyota.com.vn/lien-he-dai-ly"", ""sourceDetailPath"": ""/sources/toyota_dealers""}]","[""2: name=Toyota An Suong"", ""2: phone=1900 7339""]",8.1242021999999

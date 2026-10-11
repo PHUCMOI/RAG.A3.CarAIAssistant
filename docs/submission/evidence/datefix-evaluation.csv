@@ -1,0 +1,14 @@
+﻿id,split,input_type,intent_correct,status_correct,http_status_correct,context_precision_at_5,context_recall_at_5,image_recall_at_1,image_recall_at_5,image_mrr_at_5,faithfulness,answer_completeness,human_review,error,http_status,response_seconds,generation_mode,retrieval_mode,grounded,answer,retrieved_context_ids,answer_context_ids,image_ranked_car_ids,citations,required_answer_facts
+Q085,evaluation,text,,,0,,,,,,,,pending,HTTPStatusError,503,35.40177599999993,,,,,,,,,
+Q089,evaluation,text,,,0,,,,,,,,pending,HTTPStatusError,503,17.676394399999936,,,,,,,,,
+Q152,development,text,1,1,1,1.0,1.0,,,,,,pending,,200,8.384738499999912,bedrock-natural,postgresql-vector-search,True,"**Đại lý Toyota tại Thành phố Hồ Chí Minh:**
+
+**Tên:** Toyota An Suong
+
+**Số điện thoại:** 1900 7339
+
+**Địa chỉ:** 382 Le Quang Dao Street, Trung My Tay Ward
+
+**Website:** http://www.toyota-ansuong.vn/
+
+(Thông tin kiểm tra ngày 01/10/2026)","[""dealer:2:profile:v1""]","[""dealer:2:profile:v1""]",[],"[{""contextId"": ""dealer:2:profile:v1"", ""sourceId"": ""toyota_dealers"", ""title"": ""Toyota Vietnam dealer locator"", ""url"": ""https://www.toyota.com.vn/lien-he-dai-ly"", ""sourceDetailPath"": ""/sources/toyota_dealers""}]","[""2: name=Toyota An Suong"", ""2: phone=1900 7339""]"

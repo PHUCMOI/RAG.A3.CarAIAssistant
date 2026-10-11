@@ -1,9 +1,10 @@
-> Text RAG đã được triển khai trong `backend/app/application/rag/` (2026-10-03): Vietnamese documents, multilingual E5 768 chiều, PostgreSQL lexical/vector retrieval và Ollama với template fallback. Xem README của module để chạy/index/test. Các phần jobs/admin/reranker bên dưới vẫn là hướng mở rộng, chưa triển khai. Image service vẫn là prototype riêng.
+> Cập nhật runtime 11/10/2026: documents tiếng Việt, E5 768 chiều, SQL/lexical/pgvector, Bedrock draft + natural answer + final audit; public AI lỗi trả 503. Image service đã tích hợp unified chat. Jobs/admin catalogue/reranker bên dưới còn là hướng mở rộng; xem README module và `RAG_STATUS.md` cho trạng thái hiện tại.
 
 API runtime giữ `/api/chat` và `/api/search/text`; các `/api/v1` bên dưới là thiết
-kế tương lai. MVP dùng Ollama chọn `allowedStatements` được backend tạo từ facts,
-validate references/subject/field/unit và tự thêm cảnh báo. Không chấp nhận prose
-tự do chưa có căn cứ. Code đã có tests; nghiệm thu index/model thật vẫn pending.
+kế tương lai. Draft dùng Bedrock chọn `allowedStatements` từ facts; public presentation
+viết lời tự nhiên rồi kiểm số/đơn vị/subject, thêm qualifiers và audit ngữ nghĩa.
+Evidence/citations cuối tách khỏi ranked retrieval telemetry. Xem evidence runtime
+trong `docs/submission` để biết kết quả và giới hạn kiểm chứng mới nhất.
 
 # AutoWise Text RAG — Business logic và implementation specification
 

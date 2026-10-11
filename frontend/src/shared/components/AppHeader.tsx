@@ -58,7 +58,7 @@ export function AppHeader({ admin = false }: { admin?: boolean }) {
       {(!admin || user) && <>
         <button ref={mobileTrigger} className="mobile-menu-button mini-button" aria-expanded={mobile} aria-controls="header-navigation" onClick={() => setMobile(!mobile)}>{mobile ? 'Đóng menu' : 'Mở menu'}</button>
         <nav id="header-navigation" className={`main-nav${mobile ? ' mobile-open' : ''}`} aria-label={admin ? 'Điều hướng quản trị' : 'Điều hướng chính'}>
-          {admin ? <><NavLink to="/admin/orders" onClick={close}>Đơn hàng</NavLink>{group('requests', 'Yêu cầu', requests)}{group('care', 'Chăm sóc', care)}<NavLink to="/admin/customers" onClick={close}>Khách hàng</NavLink></> : publicLinks.map(([to, label]) => <NavLink key={to} to={to} end={to === '/'} onClick={close}>{label}</NavLink>)}
+          {admin ? <><NavLink to="/admin/orders" onClick={close}>Đơn hàng</NavLink>{group('requests', 'Yêu cầu', requests)}{group('care', 'Chăm sóc', care)}<NavLink to="/admin/customers" onClick={close}>Khách hàng</NavLink><NavLink to="/admin/assistant" onClick={close}>Trợ lý AI</NavLink></> : publicLinks.map(([to, label]) => <NavLink key={to} to={to} end={to === '/'} onClick={close}>{label}</NavLink>)}
         </nav>
         <div className="header-actions">{user ? group('account', <><span className="header-avatar" aria-hidden="true">{user.displayName?.trim().charAt(0).toUpperCase() || 'A'}</span><span className="header-account-label">{admin ? 'Quản trị viên' : 'Tài khoản'}</span></>, admin ? [] : account, true) : <NavLink className="header-cta" to="/login" onClick={close}>Đăng nhập <span aria-hidden="true">→</span></NavLink>}</div>
       </>}

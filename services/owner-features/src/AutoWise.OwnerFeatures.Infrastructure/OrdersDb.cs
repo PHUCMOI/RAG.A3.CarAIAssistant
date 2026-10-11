@@ -7,6 +7,7 @@ public sealed class OrdersDb(DbContextOptions<OrdersDb> options) : DbContext(opt
     public DbSet<OrderRecord> Orders => Set<OrderRecord>();
     public DbSet<RequestRecord> Requests => Set<RequestRecord>();
     public DbSet<PaymentReference> PaymentReferences => Set<PaymentReference>();
+    public DbSet<ChatAttachmentRecord> ChatAttachments => Set<ChatAttachmentRecord>();
     public DbSet<ChatSessionRecord> ChatSessions => Set<ChatSessionRecord>();
     public DbSet<PurchaseRecord> Purchases => Set<PurchaseRecord>();
     public DbSet<NotificationRecord> Notifications => Set<NotificationRecord>();
@@ -43,6 +44,11 @@ public sealed class OrdersDb(DbContextOptions<OrdersDb> options) : DbContext(opt
         d.Property(x=>x.Name).HasMaxLength(150);d.Property(x=>x.CustomerNote).HasMaxLength(500);
         d.HasOne<OrderRecord>().WithMany().HasForeignKey(x=>x.OrderId).OnDelete(DeleteBehavior.Restrict);
         d.HasOne<UserRecord>().WithMany().HasForeignKey(x=>x.UpdatedBy).OnDelete(DeleteBehavior.Restrict);
+        var attachment = b.Entity<ChatAttachmentRecord>();
+        attachment.ToTable("chat_attachments", t => t.HasCheckConstraint("CK_attachment_size", "octet_length(\"Data\") BETWEEN 1 AND 10000000"));
+        attachment.Property(x => x.MimeType).HasMaxLength(50);
+        attachment.HasIndex(x => x.SessionId);
+        attachment.HasOne<ChatSessionRecord>().WithMany().HasForeignKey(x => x.SessionId).OnDelete(DeleteBehavior.Cascade);
         b.Entity<ChatSessionRecord>().ToTable("chat_sessions");
         b.Entity<ChatSessionRecord>().Property(x=>x.Payload).HasColumnType("jsonb");
         b.Entity<ChatSessionRecord>().Property(x=>x.Context).HasColumnType("jsonb");

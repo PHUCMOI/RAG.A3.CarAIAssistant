@@ -11,6 +11,8 @@ backend_dir = Path(__file__).resolve().parent.parent
 if str(backend_dir) not in sys.path:
     sys.path.insert(0, str(backend_dir))
 
+from pydantic import SecretStr
+from app.core.config import get_settings
 from app.core.database import get_db_connection
 from app.main import app
 
@@ -100,11 +102,18 @@ def client(mock_db):
         yield mock_db
 
     app.dependency_overrides[get_db_connection] = override_get_db
+    original_token = get_settings().ai_internal_token
+    get_settings().ai_internal_token = SecretStr("test-internal-token")
     try:
         with patch("app.main.init_db_pool", new_callable=AsyncMock), patch("app.main.close_db_pool", new_callable=AsyncMock), patch("app.application.rag.dependencies.providers", return_value=(None, None)):
             async def compose_for_test(question, verified_data):
-                return verified_data['retrievedAnswer']
-            with patch('app.routers.chat.compose_answer', side_effect=compose_for_test), TestClient(app) as test_client:
+                from app.infrastructure.ai.answer_grounding import canonical_sources
+                evidence, citations, status = canonical_sources(verified_data)
+                return {'answer': verified_data['retrievedAnswer'], 'grounded': bool(evidence) and status in {'ok', 'partial'},
+                    'status': status, 'evidence': [e.model_dump(by_alias=True) for e in evidence],
+                    'citations': [c.model_dump(by_alias=True) for c in citations], 'generationMode': 'bedrock-natural'}
+            with patch('app.routers.chat.compose_grounded', side_effect=compose_for_test), TestClient(app) as test_client:
                 yield test_client
     finally:
+        get_settings().ai_internal_token = original_token
         app.dependency_overrides.clear()

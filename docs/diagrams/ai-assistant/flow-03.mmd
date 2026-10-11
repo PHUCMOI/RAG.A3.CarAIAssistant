@@ -1,0 +1,15 @@
+flowchart TD
+    P["Upload JPEG / PNG / WebP, tối đa 10 MB"] --> DE["Decode và kiểm tra ảnh"]
+    DE --> EMB["Extractor ảnh tương thích index: CLIP hoặc cấu hình khác"]
+    EMB --> FA["FAISS search, gom kết quả theo carId"]
+    FA --> CONF["Similarity top 1 + khoảng cách top 2"]
+    CONF --> T["Chỉ dùng mẫu top 1 + uncertain"]
+    T --> R{"Câu hỏi catalogue hay đơn?"}
+    R -->|Catalogue| RA["Adapter gọi Python /api/chat với carIds và imageMatch"]
+    RA --> TEXT["Text RAG lấy facts đúng mẫu xe"]
+    TEXT --> FIN["Viết và kiểm chứng cuối"]
+    R -->|Đơn customer| O["Tra đơn thuộc tài khoản"]
+    O --> CMP["So carId ảnh với carId trên đơn"]
+    CMP --> SEC["Section ảnh: khớp / không khớp / chưa chắc chắn"]
+    SEC --> FIN
+    R -->|Đơn guest| LI["Yêu cầu đăng nhập trước khi tra đơn"]

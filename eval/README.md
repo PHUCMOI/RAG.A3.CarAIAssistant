@@ -5,6 +5,36 @@ Chạy các lệnh từ root repository bằng Python 3.12 có dependencies back
 
 ## Bộ câu hỏi
 
+Bộ nộp thống nhất: `ground_truth_submission.jsonl`, 200 mẫu Q001–Q200, chia 50 mẫu
+cho mỗi phần công việc. Nhãn được tạo từ seed và snapshot index, tất cả đang `pending`;
+assigned_member chỉ là phân công, không khẳng định thành viên đã tự viết hoặc review.
+150 mẫu text, 49 ảnh/ảnh + text trên 44 ảnh holdout và một fixture JPEG lỗi. Không có
+ảnh holdout trùng nội dung với training index; các câu dùng cùng ảnh ở cùng split.
+Các mẫu OOD chưa có ảnh thật đã được thay bằng input có thể chạy được.
+
+```powershell
+python scripts/export_eval_snapshot.py
+python eval/build_submission_ground_truth.py --index-documents data/documents.jsonl
+python eval/validate_submission_ground_truth.py
+python eval/run_text_evaluation.py --ground-truth eval/ground_truth_submission.jsonl --split all --output docs/submission/evidence/live-evaluation.csv
+```
+
+Runner gọi API tuần tự, checkpoint sau từng mẫu; `--resume` giữ cả success/failure
+của đúng ground truth hash, không loại lỗi để làm đẹp số liệu. `--ids Q051,Q193`
+dùng diagnostics riêng. Image retrieval top-k được đo từ `/search/image`, khác top 1
+được chat chọn. Context precision/recall dùng `retrievedContextIds` trước generation;
+`answer_context_ids` lưu riêng evidence của câu trả lời cuối. API cũ thiếu telemetry
+được ghi lỗi, không tự dùng evidence thay thế. HTTP error counts và số mẫu đóng góp
+cho từng metric nằm trong summary. Faithfulness/completeness để trống cho reviewer.
+
+Latency `response_seconds` đo toàn bộ workflow của case. Với ảnh nó gồm cả probe
+image top-k riêng trước chat; không đồng nhất với latency embedding-only hay thời gian
+frontend render. Mẫu HTTP/runtime lỗi được ghi thời gian nhưng không vào mean success latency.
+
+`ground_truth_member1.jsonl`, bộ text Q051–Q100, bộ ảnh Q101–Q150 và
+`ground_truth_member4.jsonl` dùng schema chung. Job authoring sẽ ghi lại các nhãn
+pending; giữ bản review riêng và không chạy lại job lên nhãn đã review mà chưa backup.
+
 `ground_truth_text.jsonl` có 50 câu hỏi: 12 giá, 10 bảo hành, 12 so sánh,
 6 discovery, 5 thông số và 5 edge cases. IDs Q051–Q100 được giữ ổn định để đối
 chiếu các lần chạy. Q051–Q060 là development; Q061–Q100 là evaluation.
@@ -62,7 +92,7 @@ Citation presence không thay thế chấm faithfulness.
 .\.venv\Scripts\python.exe scripts/smoke_text_rag.py
 ```
 
-Smoke yêu cầu E5/Ollama thật, model SHA/digest và generationMode=llm cùng
+Smoke yêu cầu E5/Bedrock thật, model ID/region và generationMode=bedrock-natural cùng
 vector/hybrid retrieval cho năm intent. Template fallback làm smoke fail.
 
 Reports CSV/summary, `live_smoke_text.json` và latency probes là outputs local,

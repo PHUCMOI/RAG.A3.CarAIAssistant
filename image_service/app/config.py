@@ -32,8 +32,9 @@ class Settings(BaseSettings):
     default_top_k: int = 5
     default_candidate_pool: int = 30
     clip_model_name: str = "openai/clip-vit-base-patch32"
+    internal_token: str = ""
     rag_api_url: str = "http://localhost:5080"
-    rag_timeout_seconds: float = 90
+    rag_timeout_seconds: float = 240
 
     # CORS
     cors_origins: list[str] = [

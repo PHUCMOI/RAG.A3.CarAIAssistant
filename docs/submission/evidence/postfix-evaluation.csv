@@ -1,0 +1,330 @@
+﻿id,split,input_type,intent_correct,status_correct,http_status_correct,context_precision_at_5,context_recall_at_5,image_recall_at_1,image_recall_at_5,image_mrr_at_5,faithfulness,answer_completeness,human_review,error,http_status,generation_mode,retrieval_mode,grounded,answer,retrieved_context_ids,answer_context_ids,image_ranked_car_ids,citations,required_answer_facts,response_seconds
+Q001,development,text,1,1,1,0.2,1.0,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"Các mẫu xe phù hợp:
+
+**Ford EcoSport** — 5 chỗ, giá tham khảo từ 603.000.000 VND (ngày giá: 2021-11-01)
+
+Ford EcoSport là SUV 5 chỗ từng được phân phối chính hãng tại Việt Nam. Giá tham khảo nêu trên là dữ liệu từ cơ sở dữ liệu, không phải báo giá đại lý theo thời gian thực. Hiện chưa xác nhận mẫu xe này đang bán.
+
+Bảo hành tham khảo: 36 tháng hoặc 100.000 km; một số model có thể được 60 tháng hoặc 150.000 km — cần xác nhận theo model, VIN và ngày bán cụ thể.
+
+Đây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.
+
+Thông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.
+
+Cần xác nhận điều kiện bảo hành theo xe, VIN và ngày bán cụ thể.
+
+Bảo hành xe mới tiêu chuẩn; một số model có thể được 60 tháng hoặc 150.000 km. Xác nhận theo model và VIN.
+
+Ford EcoSport: Từng phân phối chính hãng; chưa xác nhận đang bán.","[""car:car_29_4:overview:v1"", ""car:car_29_4:price:v1"", ""car:car_29_4:specifications:v1"", ""warranty:brand:ford:v1"", ""warranty:car:car_29_4:v1""]","[""car:car_29_4:overview:v1"", ""car:car_29_4:price:v1"", ""car:car_29_4:specifications:v1"", ""warranty:car:car_29_4:v1""]",[],"[{""contextId"": ""car:car_29_4:overview:v1"", ""sourceId"": ""ford_owner_manuals"", ""title"": ""Ford Vietnam owner manual archive"", ""url"": ""https://www.ford.com.vn/support/owner-manuals/owner-manuals-sitemap/"", ""sourceDetailPath"": ""/sources/ford_owner_manuals""}, {""contextId"": ""car:car_29_4:price:v1"", ""sourceId"": ""ford_historical_prices"", ""title"": ""Ford historical Vietnam price references"", ""url"": ""https://xe.chotot.com/oto-ford-ecosport-sd6a0e"", ""sourceDetailPath"": ""/sources/ford_historical_prices""}, {""contextId"": ""car:car_29_4:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_29_4:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}, {""contextId"": ""warranty:car:car_29_4:v1"", ""sourceId"": ""ford_warranty"", ""title"": ""Ford Vietnam new vehicle warranty FAQ"", ""url"": ""https://www.ford.com.vn/owner/vehicle-support/faqs/"", ""sourceDetailPath"": ""/sources/ford_warranty""}]","[""Ford EcoSport: price_as_of=2021-11-01"", ""Ford EcoSport: price_vnd_from=603000000""]",25.353581100000042
+Q005,development,text,1,1,1,0.2,0.5,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"Các mẫu xe phù hợp:
+
+**Ford Fiesta** — 5 chỗ, giá tham khảo 545.000.000 VND (ngày 2018-01-01)
+
+**Ford Focus** — 5 chỗ, giá tham khảo 626.000.000 VND (ngày 2018-01-01)
+
+Cả hai mẫu đều là Hatchback 5 chỗ nằm trong ngân sách của bạn. Đây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực. Cả Ford Fiesta và Ford Focus đều từng phân phối chính hãng; chưa xác nhận đang bán. Thông số catalogue chủ yếu từ DVM-CAR thị trường Anh; chưa xác nhận phiên bản kỹ thuật tại Việt Nam.
+
+Thông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.
+
+Ford Fiesta: Từng phân phối chính hãng; chưa xác nhận đang bán.
+
+Ford Focus: Từng phân phối chính hãng; chưa xác nhận đang bán.","[""car:car_29_14:specifications:v1"", ""car:car_29_13:overview:v1"", ""car:car_29_13:specifications:v1"", ""car:car_29_13:price:v1"", ""car:car_29_14:overview:v1""]","[""car:car_29_14:specifications:v1"", ""car:car_29_13:overview:v1"", ""car:car_29_13:specifications:v1"", ""car:car_29_13:price:v1"", ""car:car_29_14:overview:v1"", ""sql:car:car_29_14:price:v1""]",[],"[{""contextId"": ""car:car_29_14:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_29_14:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}, {""contextId"": ""car:car_29_13:overview:v1"", ""sourceId"": ""ford_owner_manuals"", ""title"": ""Ford Vietnam owner manual archive"", ""url"": ""https://www.ford.com.vn/support/owner-manuals/owner-manuals-sitemap/"", ""sourceDetailPath"": ""/sources/ford_owner_manuals""}, {""contextId"": ""car:car_29_13:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_29_13:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}, {""contextId"": ""car:car_29_13:price:v1"", ""sourceId"": ""ford_historical_prices"", ""title"": ""Ford historical Vietnam price references"", ""url"": ""https://xe.chotot.com/oto-ford-ecosport-sd6a0e"", ""sourceDetailPath"": ""/sources/ford_historical_prices""}, {""contextId"": ""car:car_29_14:overview:v1"", ""sourceId"": ""ford_owner_manuals"", ""title"": ""Ford Vietnam owner manual archive"", ""url"": ""https://www.ford.com.vn/support/owner-manuals/owner-manuals-sitemap/"", ""sourceDetailPath"": ""/sources/ford_owner_manuals""}, {""contextId"": ""sql:car:car_29_14:price:v1"", ""sourceId"": ""ford_historical_prices"", ""title"": ""Ford historical Vietnam price references"", ""url"": ""https://xe.chotot.com/oto-ford-ecosport-sd6a0e"", ""sourceDetailPath"": ""/sources/ford_historical_prices""}]","[""Ford Fiesta: price_as_of=2018-01-01"", ""Ford Fiesta: price_vnd_from=545000000"", ""Ford Focus: price_as_of=2018-01-01"", ""Ford Focus: price_vnd_from=626000000""]",11.610303899999963
+Q020,evaluation,text,1,1,1,0.2,0.3333333333333333,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"Các mẫu xe phù hợp:
+
+**Kia Morning (Picanto)** — 5 chỗ, giá tham khảo 325.000.000 VND (ngày 2026-10-01)
+
+**Kia Rio** — 5 chỗ, giá tham khảo 470.000.000 VND (ngày 2017-11-21)
+
+**Kia K3 (Cerato)** — 5 chỗ, giá tham khảo 584.000.000 VND (ngày 2026-10-01)
+
+Đây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực. Kia Rio: Từng phân phối chính hãng; chưa xác nhận đang bán.
+
+Thông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.","[""car:car_43_9:specifications:v1"", ""car:car_43_7:specifications:v1"", ""car:car_43_3:specifications:v1"", ""car:car_43_9:overview:v1"", ""car:car_43_9:price:v1""]","[""car:car_43_9:specifications:v1"", ""car:car_43_7:specifications:v1"", ""car:car_43_3:specifications:v1"", ""car:car_43_9:overview:v1"", ""car:car_43_9:price:v1"", ""sql:car:car_43_3:price:v1"", ""sql:car:car_43_7:price:v1""]",[],"[{""contextId"": ""car:car_43_9:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_43_9:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}, {""contextId"": ""car:car_43_7:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_43_7:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}, {""contextId"": ""car:car_43_3:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_43_3:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}, {""contextId"": ""car:car_43_9:overview:v1"", ""sourceId"": ""kia_products_2026"", ""title"": ""Kia Vietnam products and prices"", ""url"": ""https://kiavietnam.com.vn/gia-xe?display=rows&products%5B%5D=new-morning&sort=a-z"", ""sourceDetailPath"": ""/sources/kia_products_2026""}, {""contextId"": ""car:car_43_9:price:v1"", ""sourceId"": ""kia_rio_price_2017"", ""title"": ""Kia Rio final Vietnam price reference"", ""url"": ""https://oto.com.vn/kinh-nghiem-mua-ban-xe/7-o-to-co-gia-lan-banh-600-trieu-dong-cho-khach-viet-choi-tet-articleid-kvmuamp"", ""sourceDetailPath"": ""/sources/kia_rio_price_2017""}, {""contextId"": ""sql:car:car_43_3:price:v1"", ""sourceId"": ""kia_products_2026"", ""title"": ""Kia Vietnam products and prices"", ""url"": ""https://kiavietnam.com.vn/gia-xe?display=rows&products%5B%5D=new-morning&sort=a-z"", ""sourceDetailPath"": ""/sources/kia_products_2026""}, {""contextId"": ""sql:car:car_43_7:price:v1"", ""sourceId"": ""kia_products_2026"", ""title"": ""Kia Vietnam products and prices"", ""url"": ""https://kiavietnam.com.vn/gia-xe?display=rows&products%5B%5D=new-morning&sort=a-z"", ""sourceDetailPath"": ""/sources/kia_products_2026""}]","[""Kia K3 (Cerato): price_as_of=2026-10-01"", ""Kia K3 (Cerato): price_vnd_from=584000000"", ""Kia Morning (Picanto): price_as_of=2026-10-01"", ""Kia Morning (Picanto): price_vnd_from=325000000"", ""Kia Rio: price_as_of=2017-11-21"", ""Kia Rio: price_vnd_from=470000000""]",15.611119700000017
+Q085,evaluation,text,,,0,,,,,,,,pending,HTTPStatusError,503,,,,,,,,,,13.396194499999979
+Q086,evaluation,text,1,1,1,0.0,0.0,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"Các mẫu xe phù hợp:
+
+**Toyota Hilux** – 5 chỗ, giá tham khảo 632.000.000 VND (ngày 2026-10-01)
+
+**Toyota Yaris** – 5 chỗ, giá tham khảo 684.000.000 VND (ngày 2023-11-01)
+
+**Toyota Corolla** – 5 chỗ, giá tham khảo 870.000.000 VND (ngày 2026-10-01)
+
+**Toyota Camry** – 5 chỗ, giá tham khảo 1.220.000.000 VND (ngày 2026-10-01)
+
+**Toyota Prius** – 5 chỗ, giá tham khảo 1.320.000.000 VND (ngày 2026-01-01)
+
+Tất cả các mẫu xe trên đều nằm trong ngân sách 1.500.000.000 VND. Giá là tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực. Toyota Yaris và Corolla từng phân phối chính hãng nhưng chưa xác nhận đang bán; Toyota Hilux và Camry được ghi nhận phân phối chính hãng; Toyota Prius có mặt qua nhập khẩu.
+
+Đây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.
+
+Thông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.
+
+Toyota Yaris: Từng phân phối chính hãng; chưa xác nhận đang bán.
+
+Toyota Corolla: Từng phân phối chính hãng; chưa xác nhận đang bán.
+
+Toyota Prius: Có mặt qua nhập khẩu; không khẳng định phân phối chính hãng.","[""car:car_92_11:overview:v1"", ""car:car_92_44:overview:v1"", ""car:car_92_30:overview:v1"", ""car:car_92_19:overview:v1"", ""car:car_92_9:overview:v1""]","[""car:car_92_11:overview:v1"", ""car:car_92_44:overview:v1"", ""car:car_92_30:overview:v1"", ""car:car_92_19:overview:v1"", ""car:car_92_9:overview:v1"", ""sql:car:car_92_11:price:v1"", ""sql:car:car_92_19:price:v1"", ""sql:car:car_92_30:price:v1"", ""sql:car:car_92_44:price:v1"", ""sql:car:car_92_9:price:v1""]",[],"[{""contextId"": ""car:car_92_11:overview:v1"", ""sourceId"": ""toyota_vn_company"", ""title"": ""Toyota Vietnam sustainability report 2023"", ""url"": ""https://www.toyota.com.vn/media/ccje2e4a/baocao-ptbv-toyota-2023_sua05162024-final-1.pdf"", ""sourceDetailPath"": ""/sources/toyota_vn_company""}, {""contextId"": ""car:car_92_44:overview:v1"", ""sourceId"": ""toyota_profile_2022"", ""title"": ""Toyota Vietnam company profile 2022"", ""url"": ""https://www.toyota.com.vn/media/41oecfvd/vie-toyotaprofile-2022-singlepage.pdf?usp=sharing"", ""sourceDetailPath"": ""/sources/toyota_profile_2022""}, {""contextId"": ""car:car_92_30:overview:v1"", ""sourceId"": ""toyota_hybrid_vn"", ""title"": ""Toyota Vietnam hybrid overview"", ""url"": ""https://www.toyota.com.vn/cong-nghe/hybrid/"", ""sourceDetailPath"": ""/sources/toyota_hybrid_vn""}, {""contextId"": ""car:car_92_19:overview:v1"", ""sourceId"": ""toyota_prices_2026"", ""title"": ""Toyota Vietnam 2026 price guide"", ""url"": ""https://www.toyota.com.vn/tin-tuc/thong-tin-bo-tro/bang-gia-xe-toyota-43840"", ""sourceDetailPath"": ""/sources/toyota_prices_2026""}, {""contextId"": ""car:car_92_9:overview:v1"", ""sourceId"": ""toyota_prices_2026"", ""title"": ""Toyota Vietnam 2026 price guide"", ""url"": ""https://www.toyota.com.vn/tin-tuc/thong-tin-bo-tro/bang-gia-xe-toyota-43840"", ""sourceDetailPath"": ""/sources/toyota_prices_2026""}, {""contextId"": ""sql:car:car_92_11:price:v1"", ""sourceId"": ""toyota_prices_2026"", ""title"": ""Toyota Vietnam 2026 price guide"", ""url"": ""https://www.toyota.com.vn/tin-tuc/thong-tin-bo-tro/bang-gia-xe-toyota-43840"", ""sourceDetailPath"": ""/sources/toyota_prices_2026""}, {""contextId"": ""sql:car:car_92_19:price:v1"", ""sourceId"": ""toyota_prices_2026"", ""title"": ""Toyota Vietnam 2026 price guide"", ""url"": ""https://www.toyota.com.vn/tin-tuc/thong-tin-bo-tro/bang-gia-xe-toyota-43840"", ""sourceDetailPath"": ""/sources/toyota_prices_2026""}, {""contextId"": ""sql:car:car_92_30:price:v1"", ""sourceId"": ""toyota_tax_values_2026"", ""title"": ""2026 Vietnam vehicle registration-tax valuation schedule"", ""url"": ""https://thuvienphapluat.vn/van-ban/Thue-Phi-Le-Phi/Quyet-dinh-02-2026-QD-UBND-Bang-gia-tinh-Le-phi-truoc-ba-doi-voi-o-to-xe-may-Thanh-Hoa-688116.aspx"", ""sourceDetailPath"": ""/sources/toyota_tax_values_2026""}, {""contextId"": ""sql:car:car_92_44:price:v1"", ""sourceId"": ""toyota_yaris_price_2023"", ""title"": ""Toyota Yaris 2023 listed price"", ""url"": ""https://bacninhtoyota.com.vn/toyota-yaris/"", ""sourceDetailPath"": ""/sources/toyota_yaris_price_2023""}, {""contextId"": ""sql:car:car_92_9:price:v1"", ""sourceId"": ""toyota_prices_2026"", ""title"": ""Toyota Vietnam 2026 price guide"", ""url"": ""https://www.toyota.com.vn/tin-tuc/thong-tin-bo-tro/bang-gia-xe-toyota-43840"", ""sourceDetailPath"": ""/sources/toyota_prices_2026""}]","[""Toyota Hilux: price_as_of=2026-10-01"", ""Toyota Hilux: price_vnd_from=632000000"", ""Toyota Yaris: price_as_of=2023-11-01"", ""Toyota Yaris: price_vnd_from=684000000"", ""Toyota Corolla: price_as_of=2026-10-01"", ""Toyota Corolla: price_vnd_from=870000000"", ""Toyota Camry: price_as_of=2026-10-01"", ""Toyota Camry: price_vnd_from=1220000000"", ""Toyota Prius: price_as_of=2026-01-01"", ""Toyota Prius: price_vnd_from=1320000000""]",11.793945500000007
+Q087,evaluation,text,1,1,1,0.2,0.2,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"Các mẫu xe phù hợp:
+
+**Mazda2** — 5 chỗ, giá tham khảo từ 418.000.000 VND (ngày giá: 2026-10-01)
+
+**Mazda3** — 5 chỗ, giá tham khảo từ 569.000.000 VND (ngày giá: 2026-10-01)
+
+**Mazda CX-5** — 5 chỗ, giá tham khảo từ 699.000.000 VND (ngày giá: 2026-10-01)
+
+**Mazda BT-50** — 5 chỗ, giá tham khảo từ 554.000.000 VND (ngày giá: 2026-09-03)
+
+**Mazda6** — 5 chỗ, giá tham khảo từ 769.000.000 VND (ngày giá: 2024-08-16)
+
+Tất cả các mẫu xe trên đều nằm trong ngân sách 1.500.000.000 VND. Giá là tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực. Mazda BT-50 và Mazda6 từng phân phối chính hãng; chưa xác nhận đang bán.
+
+Đây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.
+
+Thông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.
+
+Mazda BT-50: Từng phân phối chính hãng; chưa xác nhận đang bán.
+
+Mazda6: Từng phân phối chính hãng; chưa xác nhận đang bán.","[""car:car_57_10:price:v1"", ""car:car_57_7:overview:v1"", ""car:car_57_13:overview:v1"", ""car:car_57_5:overview:v1"", ""car:car_57_11:overview:v1""]","[""car:car_57_10:price:v1"", ""car:car_57_7:overview:v1"", ""car:car_57_13:overview:v1"", ""car:car_57_5:overview:v1"", ""car:car_57_11:overview:v1"", ""sql:car:car_57_11:price:v1"", ""sql:car:car_57_13:price:v1"", ""sql:car:car_57_5:price:v1"", ""sql:car:car_57_7:price:v1""]",[],"[{""contextId"": ""car:car_57_10:price:v1"", ""sourceId"": ""mazda_vn_lineup"", ""title"": ""Mazda Vietnam product introduction"", ""url"": ""https://mazdamotors.vn/news-and-events/news-and-events-content/news-and-events/chuong-trinh-gioi-thieu-san-pham-mazda-the-he-moi-dang-cap-moi"", ""sourceDetailPath"": ""/sources/mazda_vn_lineup""}, {""contextId"": ""car:car_57_7:overview:v1"", ""sourceId"": ""mazda_vn_lineup"", ""title"": ""Mazda Vietnam product introduction"", ""url"": ""https://mazdamotors.vn/news-and-events/news-and-events-content/news-and-events/chuong-trinh-gioi-thieu-san-pham-mazda-the-he-moi-dang-cap-moi"", ""sourceDetailPath"": ""/sources/mazda_vn_lineup""}, {""contextId"": ""car:car_57_13:overview:v1"", ""sourceId"": ""mazda_vn_lineup"", ""title"": ""Mazda Vietnam product introduction"", ""url"": ""https://mazdamotors.vn/news-and-events/news-and-events-content/news-and-events/chuong-trinh-gioi-thieu-san-pham-mazda-the-he-moi-dang-cap-moi"", ""sourceDetailPath"": ""/sources/mazda_vn_lineup""}, {""contextId"": ""car:car_57_5:overview:v1"", ""sourceId"": ""mazda_vn_lineup"", ""title"": ""Mazda Vietnam product introduction"", ""url"": ""https://mazdamotors.vn/news-and-events/news-and-events-content/news-and-events/chuong-trinh-gioi-thieu-san-pham-mazda-the-he-moi-dang-cap-moi"", ""sourceDetailPath"": ""/sources/mazda_vn_lineup""}, {""contextId"": ""car:car_57_11:overview:v1"", ""sourceId"": ""mazda_vn_lineup"", ""title"": ""Mazda Vietnam product introduction"", ""url"": ""https://mazdamotors.vn/news-and-events/news-and-events-content/news-and-events/chuong-trinh-gioi-thieu-san-pham-mazda-the-he-moi-dang-cap-moi"", ""sourceDetailPath"": ""/sources/mazda_vn_lineup""}, {""contextId"": ""sql:car:car_57_11:price:v1"", ""sourceId"": ""mazda_vn_lineup"", ""title"": ""Mazda Vietnam product introduction"", ""url"": ""https://mazdamotors.vn/news-and-events/news-and-events-content/news-and-events/chuong-trinh-gioi-thieu-san-pham-mazda-the-he-moi-dang-cap-moi"", ""sourceDetailPath"": ""/sources/mazda_vn_lineup""}, {""contextId"": ""sql:car:car_57_13:price:v1"", ""sourceId"": ""mazda6_price_2024"", ""title"": ""Mazda6 official price announcement"", ""url"": ""https://mazdamotors.vn/news-and-events/news-and-events-content/news-and-events/mazda6-them-tinh-nang-cong-nghe-gia-chi-tu-769-trieu"", ""sourceDetailPath"": ""/sources/mazda6_price_2024""}, {""contextId"": ""sql:car:car_57_5:price:v1"", ""sourceId"": ""mazda_bt50_price_2026"", ""title"": ""Mazda BT-50 Vietnam reference price"", ""url"": ""https://baolamdong.vn/gia-xe-o-to/mazda/bt-50"", ""sourceDetailPath"": ""/sources/mazda_bt50_price_2026""}, {""contextId"": ""sql:car:car_57_7:price:v1"", ""sourceId"": ""mazda_vn_lineup"", ""title"": ""Mazda Vietnam product introduction"", ""url"": ""https://mazdamotors.vn/news-and-events/news-and-events-content/news-and-events/chuong-trinh-gioi-thieu-san-pham-mazda-the-he-moi-dang-cap-moi"", ""sourceDetailPath"": ""/sources/mazda_vn_lineup""}]","[""Mazda2: price_as_of=2026-10-01"", ""Mazda2: price_vnd_from=418000000"", ""Mazda CX-3: price_as_of=2026-10-01"", ""Mazda CX-3: price_vnd_from=519000000"", ""Mazda BT-50: price_as_of=2026-09-03"", ""Mazda BT-50: price_vnd_from=554000000"", ""Mazda3: price_as_of=2026-10-01"", ""Mazda3: price_vnd_from=569000000"", ""Mazda CX-5: price_as_of=2026-10-01"", ""Mazda CX-5: price_vnd_from=699000000""]",10.77356050000003
+Q088,evaluation,text,1,1,1,0.0,0.0,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"Các mẫu xe phù hợp:
+
+• **Hyundai Grand i10**, 5 chỗ, giá tham khảo 360.000.000 VND (ngày 2026-10-01)
+
+• **Hyundai Accent**, 5 chỗ, giá tham khảo 439.000.000 VND (ngày 2026-10-01)
+
+• **Hyundai Elantra**, 5 chỗ, giá tham khảo 579.000.000 VND (ngày 2026-10-01)
+
+• **Hyundai Tucson**, 5 chỗ, giá tham khảo 769.000.000 VND (ngày 2026-10-01)
+
+• **Hyundai Santa Fe**, 7 chỗ, giá tham khảo 1.069.000.000 VND (ngày 2026-10-01)
+
+Tất cả các mẫu xe trên đều được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra. Giá là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.
+
+Đây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.
+
+Thông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.","[""car:car_36_20:overview:v1"", ""car:car_36_4:overview:v1"", ""car:car_36_1:overview:v1"", ""car:car_36_24:overview:v1"", ""car:car_36_8:overview:v1""]","[""car:car_36_20:overview:v1"", ""car:car_36_4:overview:v1"", ""car:car_36_1:overview:v1"", ""car:car_36_24:overview:v1"", ""car:car_36_8:overview:v1"", ""sql:car:car_36_1:price:v1"", ""sql:car:car_36_20:price:v1"", ""sql:car:car_36_24:price:v1"", ""sql:car:car_36_4:price:v1"", ""sql:car:car_36_8:price:v1""]",[],"[{""contextId"": ""car:car_36_20:overview:v1"", ""sourceId"": ""hyundai_products_2026"", ""title"": ""Hyundai Thanh Cong products"", ""url"": ""https://hyundai.thanhcong.vn/san-pham"", ""sourceDetailPath"": ""/sources/hyundai_products_2026""}, {""contextId"": ""car:car_36_4:overview:v1"", ""sourceId"": ""hyundai_products_2026"", ""title"": ""Hyundai Thanh Cong products"", ""url"": ""https://hyundai.thanhcong.vn/san-pham"", ""sourceDetailPath"": ""/sources/hyundai_products_2026""}, {""contextId"": ""car:car_36_1:overview:v1"", ""sourceId"": ""hyundai_products_2026"", ""title"": ""Hyundai Thanh Cong products"", ""url"": ""https://hyundai.thanhcong.vn/san-pham"", ""sourceDetailPath"": ""/sources/hyundai_products_2026""}, {""contextId"": ""car:car_36_24:overview:v1"", ""sourceId"": ""hyundai_products_2026"", ""title"": ""Hyundai Thanh Cong products"", ""url"": ""https://hyundai.thanhcong.vn/san-pham"", ""sourceDetailPath"": ""/sources/hyundai_products_2026""}, {""contextId"": ""car:car_36_8:overview:v1"", ""sourceId"": ""hyundai_products_2026"", ""title"": ""Hyundai Thanh Cong products"", ""url"": ""https://hyundai.thanhcong.vn/san-pham"", ""sourceDetailPath"": ""/sources/hyundai_products_2026""}, {""contextId"": ""sql:car:car_36_1:price:v1"", ""sourceId"": ""hyundai_authorized_prices_2026"", ""title"": ""Hyundai Vinh Yen authorized dealer price list"", ""url"": ""https://hyundaigiatot.vn/"", ""sourceDetailPath"": ""/sources/hyundai_authorized_prices_2026""}, {""contextId"": ""sql:car:car_36_20:price:v1"", ""sourceId"": ""hyundai_authorized_prices_2026"", ""title"": ""Hyundai Vinh Yen authorized dealer price list"", ""url"": ""https://hyundaigiatot.vn/"", ""sourceDetailPath"": ""/sources/hyundai_authorized_prices_2026""}, {""contextId"": ""sql:car:car_36_24:price:v1"", ""sourceId"": ""hyundai_authorized_prices_2026"", ""title"": ""Hyundai Vinh Yen authorized dealer price list"", ""url"": ""https://hyundaigiatot.vn/"", ""sourceDetailPath"": ""/sources/hyundai_authorized_prices_2026""}, {""contextId"": ""sql:car:car_36_4:price:v1"", ""sourceId"": ""hyundai_authorized_prices_2026"", ""title"": ""Hyundai Vinh Yen authorized dealer price list"", ""url"": ""https://hyundaigiatot.vn/"", ""sourceDetailPath"": ""/sources/hyundai_authorized_prices_2026""}, {""contextId"": ""sql:car:car_36_8:price:v1"", ""sourceId"": ""hyundai_authorized_prices_2026"", ""title"": ""Hyundai Vinh Yen authorized dealer price list"", ""url"": ""https://hyundaigiatot.vn/"", ""sourceDetailPath"": ""/sources/hyundai_authorized_prices_2026""}]","[""Hyundai Grand i10: price_as_of=2026-10-01"", ""Hyundai Grand i10: price_vnd_from=360000000"", ""Hyundai Accent: price_as_of=2026-10-01"", ""Hyundai Accent: price_vnd_from=439000000"", ""Hyundai Elantra: price_as_of=2026-10-01"", ""Hyundai Elantra: price_vnd_from=579000000"", ""Hyundai Tucson: price_as_of=2026-10-01"", ""Hyundai Tucson: price_vnd_from=769000000"", ""Hyundai Santa Fe: price_as_of=2026-10-01"", ""Hyundai Santa Fe: price_vnd_from=1069000000""]",12.507701199999985
+Q089,evaluation,text,,,0,,,,,,,,pending,HTTPStatusError,503,,,,,,,,,,28.681428600000004
+Q090,evaluation,text,1,1,1,0.4,1.0,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"Các mẫu xe phù hợp:
+
+**Suzuki Swift** – 5 chỗ, giá tham khảo từ 569.000.000 VND (ngày giá: 2026-10-01)
+
+**Suzuki Jimny** – 4 chỗ, giá tham khảo từ 789.000.000 VND (ngày giá: 2026-10-01)
+
+Cả hai mẫu xe đều được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra. Giá trên là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.
+
+Đây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.
+
+Thông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.","[""car:car_87_6:overview:v1"", ""car:car_87_10:overview:v1"", ""car:car_87_6:price:v1"", ""car:car_87_10:price:v1"", ""car:car_87_6:specifications:v1""]","[""car:car_87_6:overview:v1"", ""car:car_87_10:overview:v1"", ""car:car_87_6:price:v1"", ""car:car_87_10:price:v1""]",[],"[{""contextId"": ""car:car_87_6:overview:v1"", ""sourceId"": ""suzuki_products"", ""title"": ""Suzuki Vietnam automobiles"", ""url"": ""https://suzuki.com.vn/"", ""sourceDetailPath"": ""/sources/suzuki_products""}, {""contextId"": ""car:car_87_10:overview:v1"", ""sourceId"": ""suzuki_products"", ""title"": ""Suzuki Vietnam automobiles"", ""url"": ""https://suzuki.com.vn/"", ""sourceDetailPath"": ""/sources/suzuki_products""}, {""contextId"": ""car:car_87_6:price:v1"", ""sourceId"": ""suzuki_products"", ""title"": ""Suzuki Vietnam automobiles"", ""url"": ""https://suzuki.com.vn/"", ""sourceDetailPath"": ""/sources/suzuki_products""}, {""contextId"": ""car:car_87_10:price:v1"", ""sourceId"": ""suzuki_products"", ""title"": ""Suzuki Vietnam automobiles"", ""url"": ""https://suzuki.com.vn/"", ""sourceDetailPath"": ""/sources/suzuki_products""}]","[""Suzuki Swift: price_as_of=2026-10-01"", ""Suzuki Swift: price_vnd_from=569000000"", ""Suzuki Jimny: price_as_of=2026-10-01"", ""Suzuki Jimny: price_vnd_from=789000000""]",16.28061889999998
+Q151,development,text,1,1,1,1.0,1.0,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"**Đại lý Toyota tại Hanoi:**
+
+**Tên:** Toyota My Dinh
+
+**Địa chỉ:** 15 Pham Hung Street, My Dinh 2 Ward, Nam Tu Liem District
+
+**Liên hệ:**
+- **Điện thoại:** +84 934 891 515
+- **Website:** http://toyotamydinh.com.vn/","[""dealer:1:profile:v1""]","[""dealer:1:profile:v1""]",[],"[{""contextId"": ""dealer:1:profile:v1"", ""sourceId"": ""toyota_dealers"", ""title"": ""Toyota Vietnam dealer locator"", ""url"": ""https://www.toyota.com.vn/lien-he-dai-ly"", ""sourceDetailPath"": ""/sources/toyota_dealers""}]","[""1: city=Hanoi"", ""1: name=Toyota My Dinh"", ""1: address=15 Pham Hung Street, My Dinh 2 Ward, Nam Tu Liem District""]",22.605308400000013
+Q152,development,text,1,1,1,1.0,1.0,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"**Đại lý Toyota tại Thành phố Hồ Chí Minh:**
+
+**Tên:** Toyota An Suong
+
+**Số điện thoại:** 1900 7339
+
+**Địa chỉ:** 382 Le Quang Dao Street, Trung My Tay Ward
+
+**Website:** http://www.toyota-ansuong.vn/
+
+*(Thông tin kiểm tra lần cuối: 01/10/2026)*","[""dealer:2:profile:v1""]","[""dealer:2:profile:v1""]",[],"[{""contextId"": ""dealer:2:profile:v1"", ""sourceId"": ""toyota_dealers"", ""title"": ""Toyota Vietnam dealer locator"", ""url"": ""https://www.toyota.com.vn/lien-he-dai-ly"", ""sourceDetailPath"": ""/sources/toyota_dealers""}]","[""2: name=Toyota An Suong"", ""2: phone=1900 7339""]",26.113803399999995
+Q153,development,text,1,1,1,1.0,1.0,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"**Đại lý Toyota tại Đà Nẵng**
+
+**Tên:** Toyota Da Nang
+
+**Website:** https://danang.toyota.com.vn/
+
+**Địa chỉ:** 69-71 Duy Tan Street, Hoa Cuong Ward, Đà Nẵng
+
+**Điện thoại:** +84 905 955 204","[""dealer:3:profile:v1""]","[""dealer:3:profile:v1""]",[],"[{""contextId"": ""dealer:3:profile:v1"", ""sourceId"": ""toyota_dealers"", ""title"": ""Toyota Vietnam dealer locator"", ""url"": ""https://www.toyota.com.vn/lien-he-dai-ly"", ""sourceDetailPath"": ""/sources/toyota_dealers""}]","[""3: name=Toyota Da Nang"", ""3: website=https://danang.toyota.com.vn/""]",23.5944796
+Q154,development,text,1,1,1,1.0,1.0,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"**Đại lý Honda tại Hanoi:**
+
+**Tên:** Honda Automobile My Dinh
+
+**Địa chỉ:** 2 Le Duc Tho Street, Tu Liem Ward
+
+**Điện thoại:** +84 375 837 979
+
+**Website:** https://hondaotomydinh.vn/","[""dealer:4:profile:v1""]","[""dealer:4:profile:v1""]",[],"[{""contextId"": ""dealer:4:profile:v1"", ""sourceId"": ""honda_dealers"", ""title"": ""Honda Vietnam automobile dealer locator"", ""url"": ""https://www.honda.com.vn/o-to/dai-ly/danh-sach-dai-ly"", ""sourceDetailPath"": ""/sources/honda_dealers""}]","[""4: city=Hanoi"", ""4: name=Honda Automobile My Dinh"", ""4: address=2 Le Duc Tho Street, Tu Liem Ward""]",21.988766
+Q155,development,text,1,1,1,1.0,1.0,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"**Đại lý Honda tại Thành phố Hồ Chí Minh:**
+
+**Tên đại lý:** Honda Automobile Cong Hoa
+
+**Số điện thoại:** +84 90 866 8700
+
+**Địa chỉ:** 18 Cong Hoa Street, Tan Son Nhat Ward
+
+**Website:** https://hondaotoconghoa.com.vn/
+
+*(Thông tin kiểm tra ngày 01/10/2026)*","[""dealer:5:profile:v1""]","[""dealer:5:profile:v1""]",[],"[{""contextId"": ""dealer:5:profile:v1"", ""sourceId"": ""honda_dealers"", ""title"": ""Honda Vietnam automobile dealer locator"", ""url"": ""https://www.honda.com.vn/o-to/dai-ly/danh-sach-dai-ly"", ""sourceDetailPath"": ""/sources/honda_dealers""}]","[""5: name=Honda Automobile Cong Hoa"", ""5: phone=+84 90 866 8700""]",24.99697759999998
+Q156,development,text,1,1,1,1.0,1.0,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"**Đại lý Honda tại Đà Nẵng:**
+
+**Tên:** Honda Automobile Da Nang Hai Chau
+
+**Website:** https://hondaotodanang.com.vn/
+
+**Địa chỉ:** 178 September 2 Street, Hoa Cuong Ward, Đà Nẵng
+
+**Điện thoại:** +84 236 378 8888","[""dealer:6:profile:v1""]","[""dealer:6:profile:v1""]",[],"[{""contextId"": ""dealer:6:profile:v1"", ""sourceId"": ""honda_dealers"", ""title"": ""Honda Vietnam automobile dealer locator"", ""url"": ""https://www.honda.com.vn/o-to/dai-ly/danh-sach-dai-ly"", ""sourceDetailPath"": ""/sources/honda_dealers""}]","[""6: name=Honda Automobile Da Nang Hai Chau"", ""6: website=https://hondaotodanang.com.vn/""]",25.181863099999987
+Q157,development,text,1,1,1,1.0,1.0,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"**Đại lý Mazda tại Hanoi:**
+
+**Tên:** Mazda Pham Van Dong
+
+**Địa chỉ:** Pham Van Dong Street, Bac Tu Liem District, Hanoi
+
+**Điện thoại:** +84 933 805 628
+
+**Website:** https://mazdaphamvandong.vn/","[""dealer:7:profile:v1""]","[""dealer:7:profile:v1""]",[],"[{""contextId"": ""dealer:7:profile:v1"", ""sourceId"": ""mazda_dealers"", ""title"": ""Mazda Vietnam dealer network"", ""url"": ""https://mazdamotors.vn/customer-care"", ""sourceDetailPath"": ""/sources/mazda_dealers""}]","[""7: city=Hanoi"", ""7: name=Mazda Pham Van Dong"", ""7: address=Pham Van Dong Street, Bac Tu Liem District""]",21.923486299999922
+Q158,development,text,1,1,1,1.0,1.0,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"**Đại lý Mazda tại Đà Nẵng**
+
+**Tên đại lý:** Mazda Da Nang
+
+**Số điện thoại:** +84 933 806 726
+
+**Địa chỉ:** Group 14, Pham Van Dong Street, An Hai Ward, Đà Nẵng
+
+**Website:** https://mazdadanang.com/
+
+*(Thông tin kiểm tra ngày 01/10/2026)*","[""dealer:8:profile:v1""]","[""dealer:8:profile:v1""]",[],"[{""contextId"": ""dealer:8:profile:v1"", ""sourceId"": ""mazda_dealers"", ""title"": ""Mazda Vietnam dealer network"", ""url"": ""https://mazdamotors.vn/customer-care"", ""sourceDetailPath"": ""/sources/mazda_dealers""}]","[""8: name=Mazda Da Nang"", ""8: phone=+84 933 806 726""]",27.289732399999934
+Q159,development,text,1,1,1,1.0,1.0,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"**Đại lý Hyundai tại Hanoi:**
+
+**Tên:** Hyundai Dong Do
+
+**Địa chỉ:** 16A Pham Hung Street, Tu Liem Ward, Hanoi
+
+**Điện thoại:** +84 987 885 588
+
+**Website:** https://hyundai-vietnam.vn/","[""dealer:9:profile:v1""]","[""dealer:9:profile:v1""]",[],"[{""contextId"": ""dealer:9:profile:v1"", ""sourceId"": ""hyundai_dealers"", ""title"": ""Hyundai Thanh Cong dealer directory"", ""url"": ""https://hyundai.thanhcong.vn/thong-tin-dai-ly"", ""sourceDetailPath"": ""/sources/hyundai_dealers""}]","[""9: name=Hyundai Dong Do"", ""9: website=https://hyundai-vietnam.vn/""]",22.831153599999993
+Q160,development,text,1,1,1,1.0,1.0,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"**Đại lý Hyundai tại Đà Nẵng:**
+
+**Tên:** Hyundai Son Tra 3S
+
+**Địa chỉ:** 286 Pham Hung Street, Hoa Xuan Ward, Đà Nẵng
+
+**Liên hệ:**
+- **Điện thoại:** +84 236 377 3558
+- **Website:** https://hyundai-sontra.vn/","[""dealer:10:profile:v1""]","[""dealer:10:profile:v1""]",[],"[{""contextId"": ""dealer:10:profile:v1"", ""sourceId"": ""hyundai_dealers"", ""title"": ""Hyundai Thanh Cong dealer directory"", ""url"": ""https://hyundai.thanhcong.vn/thong-tin-dai-ly"", ""sourceDetailPath"": ""/sources/hyundai_dealers""}]","[""10: city=Da Nang"", ""10: name=Hyundai Son Tra 3S"", ""10: address=286 Pham Hung Street, Hoa Xuan Ward""]",21.79559639999991
+Q161,evaluation,text,1,1,1,1.0,1.0,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"Có 2 đại lý Kia tại Thành phố Hồ Chí Minh:
+
+**1. Kia Tan Son Nhat**
+- Địa chỉ: 7 Hoang Minh Giam Street, Duc Nhuan Ward
+- Điện thoại: +84 938 807 607
+- Website: https://kiatansonnhat.vn/
+
+**2. Kia Binh Tan**
+- Địa chỉ: 73-75 Vo Van Kiet Street, An Lac Ward
+- Điện thoại: +84 938 807 102
+- Website: https://kiabinhtan.vn/","[""dealer:12:profile:v1"", ""dealer:11:profile:v1""]","[""dealer:12:profile:v1"", ""dealer:11:profile:v1""]",[],"[{""contextId"": ""dealer:12:profile:v1"", ""sourceId"": ""kia_dealers"", ""title"": ""Kia Vietnam dealer locator"", ""url"": ""https://kiavietnam.com.vn/dai-ly"", ""sourceDetailPath"": ""/sources/kia_dealers""}, {""contextId"": ""dealer:11:profile:v1"", ""sourceId"": ""kia_dealers"", ""title"": ""Kia Vietnam dealer locator"", ""url"": ""https://kiavietnam.com.vn/dai-ly"", ""sourceDetailPath"": ""/sources/kia_dealers""}]","[""11: name=Kia Binh Tan"", ""11: phone=+84 938 807 102"", ""12: name=Kia Tan Son Nhat"", ""12: phone=+84 938 807 607""]",24.21300020000001
+Q162,evaluation,text,1,1,1,1.0,1.0,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"Có 2 đại lý Kia tại Thành phố Hồ Chí Minh:
+
+**1. Kia Tan Son Nhat**
+- Địa chỉ: 7 Hoang Minh Giam Street, Duc Nhuan Ward
+- Điện thoại: +84 938 807 607
+- Website: https://kiatansonnhat.vn/
+
+**2. Kia Binh Tan**
+- Địa chỉ: 73-75 Vo Van Kiet Street, An Lac Ward
+- Điện thoại: +84 938 807 102
+- Website: https://kiabinhtan.vn/","[""dealer:12:profile:v1"", ""dealer:11:profile:v1""]","[""dealer:12:profile:v1"", ""dealer:11:profile:v1""]",[],"[{""contextId"": ""dealer:12:profile:v1"", ""sourceId"": ""kia_dealers"", ""title"": ""Kia Vietnam dealer locator"", ""url"": ""https://kiavietnam.com.vn/dai-ly"", ""sourceDetailPath"": ""/sources/kia_dealers""}, {""contextId"": ""dealer:11:profile:v1"", ""sourceId"": ""kia_dealers"", ""title"": ""Kia Vietnam dealer locator"", ""url"": ""https://kiavietnam.com.vn/dai-ly"", ""sourceDetailPath"": ""/sources/kia_dealers""}]","[""11: name=Kia Binh Tan"", ""11: website=https://kiabinhtan.vn/"", ""12: name=Kia Tan Son Nhat"", ""12: website=https://kiatansonnhat.vn/""]",25.689142500000003
+Q163,evaluation,text,1,1,1,1.0,1.0,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"**Đại lý Ford tại Hanoi:**
+
+**Tên:** Ha Noi Ford
+
+**Địa chỉ:** 311-313 Truong Chinh Street, Phuong Liet Ward
+
+**Liên hệ:**
+- Điện thoại: +84 868 059 999
+- Website: https://www.hanoiford.com.vn/","[""dealer:13:profile:v1""]","[""dealer:13:profile:v1""]",[],"[{""contextId"": ""dealer:13:profile:v1"", ""sourceId"": ""ford_dealers_2026"", ""title"": ""Ford Vietnam authorized dealer list 2026"", ""url"": ""https://www.ford.com.vn/content/dam/Ford/vn/about/news/2026/chuong-trinhco-hoi-vang-san-sang-ruoc-xe/the-le-chuong-trinh-co-hoi-vang-san-sang-ruoc-xe-thang-5-2026.pdf"", ""sourceDetailPath"": ""/sources/ford_dealers_2026""}]","[""13: city=Hanoi"", ""13: name=Ha Noi Ford"", ""13: address=311-313 Truong Chinh Street, Phuong Liet Ward""]",23.17463090000001
+Q164,evaluation,text,1,1,1,1.0,1.0,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"**Đại lý Ford tại Thành phố Hồ Chí Minh:**
+
+**Tên:** Sai Gon Ford
+
+**Số điện thoại:** 1800 8353
+
+**Địa chỉ:** 61A Cao Thang Street, Ban Co Ward
+
+**Website:** https://saigonford.com.vn/","[""dealer:14:profile:v1""]","[""dealer:14:profile:v1""]",[],"[{""contextId"": ""dealer:14:profile:v1"", ""sourceId"": ""ford_dealers_2026"", ""title"": ""Ford Vietnam authorized dealer list 2026"", ""url"": ""https://www.ford.com.vn/content/dam/Ford/vn/about/news/2026/chuong-trinhco-hoi-vang-san-sang-ruoc-xe/the-le-chuong-trinh-co-hoi-vang-san-sang-ruoc-xe-thang-5-2026.pdf"", ""sourceDetailPath"": ""/sources/ford_dealers_2026""}]","[""14: name=Sai Gon Ford"", ""14: phone=1800 8353""]",25.651793500000053
+Q165,evaluation,text,1,1,1,1.0,1.0,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"**Đại lý Ford tại Đà Nẵng:**
+
+**Tên:** Dana Ford
+
+**Website:** https://danaford.com.vn/
+
+**Địa chỉ:** 286 Pham Hung Street, Hoa Xuan Ward, Đà Nẵng
+
+**Điện thoại:** +84 766 528 555","[""dealer:15:profile:v1""]","[""dealer:15:profile:v1""]",[],"[{""contextId"": ""dealer:15:profile:v1"", ""sourceId"": ""ford_dealers_2026"", ""title"": ""Ford Vietnam authorized dealer list 2026"", ""url"": ""https://www.ford.com.vn/content/dam/Ford/vn/about/news/2026/chuong-trinhco-hoi-vang-san-sang-ruoc-xe/the-le-chuong-trinh-co-hoi-vang-san-sang-ruoc-xe-thang-5-2026.pdf"", ""sourceDetailPath"": ""/sources/ford_dealers_2026""}]","[""15: name=Dana Ford"", ""15: website=https://danaford.com.vn/""]",22.16305490000002
+Q166,evaluation,text,1,1,1,1.0,1.0,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"**Đại lý Mitsubishi tại Hanoi:**
+
+**Tên:** Mitsubishi Kim Lien Hanoi
+
+**Địa chỉ:** 26A Pham Van Dong Street, Dong Ngac Ward, Hanoi
+
+**Điện thoại:** +84 906 997 600
+
+**Website:** https://www.mitsubishi-motors.com.vn/dealer","[""dealer:16:profile:v1""]","[""dealer:16:profile:v1""]",[],"[{""contextId"": ""dealer:16:profile:v1"", ""sourceId"": ""mitsubishi_dealers"", ""title"": ""Mitsubishi Motors Vietnam dealer network"", ""url"": ""https://www.mitsubishi-motors.com.vn/dealer"", ""sourceDetailPath"": ""/sources/mitsubishi_dealers""}]","[""16: city=Hanoi"", ""16: name=Mitsubishi Kim Lien Hanoi"", ""16: address=26A Pham Van Dong Street, Dong Ngac Ward""]",26.53986850000001
+Q167,evaluation,text,1,1,1,1.0,1.0,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"**Đại lý Mitsubishi tại Thành phố Hồ Chí Minh:**
+
+**Tên đại lý:** Mitsubishi SATSCO
+
+**Số điện thoại:** +84 938 209 520
+
+**Địa chỉ:** 1A Hong Ha Street, Tan Son Hoa Ward
+
+**Website:** https://mitsubishi-satsco.com.vn/
+
+*(Thông tin kiểm tra ngày 01/10/2026)*","[""dealer:17:profile:v1""]","[""dealer:17:profile:v1""]",[],"[{""contextId"": ""dealer:17:profile:v1"", ""sourceId"": ""mitsubishi_dealers"", ""title"": ""Mitsubishi Motors Vietnam dealer network"", ""url"": ""https://www.mitsubishi-motors.com.vn/dealer"", ""sourceDetailPath"": ""/sources/mitsubishi_dealers""}]","[""17: name=Mitsubishi SATSCO"", ""17: phone=+84 938 209 520""]",20.1882339
+Q168,evaluation,text,1,1,1,1.0,1.0,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"**Đại lý Mitsubishi tại Đà Nẵng:**
+
+**Tên:** Mitsubishi Daesco Da Nang
+
+**Website:** https://mitsubishi-danang.com/
+
+**Địa chỉ:** 51 Phan Dang Luu Street, Hoa Cuong Ward, Đà Nẵng
+
+**Điện thoại:** +84 905 715 368","[""dealer:18:profile:v1""]","[""dealer:18:profile:v1""]",[],"[{""contextId"": ""dealer:18:profile:v1"", ""sourceId"": ""mitsubishi_dealers"", ""title"": ""Mitsubishi Motors Vietnam dealer network"", ""url"": ""https://www.mitsubishi-motors.com.vn/dealer"", ""sourceDetailPath"": ""/sources/mitsubishi_dealers""}]","[""18: name=Mitsubishi Daesco Da Nang"", ""18: website=https://mitsubishi-danang.com/""]",25.992454400000042
+Q169,evaluation,text,1,1,1,1.0,1.0,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"**Đại lý Nissan tại Hanoi:**
+
+**Tên:** Nissan Giai Phong
+
+**Địa chỉ:** Km 12, National Highway 1A, Thanh Tri Commune, Hanoi
+
+**Điện thoại:** +84 931 506 666
+
+**Website:** https://www.nissanvietnam.vn/tim-kiem-dai-ly.html
+
+(Thông tin kiểm tra ngày 01/10/2026)","[""dealer:19:profile:v1""]","[""dealer:19:profile:v1""]",[],"[{""contextId"": ""dealer:19:profile:v1"", ""sourceId"": ""nissan_dealers"", ""title"": ""Nissan Vietnam dealer locator"", ""url"": ""https://www.nissanvietnam.vn/tim-kiem-dai-ly.html"", ""sourceDetailPath"": ""/sources/nissan_dealers""}]","[""19: city=Hanoi"", ""19: name=Nissan Giai Phong"", ""19: address=Km 12, National Highway 1A, Thanh Tri Commune""]",22.001884000000018
+Q170,evaluation,text,1,1,1,1.0,1.0,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"**Đại lý Nissan tại Thành phố Hồ Chí Minh:**
+
+**Tên đại lý:** Nissan Sai Gon
+
+**Số điện thoại:** +84 903 924 899
+
+**Địa chỉ:** 816 Su Van Hanh Street, Ward 12, District 10
+
+**Website:** https://www.nissanvietnam.vn/agency.html","[""dealer:20:profile:v1""]","[""dealer:20:profile:v1""]",[],"[{""contextId"": ""dealer:20:profile:v1"", ""sourceId"": ""nissan_dealers"", ""title"": ""Nissan Vietnam dealer locator"", ""url"": ""https://www.nissanvietnam.vn/tim-kiem-dai-ly.html"", ""sourceDetailPath"": ""/sources/nissan_dealers""}]","[""20: name=Nissan Sai Gon"", ""20: phone=+84 903 924 899""]",25.552640600000018
+Q171,evaluation,text,1,1,1,1.0,1.0,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"**Đại lý Nissan tại Đà Nẵng**
+
+**Tên đại lý:** Nissan Da Nang
+
+**Địa chỉ:** 875 Nguyen Huu Tho Street, Cam Le Ward, Đà Nẵng
+
+**Điện thoại:** +84 966 007 999
+
+**Website:** https://www.nissanvietnam.vn/tim-kiem-dai-ly.html","[""dealer:21:profile:v1""]","[""dealer:21:profile:v1""]",[],"[{""contextId"": ""dealer:21:profile:v1"", ""sourceId"": ""nissan_dealers"", ""title"": ""Nissan Vietnam dealer locator"", ""url"": ""https://www.nissanvietnam.vn/tim-kiem-dai-ly.html"", ""sourceDetailPath"": ""/sources/nissan_dealers""}]","[""21: name=Nissan Da Nang"", ""21: website=https://www.nissanvietnam.vn/tim-kiem-dai-ly.html""]",23.784509800000023
+Q172,evaluation,text,1,1,1,1.0,1.0,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"**Đại lý Suzuki tại Hanoi:**
+
+**Tên:** Suzuki NISU
+
+**Địa chỉ:** 449 Nguyen Van Linh Street, Phuc Dong Ward, Long Bien District
+
+**Liên hệ:**
+- Điện thoại: +84 902 233 516
+- Website: https://suzuki.com.vn/pages/contactdealer
+
+*(Thông tin kiểm tra ngày 01/10/2026)*","[""dealer:22:profile:v1""]","[""dealer:22:profile:v1""]",[],"[{""contextId"": ""dealer:22:profile:v1"", ""sourceId"": ""suzuki_dealers"", ""title"": ""Suzuki Vietnam dealer contact directory"", ""url"": ""https://suzuki.com.vn/pages/contactdealer"", ""sourceDetailPath"": ""/sources/suzuki_dealers""}]","[""22: city=Hanoi"", ""22: name=Suzuki NISU"", ""22: address=449 Nguyen Van Linh Street, Phuc Dong Ward, Long Bien District""]",23.65393640000002

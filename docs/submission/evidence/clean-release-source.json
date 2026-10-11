@@ -1,0 +1,9 @@
+{
+  "scope": "Source ZIP extracted into a separate empty workspace; host Python dependencies and local PostgreSQL reused, not a new machine deployment",
+  "source_archive_sha256": "a861010e8185e8ffcca5c77fc7142a9bad5eb896fe143c0c49bc51715b48950b",
+  "frontend": {"npm_ci": "passed", "reported_vulnerabilities": 0, "typescript_vite_build": "passed", "warning": "508.54 kB JS bundle"},
+  "backend": {"passed": 192, "failed": 0, "postgresql_integration": "enabled via TEST_DATABASE_URL"},
+  "csharp": {"passed": 122, "skipped": 25, "failed": 0, "scope": "Default tests; PostgreSQL/AWS opt-in not enabled in this clean-source run"},
+  "fresh_sql_seed": "See fresh-database.json for separate isolated initialization evidence",
+  "full_clean_deployment_verified": false
+}

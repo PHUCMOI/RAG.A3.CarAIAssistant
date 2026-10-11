@@ -1,7 +1,20 @@
 import { Fragment, useEffect, useRef, useState, type FormEvent, type RefObject, type ReactNode } from 'react'
 import { composerKeyDown } from './ChatUtilities'
 import { formatAnswer, comparisonFacts, singleCarFacts } from './answerFormatting'
-import type { CatalogContext } from './storage'
+import type { CatalogContext, GroundingMetadata } from './storage'
+import { Link } from 'react-router-dom'
+import { NextSteps } from './NextSteps'
+
+export function AnswerSources({ metadata }: { metadata: GroundingMetadata }) {
+  const labels: Record<string, string> = { partial: 'Một phần dữ liệu chưa có hoặc chưa xác minh được.', no_data: 'Chưa có đủ dữ liệu để trả lời.', needs_clarification: 'Cần làm rõ thêm thông tin.' }
+  const sources = metadata.citations || []
+  return <>{metadata.status && labels[metadata.status] && <p className="assistant-answer-note">{labels[metadata.status]}</p>}
+    {sources.length > 0 && <details className="assistant-sources"><summary>Nguồn dữ liệu của câu trả lời</summary><ul>{sources.map((source, index) => {
+      const path = source.sourceId ? `/sources/${encodeURIComponent(source.sourceId)}` : source.sourceDetailPath
+      return <li key={index}>{path && /^\/(?:sources|cars|account)\//.test(path) ? <Link to={path}>{source.title}</Link> : source.title}</li>
+    })}</ul><small>{metadata.grounded ? 'Câu trả lời đã được kiểm chứng với dữ liệu tra cứu.' : 'Chưa xác minh đầy đủ nội dung câu trả lời.'}</small></details>}
+  </>
+}
 
 function inline(value: string) {
   return value.split(/(\*\*[^*]+\*\*|\*[^*\n]+\*|`[^`]+`)/g).map((part, index) => part.startsWith('**') && part.endsWith('**') ? <strong key={index}>{part.slice(2, -2)}</strong> : part.startsWith('*') && part.endsWith('*') ? <em key={index}>{part.slice(1, -1)}</em> : part.startsWith('`') && part.endsWith('`') ? <code key={index}>{part.slice(1, -1)}</code> : <Fragment key={index}>{part}</Fragment>)
@@ -79,8 +92,8 @@ export function CopyAnswer({ content }: { content: string }) {
   return <div className="assistant-message-actions"><button type="button" onClick={() => void copy()} aria-label="Sao chép câu trả lời">Sao chép</button><span role="status">{status}</span></div>
 }
 
-export function FailedQuestion({ content, error, busy, onRetry }: { content: string; error: string; busy: boolean; onRetry: () => void }) {
-  return <article className="order-chat-message user assistant-failed"><strong>Bạn · Chưa gửi thành công</strong><p>{content}</p><div role="alert"><small>{error}</small><button type="button" className="mini-button" disabled={busy} onClick={onRetry}>Gửi lại câu hỏi</button></div></article>
+export function FailedQuestion({ content, error, busy, onRetry, role = 'guest' }: { content: string; error: string; busy: boolean; onRetry: () => void; role?: 'guest' | 'customer' }) {
+  return <article className="order-chat-message user assistant-failed"><strong>Bạn · Chưa gửi thành công</strong><p>{content}</p><div role="alert"><small>{error}</small><button type="button" className="mini-button" disabled={busy} onClick={onRetry}>Gửi lại câu hỏi</button></div><NextSteps context={{ role, status: 'error', question: content }} busy={busy} /></article>
 }
 
 export function ChatComposer({ value, onChange, busy, onSubmit, sendLabel, placeholder, notice, inputRef, attachment, tools, canSend = false }: { value: string; onChange: (value: string) => void; busy: boolean; onSubmit: (event: FormEvent) => void; sendLabel: string; placeholder: string; notice: string; attachment?: ReactNode; tools?: ReactNode; canSend?: boolean; inputRef?: RefObject<HTMLTextAreaElement | null> }) {

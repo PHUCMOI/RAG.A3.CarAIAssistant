@@ -1,0 +1,25 @@
+flowchart TD
+    Q["Câu hỏi route orders"] --> CT["Đọc context: current / previous order, topics, pending, drafts"]
+    CT --> OWN["Kiểm tra lại owner của references"]
+    OWN --> RES["Luật cục bộ + Bedrock resolve context; summary nếu bật"]
+    RES --> O{"Chọn được đúng một đơn?"}
+    O -->|Chưa| ASK["Hỏi mã đơn; nhớ pending topics"]
+    O -->|Rồi| TYPE{"Loại yêu cầu"}
+    TYPE -->|Tra cứu| MULTI["Tách nhiều chủ đề trong một lượt"]
+    MULTI --> P["Tiến trình + bước tiếp theo"]
+    MULTI --> PAY["Thanh toán / thu hoàn đã xác nhận"]
+    MULTI --> DEL["Lịch bàn giao"]
+    MULTI --> DOC["Checklist hồ sơ"]
+    MULTI --> CAR["Thông tin xe / bảo hành qua Python"]
+    P --> S["Sections: success / missing / error + retrievedAt + link"]
+    PAY --> S
+    DEL --> S
+    DOC --> S
+    CAR --> S
+    TYPE -->|Đổi lịch / hủy / hỗ trợ| DRAFT["Chuẩn bị bản nháp, chưa gửi"]
+    TYPE -->|Tài khoản| NAV["Liên kết trang nghiệp vụ"]
+    ASK --> FIN["Python compose_grounded"]
+    S --> FIN
+    DRAFT --> FIN
+    NAV --> FIN
+    FIN --> SAVE["Lưu messages + sources + context + attachments + tăng version"]

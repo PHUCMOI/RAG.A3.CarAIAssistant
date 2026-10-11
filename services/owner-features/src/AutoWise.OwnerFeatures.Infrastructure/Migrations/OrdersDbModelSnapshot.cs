@@ -114,6 +114,34 @@ namespace AutoWise.OwnerFeatures.Infrastructure.Migrations
                     b.ToTable("order_change_requests", "orders_service");
                 });
 
+            modelBuilder.Entity("AutoWise.OwnerFeatures.Infrastructure.ChatAttachmentRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<byte[]>("Data")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("MimeType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<Guid>("SessionId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SessionId");
+
+                    b.ToTable("chat_attachments", "orders_service", t =>
+                        {
+                            t.HasCheckConstraint("CK_attachment_size", "octet_length(\"Data\") BETWEEN 1 AND 10000000");
+                        });
+                });
+
             modelBuilder.Entity("AutoWise.OwnerFeatures.Infrastructure.ChatSessionRecord", b =>
                 {
                     b.Property<Guid>("Id")
@@ -715,6 +743,15 @@ namespace AutoWise.OwnerFeatures.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("ReviewedBy")
                         .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("AutoWise.OwnerFeatures.Infrastructure.ChatAttachmentRecord", b =>
+                {
+                    b.HasOne("AutoWise.OwnerFeatures.Infrastructure.ChatSessionRecord", null)
+                        .WithMany()
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("AutoWise.OwnerFeatures.Infrastructure.ChatSessionRecord", b =>

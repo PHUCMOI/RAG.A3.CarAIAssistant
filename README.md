@@ -7,11 +7,12 @@ AutoWise là website khám phá và tư vấn ô tô tại Việt Nam, sử dụ
 ## Setup cho người mới
 
 Đọc **[hướng dẫn setup từng bước](docs/SETUP.md)** để clone đúng branch, cấu hình
-database/Ollama CPU hoặc GPU, tạo index và chạy backend/frontend. Có hai lựa chọn:
+database/Amazon Bedrock, tạo index và chạy backend/frontend. Có hai lựa chọn:
 development trên Windows/PowerShell hoặc toàn bộ ứng dụng bằng Docker, kèm bước
 kiểm tra thành công và xử lý lỗi. Không cần corpus raw để chạy dữ liệu hiện tại.
 
 Để dùng Claude Haiku 4.5 trên Amazon Bedrock, xem [hướng dẫn Bedrock](docs/BEDROCK.md).
+Luồng chat thống nhất và kiểm chứng câu trả lời cuối: [pipeline Bedrock](docs/chat-pipeline-bedrock.md).
 
 Lưu ý: `package.json` nằm trong **frontend**. Từ root dùng
 `npm.cmd --prefix frontend run dev`; backend dùng Python **3.12** trong `.venv`.
@@ -26,7 +27,7 @@ Lưu ý: `package.json` nằm trong **frontend**. Từ root dùng
 - Trang chi tiết xe.
 - So sánh 2–3 xe, chọn/thay/xóa trên màn hình, xem khác biệt và chia sẻ URL.
 - Danh sách 22 đại lý, lọc theo hãng và thành phố.
-- Chatbot text RAG: intent/entities, SQL filters, lexical/pgvector retrieval và Claude Haiku 4.5 qua Bedrock hoặc Ollama; structured/template fallback khi model/index chưa sẵn sàng.
+- Chat thống nhất: input text/ảnh, routing phía backend, SQL/lexical/pgvector retrieval và Claude Haiku 4.5 qua Bedrock. Câu trả lời cuối được kiểm chứng với evidence; model không tạo được câu hợp lệ thì trả lỗi để thử lại.
 - Responsive cho desktop, tablet và mobile.
 - Swagger/OpenAPI cho backend.
 - API danh sách/chi tiết nguồn và danh sách bảo hành.
@@ -38,13 +39,13 @@ Lưu ý: `package.json` nằm trong **frontend**. Từ root dùng
 ### Chưa triển khai
 
 - Image embeddings/vector search trong API chính (text đã có pipeline riêng).
-- Lưu lịch sử hội thoại RAG common (trợ lý đơn hàng C# đã có lịch sử).
-- Authentication cho phần RAG/common ngoài module C# (C# đã có auth và phân quyền).
+- Lưu lịch sử guest trên server (guest dùng cache trình duyệt; customer lưu hội thoại thống nhất trong C#).
+- Tài khoản độc lập cho Python API; đăng nhập/phân quyền hiện được quản lý qua C# và token nội bộ giữa services.
 - CRUD catalogue/RAG trong giao diện quản trị common (module nghiệp vụ C# đã có màn hình xử lý).
-- Tích hợp nhận diện ảnh vào frontend/API chính. Prototype độc lập nằm tại `image_service/`, cần model runtime tương thích index.
+- Nhận diện ảnh đã tích hợp qua `image_service/`; cần model runtime tương thích index. Việc đối chiếu ảnh với đơn cần đăng nhập và chỉ so sánh mẫu xe, không xác minh VIN.
 - Image vector search trong API chính; prototype ảnh có FAISS index 512 chiều riêng.
 
-Các route Admin và RAG Settings hiện mới là placeholder giao diện.
+Chỉ `/admin/data` và `/admin/rag` còn là placeholder. Các màn hình admin nghiệp vụ và `/admin/assistant` đã triển khai.
 
 ## Công nghệ
 
@@ -73,8 +74,8 @@ Dữ liệu nghiệp vụ trong PostgreSQL được lưu bằng tiếng Anh. Gia
 ## Chạy toàn bộ bằng Docker
 
 Yêu cầu: Docker Desktop. SQL seed và curated images đã ở repository. Cấu hình
-Ollama và index text RAG theo **[cách B trong hướng dẫn setup](docs/SETUP.md#b-toàn-bộ-ứng-dụng-bằng-docker)**.
-Compose khởi động PostgreSQL, Python API, C# API và website; Ollama được chuẩn bị riêng.
+Bedrock và index text RAG theo **[cách B trong hướng dẫn setup](docs/SETUP.md#b-toàn-bộ-ứng-dụng-bằng-docker)**.
+Compose khởi động PostgreSQL, Python API, C# API và website; AWS credentials được cấu hình trước khi chạy. Image service được khởi động cùng stack.
 
 ```powershell
 docker compose up --build -d
@@ -106,13 +107,13 @@ Không dùng `docker compose down -v` nếu muốn giữ dữ liệu PostgreSQL.
 
 ## Chạy ở chế độ development
 
-Chuẩn bị Python 3.12, Node 24, `.env`, dependencies, PostgreSQL, Ollama và index
+Chuẩn bị Python 3.12, Node 24, `.env`, dependencies, PostgreSQL, Bedrock và index
 theo **[hướng dẫn setup](docs/SETUP.md)**. Sau lần setup đầu, chạy từ root:
 
 ```powershell
 docker compose up -d postgres
-# Nếu dùng container Ollama được tạo theo hướng dẫn:
-docker start autowise-ollama-rag
+# Nếu dùng container Bedrock được tạo theo hướng dẫn:
+# AWS credentials are configured in .env or the AWS profile override.
 ```
 
 Chạy backend:
@@ -139,7 +140,9 @@ cần service C# cổng 5090; xem mục A4 trong setup. Catalogue và chat text 
 | `/cars/:carId` | Chi tiết xe | Hoạt động |
 | `/compare?ids=...` | So sánh xe | Hoạt động |
 | `/dealers` | Danh sách đại lý | Hoạt động |
-| `/chat` | Chatbot | Text RAG / template fallback |
+| `/chat` | Chatbot | Text/ảnh, catalogue/đơn, Bedrock và nguồn câu trả lời cuối |
+| `/search-image` | Tìm mẫu xe bằng ảnh | CLIP/FAISS, confidence/uncertainty và mở chi tiết xe |
+| `/admin/assistant` | Trợ lý quản trị | Tra cứu nghiệp vụ và thống kê có phân quyền |
 | `/sources/:sourceId` | Chi tiết nguồn | Hoạt động |
 | `/admin/data` | Quản trị dữ liệu | Placeholder |
 | `/admin/rag` | Cấu hình RAG | Placeholder |
@@ -196,12 +199,12 @@ Content-Type: application/json
 }
 ```
 
-Endpoint chat phân tích intent/entities, áp dụng SQL filters và hybrid retrieval rồi gọi Ollama khi có facts. Response giữ `answer`, `contexts`, `grounded`, bổ sung `intent`, `filters`, `evidence`, `citations`, `status`, `generationMode`. Cần chạy text indexing và cấu hình Ollama; lỗi provider dùng template có căn cứ.
+Endpoint chat phân tích intent/entities, áp dụng SQL filters và hybrid retrieval rồi gọi Bedrock. Câu trả lời cuối phải qua kiểm chứng ngữ nghĩa; `grounded`, `evidence` và `citations` dựa trên nội dung cuối. Nếu không kiểm chứng được, API trả 503. Cần text index và AWS credentials. Frontend gửi input thô vào `/api/chat/turns` cho guest hoặc `/assistant/sessions/{id}/turns` cho khách đăng nhập; backend điều phối catalogue, ảnh và công cụ đơn hàng.
 
 ## Text RAG
 
 Xem [hướng dẫn module](backend/app/application/rag/README.md) để chuẩn bị Python 3.12,
-Ollama `qwen2.5:3b`, migration database đang tồn tại, chạy indexing và evaluation.
+Claude Haiku 4.5 trên Bedrock, migration database đang tồn tại, chạy indexing và evaluation.
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip install --no-cache-dir -r backend/requirements-rag.txt
@@ -211,8 +214,8 @@ Ollama `qwen2.5:3b`, migration database đang tồn tại, chạy indexing và e
 
 Document dùng tiếng Việt, embedding `intfloat/multilingual-e5-base` 768 chiều.
 Database seed ban đầu vẫn có 0 documents; job indexing mới sinh dữ liệu.
-Bộ 50 câu hỏi đánh giá nằm trong `eval/ground_truth_text.jsonl`; facts và đáp án cần được review trước khi dùng làm release gate.
-Offline seed/template diagnostics không thay thế kết quả PostgreSQL/vector/Ollama thật.
+Bộ text gốc 50 câu nằm trong `eval/ground_truth_text.jsonl`. Bộ nộp thống nhất 200 mẫu ở `eval/ground_truth_submission.jsonl`, gồm 150 text và 50 ảnh/ảnh + text; xem [evaluation](eval/README.md). Các nhãn là bản nháp từ seed/index, cần review chéo trước khi dùng làm kết quả nghiệm thu chính thức.
+Offline seed/template diagnostics không thay thế kết quả PostgreSQL/vector/Bedrock thật.
 
 ## Kết nối PostgreSQL bằng pgAdmin 4
 
@@ -360,12 +363,12 @@ docker compose up -d --build api web
 
 1. Đánh giá live text RAG và hoàn thành kiểm tra chéo ground truth.
 2. Mở rộng bộ chọn xe sang server search/pagination khi dataset tăng.
-3. Lưu chat sessions và messages cho RAG common.
-4. Thêm authentication và trang admin CRUD cho catalogue/RAG common.
-5. Tạo image embeddings `vector(512)` và nối module ảnh với text RAG.
+3. Mở rộng history guest trên server nếu cần; customer đã có hội thoại thống nhất.
+4. Thêm trang admin CRUD cho catalogue/RAG common.
+5. Mở rộng độ phủ và calibration cho index ảnh CLIP/FAISS đã tích hợp.
 
 
-## Python migration và image prototype
+## Python API và image service
 
 Backend chính dùng Python 3.12+, FastAPI, Pydantic và asyncpg. Router xử lý HTTP,
 repository giữ SQL có tham số, application layer giữ orchestration chat qua Protocol.
@@ -384,14 +387,15 @@ python -m pytest backend/tests -q
 Tests mặc định dùng database giả, không xác minh SQL với PostgreSQL thực.
 Xem `docs/python_migration_review.md` để biết kết quả review và giới hạn kiểm chứng.
 
-Image service trên nhánh dev được giữ như prototype tùy chọn:
+Image service được khởi động cùng Compose và đã tích hợp qua Nginx:
 
 ```powershell
-docker compose --profile image up --build -d
+docker compose up --build -d image-service
 ```
 
-Dịch vụ này dùng cổng 8000 và snapshot/index riêng. Frontend chưa gọi dịch vụ;
-`imageName` trên `/api/chat` chỉ là tên file, không phải upload hoặc nhận diện ảnh.
+Dịch vụ dùng cổng 8000 và index CLIP/FAISS 512 chiều riêng. Frontend tìm ảnh tại
+`/search-image`; chat gửi ảnh thô qua endpoint turns để backend điều phối.
+`imageName` trên API cũ `/api/chat` vẫn chỉ là tên file, không phải ảnh upload.
 Đổi embedding model cần tạo lại index bằng cùng model và preprocessing.
 
 ## Module đơn hàng C#
@@ -401,9 +405,11 @@ ghi nhận thu/hoàn tiền và quản lý bàn giao. C# cùng Python dùng DB `
 các bảng C# nằm trong schema `orders_service`. Chạy `docker compose up --build -d`
 để chạy migration và seed demo trong Development, mở http://localhost:5173/login.
 Xem [đặc tả và hướng dẫn](docs/csharp_owner_features.md) để lấy tài khoản demo.
-Customer có chatbot tra cứu đơn tại `/account/assistant`: status, số tiền, lịch bàn giao,
-thông tin xe/bảo hành qua API Python và lịch sử hội thoại. Bản MVP dùng intent/template C#,
-không phụ thuộc RAG/LLM. Dashboard và chatbot phân tích admin chưa triển khai.
+`/account/assistant` chuyển tới `/chat`. Customer dùng hội thoại thống nhất để hỏi
+catalogue/ảnh/đơn: C# lấy dữ liệu thuộc tài khoản, Python retrieval và Bedrock viết/kiểm chứng
+câu trả lời cuối. Lịch sử và attachment được lưu có kiểm quyền sở hữu.
+Admin có trợ lý tại `/admin/assistant`, gồm lọc nghiệp vụ và thống kê tài chính có phân quyền;
+xem [hướng dẫn admin assistant](docs/admin-assistant.md).
 
 Customer account: mở `/account` sau đăng nhập customer. Profile, bảo mật, yêu cầu mua xe,
 đề nghị thay đổi/hủy, thông báo, lịch tư vấn/lái thử và xe yêu thích đã có UI/API C#;

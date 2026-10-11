@@ -12,6 +12,8 @@ Môi trường Docker demo đã bật Bedrock cho Python API bằng cấu hình 
 docker compose -f docker-compose.yml -f docker-compose.bedrock.yml up -d --no-deps api
 ```
 
-Luồng đặt tên luôn khởi tạo Bedrock riêng, không phụ thuộc `LLM_PROVIDER` hoặc `RAG_ENABLED`. Override trên cung cấp AWS profile/credentials cho container; không dùng Ollama hoặc câu hỏi đầu làm tên thay thế khi Bedrock lỗi.
+Luồng đặt tên luôn khởi tạo Bedrock riêng, không phụ thuộc `LLM_PROVIDER` hoặc `RAG_ENABLED`. Override trên cung cấp AWS profile/credentials cho container; không dùng Bedrock hoặc câu hỏi đầu làm tên thay thế khi Bedrock lỗi.
 
 Đã xác minh mô hình Bedrock thật và Edge có giao diện: hội thoại cũ có tên “So sánh các mẫu xe SUV và MPV”; hội thoại mới tự có tên “Hỏi số tiền còn phải thanh toán”. Tên xuất hiện trong sidebar và còn sau reload. Các test kiểm tra schema/AI lỗi, lưu và đọc lại tên, quyền sở hữu và chỉ tạo tên thành công một lần đều đạt.
+
+Các endpoint Python `/api/chat/compose`, `/api/chat/understand`, `/api/chat/title` chỉ dành cho dịch vụ nội bộ và yêu cầu header `X-AutoWise-Internal-Token`. Frontend gửi input thô đến `/api/chat/turns` (guest) hoặc endpoint `/assistant/sessions/{id}/turns` đã đăng nhập; token không được gửi xuống browser.

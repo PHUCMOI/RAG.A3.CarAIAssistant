@@ -91,5 +91,12 @@ async def get_db_connection() -> AsyncGenerator[asyncpg.Connection, None]:
     except (OSError, asyncpg.PostgresError, asyncio.TimeoutError):
         from fastapi import HTTPException
         raise HTTPException(status_code=503, detail="PostgreSQL is not ready") from None
-    async with pool.acquire() as connection:
+    try:
+        connection = await pool.acquire(timeout=5.0)
+    except asyncio.TimeoutError:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=503, detail="Database is busy; retry shortly") from None
+    try:
         yield connection
+    finally:
+        await pool.release(connection)

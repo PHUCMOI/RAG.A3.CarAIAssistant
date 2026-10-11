@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Header, HTTPException
+from app.core.internal_auth import require_internal, is_internal
 from app.models.schemas import ChatRequest, ChatResponse, ChatContext
 from app.application.rag.dependencies import get_rag_service
 from app.infrastructure.ai.conversation_titles import title_provider
-from app.infrastructure.ai.natural_answers import compose_answer
+from app.infrastructure.ai.natural_answers import compose_grounded
 from app.infrastructure.ai.question_understanding import understand
 from pydantic import BaseModel, Field
 import asyncio
@@ -24,7 +25,7 @@ class UnderstandRequest(BaseModel):
     question: str = Field(min_length=1, max_length=4000)
     context: dict = Field(default_factory=dict)
 
-@router.post('/understand')
+@router.post('/understand', dependencies=[Depends(require_internal)])
 async def understanding(request: UnderstandRequest):
     from fastapi import HTTPException
     if len(json.dumps(request.context, ensure_ascii=False)) > 12000:
@@ -34,14 +35,14 @@ async def understanding(request: UnderstandRequest):
     except Exception:
         raise HTTPException(503, 'Chưa hiểu được câu hỏi qua Bedrock. Vui lòng thử lại.')
 
-@router.post("/compose")
+@router.post("/compose", dependencies=[Depends(require_internal)])
 async def compose(request: ComposeRequest):
     from fastapi import HTTPException
     if len(json.dumps(request.verifiedData, ensure_ascii=False, default=str)) > 60000:
         raise HTTPException(413, "Dữ liệu trả lời quá lớn.")
-    return {"answer": await compose_answer(request.question, request.verifiedData), "generationMode": "bedrock-natural"}
+    return await compose_grounded(request.question, request.verifiedData)
 
-@router.post("/title", response_model=TitleResponse)
+@router.post("/title", response_model=TitleResponse, dependencies=[Depends(require_internal)])
 async def conversation_title(request: TitleRequest):
     from fastapi import HTTPException
     try:
@@ -61,10 +62,19 @@ async def conversation_title(request: TitleRequest):
 
 
 @router.post("", response_model=ChatResponse)
-async def chat(request: ChatRequest, service=Depends(get_rag_service)):
+async def public_chat(request: ChatRequest, token: str | None = Header(default=None, alias="X-AutoWise-Internal-Token"), service=Depends(get_rag_service)):
+    if (request.image_match is not None or request.clarification is not None) and not is_internal(token):
+        raise HTTPException(403, "Evidence ảnh và diễn giải chỉ được nhận từ dịch vụ nội bộ.")
+    return await chat(request, service)
+
+
+async def chat(request: ChatRequest, service):
+    from app.core.chat_access import restricted_admin_question, refusal_result
+    if restricted_admin_question(request.question):
+        return ChatResponse(**refusal_result())
     if request.clarification:
-        answer = await compose_answer(request.question, {'status': 'needs_clarification', 'retrievedAnswer': request.clarification})
-        return ChatResponse(answer=answer, contexts=[], grounded=False, status='needs_clarification', generationMode='bedrock-natural')
+        final = await compose_grounded(request.question, {'status': 'needs_clarification', 'retrievedAnswer': request.clarification})
+        return ChatResponse(contexts=[], **final)
     result = await service.answer(request.question, image_name=request.image_name,
         explicit_filters=request.filters, car_ids=request.car_ids, top_k=request.top_k)
     r = result.retrieval_result
@@ -93,15 +103,23 @@ async def chat(request: ChatRequest, service=Depends(get_rag_service)):
                 if first.price_vnd_from is not None and second.price_vnd_from is not None and first.price_source_id and second.price_source_id:
                     price_differences.append({"cars": [first.display_name, second.display_name],
                         "differenceVnd": abs(first.price_vnd_from - second.price_vnd_from)})
-    answer = await compose_answer(request.question, {
+    from app.application.rag.context_builder import build_context, required_qualifiers, composition_retrieval
+    composition = composition_retrieval(r)
+    package = build_context(composition)
+    final = await compose_grounded(request.question, {
+        "intent": r.analysis.intent,
         "referencePriceDifferences": price_differences,
+        "selectedCarNames": [c.display_name for c in r.cars],
         "retrievedAnswer": result.answer, "status": result.status,
         "cars": cars,
-        "evidence": [e.model_dump(mode="json", by_alias=True) for e in r.evidence],
+        "searchConstraints": r.filters.model_dump(mode="json", by_alias=True),
+        "evidence": [e.model_dump(mode="json", by_alias=True) for e in composition.evidence],
+        "citations": [c.model_dump(mode="json", by_alias=True) for c in package.citations],
+        "requiredQualifiers": required_qualifiers(composition),
         "imageMatch": request.image_match,
         "specificationScope": "Thông số catalogue chủ yếu từ DVM-CAR thị trường Anh; chưa xác nhận phiên bản kỹ thuật tại Việt Nam. Nếu nêu thông số kỹ thuật, phải giữ giới hạn này.",
     })
-    return ChatResponse(answer=answer, grounded=result.grounded,
+    return ChatResponse(**final,
+        retrievedContextIds=[e.context_id for e in r.evidence],
         contexts=[context(c) for c in r.cars],
-        intent=r.analysis.intent, filters=r.filters, evidence=r.evidence, citations=result.citations,
-        status=result.status, generationMode="bedrock-natural", retrieval=r.retrieval)
+        intent=r.analysis.intent, filters=r.filters, retrieval=r.retrieval)

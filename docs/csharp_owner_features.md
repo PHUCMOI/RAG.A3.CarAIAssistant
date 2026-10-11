@@ -444,7 +444,9 @@ API fail cùng đường dẫn kết thúc `/fail`, cần lý do. Analytics mớ
 
 Customer mở `/account/assistant`, hoặc nút **Hỏi về đơn hàng** từ danh sách đơn.
 Màn hình chat catalogue `/chat` của Python vẫn thuộc nhóm RAG; không thay thế bằng chat đơn hàng.
-Admin không truy cập route chat customer; chatbot phân tích admin chưa triển khai.
+Admin không truy cập route chat customer. Chatbot admin đã triển khai riêng tại `/admin/assistant`;
+tra cứu tổng quan, đơn/thanh toán, khách và phiếu hỗ trợ theo bộ lọc. Chi tiết và giới hạn:
+[admin-assistant.md](admin-assistant.md).
 
 Các API thực tế cùng prefix proxy C# `/api/orders-service/assistant`:
 

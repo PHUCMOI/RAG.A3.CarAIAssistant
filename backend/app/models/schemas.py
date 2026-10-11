@@ -130,6 +130,7 @@ class ChatResponse(CamelModel):
     intent: str = "other"
     filters: RagFilters = Field(default_factory=RagFilters)
     evidence: list[Evidence] = Field(default_factory=list)
+    retrieved_context_ids: list[str] = Field(default_factory=list, alias="retrievedContextIds")
     citations: list[Citation] = Field(default_factory=list)
     status: str = "no_data"
     generation_mode: str = Field("template", alias="generationMode")

@@ -1,0 +1,17 @@
+flowchart TD
+    A["Text / ảnh + context hội thoại"] --> B["Kiểm input, quyền, owner và replay/version"]
+    B --> C["Bedrock understand: question + route + clarification"]
+    C --> D{"Route?"}
+    D -->|catalogue| E["Python analyzer: intent / carIds / filters"]
+    E --> F["SQL candidates + lexical / vector + evidence"]
+    D -->|orders customer| G["C# context resolver + tools theo owner"]
+    D -->|orders guest| H["Yêu cầu đăng nhập"]
+    D -->|clarification| I["Câu hỏi làm rõ"]
+    F --> J["VerifiedData + sources + qualifiers"]
+    G --> J
+    H --> J
+    I --> J
+    J --> K["Bedrock viết + backend validate + Bedrock review"]
+    K --> L["Kết quả hợp lệ: lưu và hiển thị"]
+    K -->|lỗi sau repair| M["503, giữ input"]
+    L --> N["NextSteps theo metadata có cấu trúc"]

@@ -1,0 +1,7 @@
+flowchart LR
+    B["Nghiệp vụ hoặc lịch giao thay đổi"] --> OB["notification_outbox"]
+    OB --> WORK["NotificationWorker / Delivery"]
+    WORK --> RULE["Kiểm owner, schedule version, trạng thái và preference"]
+    RULE --> N["Notifications chống trùng"]
+    N --> ACC["Thông báo trong tài khoản"]
+    ACC --> CHAT["Mở chat với orderId để tiếp tục"]

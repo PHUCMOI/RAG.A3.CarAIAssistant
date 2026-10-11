@@ -1,0 +1,1442 @@
+{
+  "embeddingModel": "intfloat/multilingual-e5-base",
+  "embeddingVersion": "d128750597153bb5987e10b1c3493a34e5a4502a:e5-prefix-l2-vi-v1",
+  "dimensions": [
+    768,
+    768,
+    768,
+    768,
+    768
+  ],
+  "cases": [
+    {
+      "question": "Tìm SUV 5 chỗ dưới 800 triệu",
+      "expectedIntent": "find_car",
+      "passed": true,
+      "error": "",
+      "httpStatus": 200,
+      "response": {
+        "answer": "Các mẫu xe phù hợp:\n\n**Mitsubishi Eclipse Cross** — 5 chỗ, giá tham khảo 595.000.000 VND (ngày 2026-09-01).\n\n**Ford EcoSport** — 5 chỗ, giá tham khảo 603.000.000 VND (ngày 2021-11-01).\n\n**Honda HR-V** — 5 chỗ, giá tham khảo 669.000.000 VND (ngày 2026-10-01).\n\n**Mazda CX-5** — 5 chỗ, giá tham khảo 699.000.000 VND (ngày 2026-10-01).\n\n**Hyundai Tucson** — 5 chỗ, giá tham khảo 769.000.000 VND (ngày 2026-10-01).\n\nĐây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.\n\nThông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.\n\nMitsubishi Eclipse Cross: Từng phân phối chính hãng; chưa xác nhận đang bán.\n\nFord EcoSport: Từng phân phối chính hãng; chưa xác nhận đang bán.\n\nHonda HR-V: Được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.\n\nMazda CX-5: Được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.\n\nHyundai Tucson: Được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.",
+        "contexts": [
+          {
+            "carId": "car_62_7",
+            "displayName": "Mitsubishi Eclipse Cross",
+            "description": "Mitsubishi Eclipse Cross is an SUV with 5 seats from Mitsubishi. The model was officially present in Vietnam, but current pricing and configurations may no longer be published. The dataset records a reference starting price of VND 595,000,000 as of 2026-09-01.",
+            "presenceSourceId": "mitsubishi_vn_history",
+            "summary": "Mitsubishi Eclipse Cross là mẫu SUV 5 chỗ của hãng Mitsubishi.",
+            "specifications": {
+              "Kiểu xe": "SUV",
+              "Số chỗ": "5 chỗ",
+              "Động cơ": "1.5L",
+              "Nhiên liệu": "Xăng",
+              "Hộp số": "Số sàn"
+            }
+          },
+          {
+            "carId": "car_29_4",
+            "displayName": "Ford EcoSport",
+            "description": "Ford EcoSport is an SUV with 5 seats from Ford. The model was officially present in Vietnam, but current pricing and configurations may no longer be published. The dataset records a reference starting price of VND 603,000,000 as of 2021-11-01.",
+            "presenceSourceId": "ford_owner_manuals",
+            "summary": "Ford EcoSport là mẫu SUV 5 chỗ của hãng Ford.",
+            "specifications": {
+              "Kiểu xe": "SUV",
+              "Số chỗ": "5 chỗ",
+              "Động cơ": "1.0L",
+              "Nhiên liệu": "Xăng",
+              "Hộp số": "Số sàn"
+            }
+          },
+          {
+            "carId": "car_34_8",
+            "displayName": "Honda HR-V",
+            "description": "Honda HR-V is an SUV with 5 seats from Honda. The model is currently listed by an official or manufacturer-backed source in Vietnam. The dataset records a reference starting price of VND 669,000,000 as of 2026-10-01.",
+            "presenceSourceId": "honda_products_2026",
+            "summary": "Honda HR-V là mẫu SUV 5 chỗ của hãng Honda.",
+            "specifications": {
+              "Kiểu xe": "SUV",
+              "Số chỗ": "5 chỗ",
+              "Động cơ": "1.6L",
+              "Nhiên liệu": "Xăng",
+              "Hộp số": "Số sàn"
+            }
+          },
+          {
+            "carId": "car_57_7",
+            "displayName": "Mazda CX-5",
+            "description": "Mazda CX-5 is an SUV with 5 seats from Mazda. The model is currently listed by an official or manufacturer-backed source in Vietnam. The dataset records a reference starting price of VND 699,000,000 as of 2026-10-01.",
+            "presenceSourceId": "mazda_vn_lineup",
+            "summary": "Mazda CX-5 là mẫu SUV 5 chỗ của hãng Mazda.",
+            "specifications": {
+              "Kiểu xe": "SUV",
+              "Số chỗ": "5 chỗ",
+              "Động cơ": "2.2L",
+              "Nhiên liệu": "Dầu",
+              "Hộp số": "Số sàn"
+            }
+          },
+          {
+            "carId": "car_36_24",
+            "displayName": "Hyundai Tucson",
+            "description": "Hyundai Tucson is an SUV with 5 seats from Hyundai. The model is currently listed by an official or manufacturer-backed source in Vietnam. The dataset records a reference starting price of VND 769,000,000 as of 2026-10-01.",
+            "presenceSourceId": "hyundai_products_2026",
+            "summary": "Hyundai Tucson là mẫu SUV 5 chỗ của hãng Hyundai.",
+            "specifications": {
+              "Kiểu xe": "SUV",
+              "Số chỗ": "5 chỗ",
+              "Động cơ": "1.6L",
+              "Nhiên liệu": "Dầu",
+              "Hộp số": "Số sàn"
+            }
+          }
+        ],
+        "grounded": true,
+        "intent": "find_car",
+        "filters": {
+          "brand": null,
+          "bodyType": "SUV",
+          "fuelType": null,
+          "transmission": null,
+          "seats": 5,
+          "minPrice": null,
+          "maxPrice": 800000000,
+          "minPriceInclusive": true,
+          "maxPriceInclusive": false,
+          "city": null
+        },
+        "evidence": [
+          {
+            "contextId": "car:car_57_7:price:v1",
+            "carId": "car_57_7",
+            "section": "price",
+            "content": "Giá tham khảo của Mazda CX-5.\nGiá từ: 699000000 VND.\nNgày giá tham khảo: 2026-10-01.\nĐây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.\nĐược ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.",
+            "score": 0.01639344262295082,
+            "metadata": {
+              "brand": "Mazda",
+              "facts": {
+                "price_as_of": {
+                  "value": "2026-10-01",
+                  "sourceId": "mazda_vn_lineup"
+                },
+                "price_vnd_from": {
+                  "unit": "VND",
+                  "value": 699000000,
+                  "sourceId": "mazda_vn_lineup"
+                }
+              },
+              "seats": 5,
+              "bodyType": "SUV",
+              "entityId": "car_57_7",
+              "fuelType": "Diesel",
+              "sourceIds": [
+                "mazda_vn_lineup"
+              ],
+              "entityType": "car",
+              "displayName": "Mazda CX-5",
+              "priceVndFrom": 699000000,
+              "transmission": "Manual",
+              "schemaVersion": 1,
+              "marketStatusVn": "official_current",
+              "templateVersion": "vi-v1",
+              "contentHash": "339de31fb6ef650b2d19645dfb1f5b206b1d61d359fbfcc37db43a437bf087be"
+            },
+            "sourceIds": [
+              "mazda_vn_lineup"
+            ]
+          },
+          {
+            "contextId": "car:car_36_24:overview:v1",
+            "carId": "car_36_24",
+            "section": "overview",
+            "content": "Xe: Hyundai Tucson. Hãng: Hyundai.\nTên khác: Tucson.\nĐược ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.",
+            "score": 0.015625,
+            "metadata": {
+              "brand": "Hyundai",
+              "facts": {
+                "display_name": {
+                  "value": "Hyundai Tucson",
+                  "sourceId": "hyundai_products_2026"
+                },
+                "market_status_vn": {
+                  "value": "official_current",
+                  "sourceId": "hyundai_products_2026"
+                }
+              },
+              "seats": 5,
+              "bodyType": "SUV",
+              "entityId": "car_36_24",
+              "fuelType": "Diesel",
+              "sourceIds": [
+                "hyundai_products_2026"
+              ],
+              "entityType": "car",
+              "displayName": "Hyundai Tucson",
+              "transmission": "Manual",
+              "schemaVersion": 1,
+              "marketStatusVn": "official_current",
+              "templateVersion": "vi-v1",
+              "contentHash": "2f46004e2f5222e5144474f67e17a8f159ccdddb1e9a052455f08565d531e3aa"
+            },
+            "sourceIds": [
+              "hyundai_products_2026"
+            ]
+          },
+          {
+            "contextId": "car:car_62_7:overview:v1",
+            "carId": "car_62_7",
+            "section": "overview",
+            "content": "Xe: Mitsubishi Eclipse Cross. Hãng: Mitsubishi.\nTên khác: Eclipse Cross.\nTừng phân phối chính hãng; chưa xác nhận đang bán.",
+            "score": 0.015151515151515152,
+            "metadata": {
+              "brand": "Mitsubishi",
+              "facts": {
+                "display_name": {
+                  "value": "Mitsubishi Eclipse Cross",
+                  "sourceId": "mitsubishi_vn_history"
+                },
+                "market_status_vn": {
+                  "value": "official_historical",
+                  "sourceId": "mitsubishi_vn_history"
+                }
+              },
+              "seats": 5,
+              "bodyType": "SUV",
+              "entityId": "car_62_7",
+              "fuelType": "Petrol",
+              "sourceIds": [
+                "mitsubishi_vn_history"
+              ],
+              "entityType": "car",
+              "displayName": "Mitsubishi Eclipse Cross",
+              "transmission": "Manual",
+              "schemaVersion": 1,
+              "marketStatusVn": "official_historical",
+              "templateVersion": "vi-v1",
+              "contentHash": "8f693e71439134c53f73c08087298173833f551b9a2bd5d4a466e8aaa1619cf9"
+            },
+            "sourceIds": [
+              "mitsubishi_vn_history"
+            ]
+          },
+          {
+            "contextId": "car:car_29_4:specifications:v1",
+            "carId": "car_29_4",
+            "section": "specifications",
+            "content": "Thông số tham khảo của Ford EcoSport.\nKiểu xe: SUV.\nSố chỗ: 5 chỗ.\nNhiên liệu: Xăng.\nHộp số: Số sàn.\nĐộng cơ: 1.0L.\nCông suất: 123 hp.\nDài: 4235 mm.\nRộng: 2057 mm.\nCao: 1665 mm.\nChiều dài cơ sở: 2519 mm.\nThông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.",
+            "score": 0.014705882352941176,
+            "metadata": {
+              "brand": "Ford",
+              "facts": {
+                "seats": {
+                  "unit": "chỗ",
+                  "value": 5,
+                  "sourceId": null
+                },
+                "engine": {
+                  "unit": null,
+                  "value": "1.0L",
+                  "sourceId": null
+                },
+                "width_mm": {
+                  "unit": "mm",
+                  "value": 2057,
+                  "sourceId": null
+                },
+                "body_type": {
+                  "unit": null,
+                  "value": "SUV",
+                  "sourceId": null
+                },
+                "fuel_type": {
+                  "unit": null,
+                  "value": "Petrol",
+                  "sourceId": null
+                },
+                "height_mm": {
+                  "unit": "mm",
+                  "value": 1665,
+                  "sourceId": null
+                },
+                "length_mm": {
+                  "unit": "mm",
+                  "value": 4235,
+                  "sourceId": null
+                },
+                "transmission": {
+                  "unit": null,
+                  "value": "Manual",
+                  "sourceId": null
+                },
+                "wheelbase_mm": {
+                  "unit": "mm",
+                  "value": 2519,
+                  "sourceId": null
+                },
+                "engine_power_hp": {
+                  "unit": "hp",
+                  "value": 123,
+                  "sourceId": null
+                }
+              },
+              "seats": 5,
+              "bodyType": "SUV",
+              "entityId": "car_29_4",
+              "fuelType": "Petrol",
+              "sourceIds": [],
+              "entityType": "car",
+              "displayName": "Ford EcoSport",
+              "transmission": "Manual",
+              "schemaVersion": 1,
+              "marketStatusVn": "official_historical",
+              "templateVersion": "vi-v1",
+              "contentHash": "70c77626a24ecccbd3213f3f0de571a8f7cb8a6aa08350cc5423b81effb16a90"
+            },
+            "sourceIds": []
+          },
+          {
+            "contextId": "car:car_34_8:overview:v1",
+            "carId": "car_34_8",
+            "section": "overview",
+            "content": "Xe: Honda HR-V. Hãng: Honda.\nTên khác: HR-V.\nĐược ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.",
+            "score": 0.014285714285714285,
+            "metadata": {
+              "brand": "Honda",
+              "facts": {
+                "display_name": {
+                  "value": "Honda HR-V",
+                  "sourceId": "honda_products_2026"
+                },
+                "market_status_vn": {
+                  "value": "official_current",
+                  "sourceId": "honda_products_2026"
+                }
+              },
+              "seats": 5,
+              "bodyType": "SUV",
+              "entityId": "car_34_8",
+              "fuelType": "Petrol",
+              "sourceIds": [
+                "honda_products_2026"
+              ],
+              "entityType": "car",
+              "displayName": "Honda HR-V",
+              "transmission": "Manual",
+              "schemaVersion": 1,
+              "marketStatusVn": "official_current",
+              "templateVersion": "vi-v1",
+              "contentHash": "025d7ab4f02c54836e92e1128c5d29dd35b23eb41ef292c22905c5a2216f9dd9"
+            },
+            "sourceIds": [
+              "honda_products_2026"
+            ]
+          },
+          {
+            "contextId": "car:car_29_4:price:v1",
+            "carId": "car_29_4",
+            "section": "price",
+            "content": "Giá tham khảo của Ford EcoSport.\nGiá từ: 603000000 VND.\nNgày giá tham khảo: 2021-11-01.\nĐây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.\nTừng phân phối chính hãng; chưa xác nhận đang bán.",
+            "score": 0.0,
+            "metadata": {
+              "entityType": "car",
+              "entityId": "car_29_4",
+              "brand": "Ford",
+              "displayName": "Ford EcoSport",
+              "bodyType": "SUV",
+              "fuelType": "Petrol",
+              "transmission": "Manual",
+              "seats": 5,
+              "marketStatusVn": "official_historical",
+              "priceVndFrom": 603000000,
+              "schemaVersion": 1,
+              "templateVersion": "vi-v1",
+              "facts": {
+                "price_vnd_from": {
+                  "value": 603000000,
+                  "unit": "VND",
+                  "sourceId": "ford_historical_prices"
+                },
+                "price_as_of": {
+                  "value": "2021-11-01",
+                  "sourceId": "ford_historical_prices"
+                }
+              },
+              "sourceIds": [
+                "ford_historical_prices"
+              ],
+              "retrievalOrigin": "sql-catalogue"
+            },
+            "sourceIds": [
+              "ford_historical_prices"
+            ]
+          },
+          {
+            "contextId": "car:car_34_8:specifications:v1",
+            "carId": "car_34_8",
+            "section": "specifications",
+            "content": "Dữ liệu catalogue SQL của Honda HR-V.\nKiểu xe: SUV.\nSố chỗ: 5 chỗ.\nThông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.",
+            "score": 0.0,
+            "metadata": {
+              "entityType": "car",
+              "entityId": "car_34_8",
+              "brand": "Honda",
+              "displayName": "Honda HR-V",
+              "bodyType": "SUV",
+              "fuelType": "Petrol",
+              "transmission": "Manual",
+              "seats": 5,
+              "marketStatusVn": "official_current",
+              "schemaVersion": 1,
+              "templateVersion": "vi-v1",
+              "facts": {
+                "body_type": {
+                  "value": "SUV",
+                  "unit": null,
+                  "sourceId": null
+                },
+                "seats": {
+                  "value": 5,
+                  "unit": "chỗ",
+                  "sourceId": null
+                }
+              },
+              "sourceIds": [],
+              "retrievalOrigin": "sql-catalogue"
+            },
+            "sourceIds": []
+          },
+          {
+            "contextId": "car:car_34_8:price:v1",
+            "carId": "car_34_8",
+            "section": "price",
+            "content": "Giá tham khảo của Honda HR-V.\nGiá từ: 669000000 VND.\nNgày giá tham khảo: 2026-10-01.\nĐây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.\nĐược ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.",
+            "score": 0.0,
+            "metadata": {
+              "entityType": "car",
+              "entityId": "car_34_8",
+              "brand": "Honda",
+              "displayName": "Honda HR-V",
+              "bodyType": "SUV",
+              "fuelType": "Petrol",
+              "transmission": "Manual",
+              "seats": 5,
+              "marketStatusVn": "official_current",
+              "priceVndFrom": 669000000,
+              "schemaVersion": 1,
+              "templateVersion": "vi-v1",
+              "facts": {
+                "price_vnd_from": {
+                  "value": 669000000,
+                  "unit": "VND",
+                  "sourceId": "honda_products_2026"
+                },
+                "price_as_of": {
+                  "value": "2026-10-01",
+                  "sourceId": "honda_products_2026"
+                }
+              },
+              "sourceIds": [
+                "honda_products_2026"
+              ],
+              "retrievalOrigin": "sql-catalogue"
+            },
+            "sourceIds": [
+              "honda_products_2026"
+            ]
+          },
+          {
+            "contextId": "car:car_36_24:specifications:v1",
+            "carId": "car_36_24",
+            "section": "specifications",
+            "content": "Dữ liệu catalogue SQL của Hyundai Tucson.\nKiểu xe: SUV.\nSố chỗ: 5 chỗ.\nThông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.",
+            "score": 0.0,
+            "metadata": {
+              "entityType": "car",
+              "entityId": "car_36_24",
+              "brand": "Hyundai",
+              "displayName": "Hyundai Tucson",
+              "bodyType": "SUV",
+              "fuelType": "Diesel",
+              "transmission": "Manual",
+              "seats": 5,
+              "marketStatusVn": "official_current",
+              "schemaVersion": 1,
+              "templateVersion": "vi-v1",
+              "facts": {
+                "body_type": {
+                  "value": "SUV",
+                  "unit": null,
+                  "sourceId": null
+                },
+                "seats": {
+                  "value": 5,
+                  "unit": "chỗ",
+                  "sourceId": null
+                }
+              },
+              "sourceIds": [],
+              "retrievalOrigin": "sql-catalogue"
+            },
+            "sourceIds": []
+          },
+          {
+            "contextId": "car:car_36_24:price:v1",
+            "carId": "car_36_24",
+            "section": "price",
+            "content": "Giá tham khảo của Hyundai Tucson.\nGiá từ: 769000000 VND.\nNgày giá tham khảo: 2026-10-01.\nĐây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.\nĐược ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.",
+            "score": 0.0,
+            "metadata": {
+              "entityType": "car",
+              "entityId": "car_36_24",
+              "brand": "Hyundai",
+              "displayName": "Hyundai Tucson",
+              "bodyType": "SUV",
+              "fuelType": "Diesel",
+              "transmission": "Manual",
+              "seats": 5,
+              "marketStatusVn": "official_current",
+              "priceVndFrom": 769000000,
+              "schemaVersion": 1,
+              "templateVersion": "vi-v1",
+              "facts": {
+                "price_vnd_from": {
+                  "value": 769000000,
+                  "unit": "VND",
+                  "sourceId": "hyundai_authorized_prices_2026"
+                },
+                "price_as_of": {
+                  "value": "2026-10-01",
+                  "sourceId": "hyundai_authorized_prices_2026"
+                }
+              },
+              "sourceIds": [
+                "hyundai_authorized_prices_2026"
+              ],
+              "retrievalOrigin": "sql-catalogue"
+            },
+            "sourceIds": [
+              "hyundai_authorized_prices_2026"
+            ]
+          },
+          {
+            "contextId": "car:car_57_7:specifications:v1",
+            "carId": "car_57_7",
+            "section": "specifications",
+            "content": "Dữ liệu catalogue SQL của Mazda CX-5.\nKiểu xe: SUV.\nSố chỗ: 5 chỗ.\nThông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.",
+            "score": 0.0,
+            "metadata": {
+              "entityType": "car",
+              "entityId": "car_57_7",
+              "brand": "Mazda",
+              "displayName": "Mazda CX-5",
+              "bodyType": "SUV",
+              "fuelType": "Diesel",
+              "transmission": "Manual",
+              "seats": 5,
+              "marketStatusVn": "official_current",
+              "schemaVersion": 1,
+              "templateVersion": "vi-v1",
+              "facts": {
+                "body_type": {
+                  "value": "SUV",
+                  "unit": null,
+                  "sourceId": null
+                },
+                "seats": {
+                  "value": 5,
+                  "unit": "chỗ",
+                  "sourceId": null
+                }
+              },
+              "sourceIds": [],
+              "retrievalOrigin": "sql-catalogue"
+            },
+            "sourceIds": []
+          },
+          {
+            "contextId": "car:car_62_7:specifications:v1",
+            "carId": "car_62_7",
+            "section": "specifications",
+            "content": "Dữ liệu catalogue SQL của Mitsubishi Eclipse Cross.\nKiểu xe: SUV.\nSố chỗ: 5 chỗ.\nThông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.",
+            "score": 0.0,
+            "metadata": {
+              "entityType": "car",
+              "entityId": "car_62_7",
+              "brand": "Mitsubishi",
+              "displayName": "Mitsubishi Eclipse Cross",
+              "bodyType": "SUV",
+              "fuelType": "Petrol",
+              "transmission": "Manual",
+              "seats": 5,
+              "marketStatusVn": "official_historical",
+              "schemaVersion": 1,
+              "templateVersion": "vi-v1",
+              "facts": {
+                "body_type": {
+                  "value": "SUV",
+                  "unit": null,
+                  "sourceId": null
+                },
+                "seats": {
+                  "value": 5,
+                  "unit": "chỗ",
+                  "sourceId": null
+                }
+              },
+              "sourceIds": [],
+              "retrievalOrigin": "sql-catalogue"
+            },
+            "sourceIds": []
+          },
+          {
+            "contextId": "car:car_62_7:price:v1",
+            "carId": "car_62_7",
+            "section": "price",
+            "content": "Giá tham khảo của Mitsubishi Eclipse Cross.\nGiá từ: 595000000 VND.\nNgày giá tham khảo: 2026-09-01.\nĐây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.\nTừng phân phối chính hãng; chưa xác nhận đang bán.",
+            "score": 0.0,
+            "metadata": {
+              "entityType": "car",
+              "entityId": "car_62_7",
+              "brand": "Mitsubishi",
+              "displayName": "Mitsubishi Eclipse Cross",
+              "bodyType": "SUV",
+              "fuelType": "Petrol",
+              "transmission": "Manual",
+              "seats": 5,
+              "marketStatusVn": "official_historical",
+              "priceVndFrom": 595000000,
+              "schemaVersion": 1,
+              "templateVersion": "vi-v1",
+              "facts": {
+                "price_vnd_from": {
+                  "value": 595000000,
+                  "unit": "VND",
+                  "sourceId": "mitsubishi_eclipse_price_reference"
+                },
+                "price_as_of": {
+                  "value": "2026-09-01",
+                  "sourceId": "mitsubishi_eclipse_price_reference"
+                }
+              },
+              "sourceIds": [
+                "mitsubishi_eclipse_price_reference"
+              ],
+              "retrievalOrigin": "sql-catalogue"
+            },
+            "sourceIds": [
+              "mitsubishi_eclipse_price_reference"
+            ]
+          }
+        ],
+        "retrievedContextIds": [
+          "car:car_57_7:price:v1",
+          "car:car_36_24:overview:v1",
+          "car:car_62_7:overview:v1",
+          "car:car_29_4:specifications:v1",
+          "car:car_34_8:overview:v1"
+        ],
+        "citations": [
+          {
+            "contextId": "car:car_57_7:price:v1",
+            "sourceId": "mazda_vn_lineup",
+            "title": "Mazda Vietnam product introduction",
+            "url": "https://mazdamotors.vn/news-and-events/news-and-events-content/news-and-events/chuong-trinh-gioi-thieu-san-pham-mazda-the-he-moi-dang-cap-moi",
+            "sourceDetailPath": "/sources/mazda_vn_lineup"
+          },
+          {
+            "contextId": "car:car_36_24:overview:v1",
+            "sourceId": "hyundai_products_2026",
+            "title": "Hyundai Thanh Cong products",
+            "url": "https://hyundai.thanhcong.vn/san-pham",
+            "sourceDetailPath": "/sources/hyundai_products_2026"
+          },
+          {
+            "contextId": "car:car_62_7:overview:v1",
+            "sourceId": "mitsubishi_vn_history",
+            "title": "Mitsubishi Motors Vietnam history",
+            "url": "https://mitsubishi-motors.com.vn/ve-chung-toi/lich-su-phat-trien",
+            "sourceDetailPath": "/sources/mitsubishi_vn_history"
+          },
+          {
+            "contextId": "car:car_29_4:specifications:v1",
+            "sourceId": null,
+            "title": "Bản ghi dữ liệu — car:car_29_4:specifications:v1",
+            "url": null,
+            "sourceDetailPath": null
+          },
+          {
+            "contextId": "car:car_34_8:overview:v1",
+            "sourceId": "honda_products_2026",
+            "title": "Honda Vietnam automobiles",
+            "url": "https://www.honda.com.vn/o-to/san-pham",
+            "sourceDetailPath": "/sources/honda_products_2026"
+          },
+          {
+            "contextId": "car:car_29_4:price:v1",
+            "sourceId": "ford_historical_prices",
+            "title": "Ford historical Vietnam price references",
+            "url": "https://xe.chotot.com/oto-ford-ecosport-sd6a0e",
+            "sourceDetailPath": "/sources/ford_historical_prices"
+          },
+          {
+            "contextId": "car:car_34_8:specifications:v1",
+            "sourceId": null,
+            "title": "Bản ghi dữ liệu — car:car_34_8:specifications:v1",
+            "url": null,
+            "sourceDetailPath": null
+          },
+          {
+            "contextId": "car:car_34_8:price:v1",
+            "sourceId": "honda_products_2026",
+            "title": "Honda Vietnam automobiles",
+            "url": "https://www.honda.com.vn/o-to/san-pham",
+            "sourceDetailPath": "/sources/honda_products_2026"
+          },
+          {
+            "contextId": "car:car_36_24:specifications:v1",
+            "sourceId": null,
+            "title": "Bản ghi dữ liệu — car:car_36_24:specifications:v1",
+            "url": null,
+            "sourceDetailPath": null
+          },
+          {
+            "contextId": "car:car_36_24:price:v1",
+            "sourceId": "hyundai_authorized_prices_2026",
+            "title": "Hyundai Vinh Yen authorized dealer price list",
+            "url": "https://hyundaigiatot.vn/",
+            "sourceDetailPath": "/sources/hyundai_authorized_prices_2026"
+          },
+          {
+            "contextId": "car:car_57_7:specifications:v1",
+            "sourceId": null,
+            "title": "Bản ghi dữ liệu — car:car_57_7:specifications:v1",
+            "url": null,
+            "sourceDetailPath": null
+          },
+          {
+            "contextId": "car:car_62_7:specifications:v1",
+            "sourceId": null,
+            "title": "Bản ghi dữ liệu — car:car_62_7:specifications:v1",
+            "url": null,
+            "sourceDetailPath": null
+          },
+          {
+            "contextId": "car:car_62_7:price:v1",
+            "sourceId": "mitsubishi_eclipse_price_reference",
+            "title": "Mitsubishi Eclipse Cross market price reference",
+            "url": "https://tinbanxe.vn/oto/mitsubishi/eclipse-cross/",
+            "sourceDetailPath": "/sources/mitsubishi_eclipse_price_reference"
+          }
+        ],
+        "status": "ok",
+        "generationMode": "bedrock-natural",
+        "retrieval": "postgresql-vector-search"
+      },
+      "responseSeconds": 17.531321397999818
+    },
+    {
+      "question": "Thông số Honda CR-V",
+      "expectedIntent": "ask_specification",
+      "passed": true,
+      "error": "",
+      "httpStatus": 200,
+      "response": {
+        "answer": "**Honda CR-V** là một chiếc SUV 5 chỗ được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.\n\n**Thông số tham khảo:**\n\n• **Kiểu xe:** SUV\n• **Số chỗ:** 5 chỗ\n• **Nhiên liệu:** Dầu\n• **Hộp số:** Số sàn\n• **Động cơ:** 2.0L\n• **Công suất:** 148 hp\n• **Kích thước:**\n  - Dài: 4605 mm\n  - Rộng: 1820 mm\n  - Cao: 1685 mm\n  - Chiều dài cơ sở: 2630 mm\n\n**Giá tham khảo:** 1.039.000.000 VND (tính từ 2026-10-01)\n\n*Lưu ý: Thông số catalogue chủ yếu từ DVM-CAR thị trường Anh; chưa xác nhận phiên bản kỹ thuật tại Việt Nam. Giá là tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.*\n\nThông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.\n\nHonda CR-V: Được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.",
+        "contexts": [
+          {
+            "carId": "car_34_3",
+            "displayName": "Honda CR-V",
+            "description": "Honda CR-V is an SUV with 5 seats from Honda. The model is currently listed by an official or manufacturer-backed source in Vietnam. The dataset records a reference starting price of VND 1,039,000,000 as of 2026-10-01.",
+            "presenceSourceId": "honda_products_2026",
+            "summary": "Honda CR-V là mẫu SUV 5 chỗ của hãng Honda.",
+            "specifications": {
+              "Kiểu xe": "SUV",
+              "Số chỗ": "5 chỗ",
+              "Động cơ": "2.0L",
+              "Nhiên liệu": "Dầu",
+              "Hộp số": "Số sàn"
+            }
+          }
+        ],
+        "grounded": true,
+        "intent": "ask_specification",
+        "filters": {
+          "brand": "Honda",
+          "bodyType": null,
+          "fuelType": null,
+          "transmission": null,
+          "seats": null,
+          "minPrice": null,
+          "maxPrice": null,
+          "minPriceInclusive": true,
+          "maxPriceInclusive": true,
+          "city": null
+        },
+        "evidence": [
+          {
+            "contextId": "car:car_34_3:specifications:v1",
+            "carId": "car_34_3",
+            "section": "specifications",
+            "content": "Thông số tham khảo của Honda CR-V.\nKiểu xe: SUV.\nSố chỗ: 5 chỗ.\nNhiên liệu: Dầu.\nHộp số: Số sàn.\nĐộng cơ: 2.0L.\nCông suất: 148 hp.\nDài: 4605 mm.\nRộng: 1820 mm.\nCao: 1685 mm.\nChiều dài cơ sở: 2630 mm.\nThông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.",
+            "score": 0.03278688524590164,
+            "metadata": {
+              "brand": "Honda",
+              "facts": {
+                "seats": {
+                  "unit": "chỗ",
+                  "value": 5,
+                  "sourceId": null
+                },
+                "engine": {
+                  "unit": null,
+                  "value": "2.0L",
+                  "sourceId": null
+                },
+                "width_mm": {
+                  "unit": "mm",
+                  "value": 1820,
+                  "sourceId": null
+                },
+                "body_type": {
+                  "unit": null,
+                  "value": "SUV",
+                  "sourceId": null
+                },
+                "fuel_type": {
+                  "unit": null,
+                  "value": "Diesel",
+                  "sourceId": null
+                },
+                "height_mm": {
+                  "unit": "mm",
+                  "value": 1685,
+                  "sourceId": null
+                },
+                "length_mm": {
+                  "unit": "mm",
+                  "value": 4605,
+                  "sourceId": null
+                },
+                "transmission": {
+                  "unit": null,
+                  "value": "Manual",
+                  "sourceId": null
+                },
+                "wheelbase_mm": {
+                  "unit": "mm",
+                  "value": 2630,
+                  "sourceId": null
+                },
+                "engine_power_hp": {
+                  "unit": "hp",
+                  "value": 148,
+                  "sourceId": null
+                }
+              },
+              "seats": 5,
+              "bodyType": "SUV",
+              "entityId": "car_34_3",
+              "fuelType": "Diesel",
+              "sourceIds": [],
+              "entityType": "car",
+              "displayName": "Honda CR-V",
+              "transmission": "Manual",
+              "schemaVersion": 1,
+              "marketStatusVn": "official_current",
+              "templateVersion": "vi-v1",
+              "contentHash": "a1f1321bf201fff27724ea72310ff1ed9ac81a16a1e2ed7a7624b3f65e9acf5b"
+            },
+            "sourceIds": []
+          },
+          {
+            "contextId": "car:car_34_3:overview:v1",
+            "carId": "car_34_3",
+            "section": "overview",
+            "content": "Xe: Honda CR-V. Hãng: Honda.\nTên khác: CR-V.\nĐược ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.",
+            "score": 0.016129032258064516,
+            "metadata": {
+              "brand": "Honda",
+              "facts": {
+                "display_name": {
+                  "value": "Honda CR-V",
+                  "sourceId": "honda_products_2026"
+                },
+                "market_status_vn": {
+                  "value": "official_current",
+                  "sourceId": "honda_products_2026"
+                }
+              },
+              "seats": 5,
+              "bodyType": "SUV",
+              "entityId": "car_34_3",
+              "fuelType": "Diesel",
+              "sourceIds": [
+                "honda_products_2026"
+              ],
+              "entityType": "car",
+              "displayName": "Honda CR-V",
+              "transmission": "Manual",
+              "schemaVersion": 1,
+              "marketStatusVn": "official_current",
+              "templateVersion": "vi-v1",
+              "contentHash": "8b3f4d37117a9e0ddf72cb6d1c80fabda8bf049e4523ceb4899089976e7ef62c"
+            },
+            "sourceIds": [
+              "honda_products_2026"
+            ]
+          }
+        ],
+        "retrievedContextIds": [
+          "car:car_34_3:specifications:v1",
+          "car:car_34_3:overview:v1"
+        ],
+        "citations": [
+          {
+            "contextId": "car:car_34_3:specifications:v1",
+            "sourceId": null,
+            "title": "Bản ghi dữ liệu — car:car_34_3:specifications:v1",
+            "url": null,
+            "sourceDetailPath": null
+          },
+          {
+            "contextId": "car:car_34_3:overview:v1",
+            "sourceId": "honda_products_2026",
+            "title": "Honda Vietnam automobiles",
+            "url": "https://www.honda.com.vn/o-to/san-pham",
+            "sourceDetailPath": "/sources/honda_products_2026"
+          }
+        ],
+        "status": "ok",
+        "generationMode": "bedrock-natural",
+        "retrieval": "postgresql-hybrid-search"
+      },
+      "responseSeconds": 12.203378713000347
+    },
+    {
+      "question": "Giá Honda CR-V",
+      "expectedIntent": "ask_price",
+      "passed": true,
+      "error": "",
+      "httpStatus": 200,
+      "response": {
+        "answer": "**Honda CR-V** có giá tham khảo từ **1.039.000.000 VND** (ngày giá tham khảo: 2026-10-01).\n\nĐây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực. Honda CR-V được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.\n\nHonda CR-V: Được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.",
+        "contexts": [
+          {
+            "carId": "car_34_3",
+            "displayName": "Honda CR-V",
+            "description": "Honda CR-V is an SUV with 5 seats from Honda. The model is currently listed by an official or manufacturer-backed source in Vietnam. The dataset records a reference starting price of VND 1,039,000,000 as of 2026-10-01.",
+            "presenceSourceId": "honda_products_2026",
+            "summary": "Honda CR-V là mẫu SUV 5 chỗ của hãng Honda.",
+            "specifications": {
+              "Kiểu xe": "SUV",
+              "Số chỗ": "5 chỗ",
+              "Động cơ": "2.0L",
+              "Nhiên liệu": "Dầu",
+              "Hộp số": "Số sàn"
+            }
+          }
+        ],
+        "grounded": true,
+        "intent": "ask_price",
+        "filters": {
+          "brand": "Honda",
+          "bodyType": null,
+          "fuelType": null,
+          "transmission": null,
+          "seats": null,
+          "minPrice": null,
+          "maxPrice": null,
+          "minPriceInclusive": true,
+          "maxPriceInclusive": true,
+          "city": null
+        },
+        "evidence": [
+          {
+            "contextId": "car:car_34_3:price:v1",
+            "carId": "car_34_3",
+            "section": "price",
+            "content": "Giá tham khảo của Honda CR-V.\nGiá từ: 1039000000 VND.\nNgày giá tham khảo: 2026-10-01.\nĐây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.\nĐược ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.",
+            "score": 0.03278688524590164,
+            "metadata": {
+              "brand": "Honda",
+              "facts": {
+                "price_as_of": {
+                  "value": "2026-10-01",
+                  "sourceId": "honda_products_2026"
+                },
+                "price_vnd_from": {
+                  "unit": "VND",
+                  "value": 1039000000,
+                  "sourceId": "honda_products_2026"
+                }
+              },
+              "seats": 5,
+              "bodyType": "SUV",
+              "entityId": "car_34_3",
+              "fuelType": "Diesel",
+              "sourceIds": [
+                "honda_products_2026"
+              ],
+              "entityType": "car",
+              "displayName": "Honda CR-V",
+              "priceVndFrom": 1039000000,
+              "transmission": "Manual",
+              "schemaVersion": 1,
+              "marketStatusVn": "official_current",
+              "templateVersion": "vi-v1",
+              "contentHash": "d8d1284bcf42027b52b6aae14d9031602c6d6ebf14c751ae645228ebc48b72c2"
+            },
+            "sourceIds": [
+              "honda_products_2026"
+            ]
+          }
+        ],
+        "retrievedContextIds": [
+          "car:car_34_3:price:v1"
+        ],
+        "citations": [
+          {
+            "contextId": "car:car_34_3:price:v1",
+            "sourceId": "honda_products_2026",
+            "title": "Honda Vietnam automobiles",
+            "url": "https://www.honda.com.vn/o-to/san-pham",
+            "sourceDetailPath": "/sources/honda_products_2026"
+          }
+        ],
+        "status": "ok",
+        "generationMode": "bedrock-natural",
+        "retrieval": "postgresql-hybrid-search"
+      },
+      "responseSeconds": 6.46407493300012
+    },
+    {
+      "question": "Honda CR-V bảo hành bao lâu?",
+      "expectedIntent": "ask_warranty",
+      "passed": true,
+      "error": "",
+      "httpStatus": 200,
+      "response": {
+        "answer": "Honda CR-V có thời hạn bảo hành **36 tháng** với giới hạn quãng đường **100000 km**. Chính sách áp dụng theo tiêu chuẩn, giới hạn nào đến trước sẽ được áp dụng trước.\n\nLưu ý: Đây là bảo hành tham khảo từ hãng Honda. Điều kiện bảo hành cần được xác nhận theo VIN và ngày bán cụ thể của xe bạn.\n\nCần xác nhận điều kiện bảo hành theo xe, VIN và ngày bán cụ thể.\n\nChính sách tham khảo tiêu chuẩn, giới hạn nào đến trước áp dụng trước. Xác nhận theo VIN và ngày bán.\n\nHonda CR-V: Được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.",
+        "contexts": [
+          {
+            "carId": "car_34_3",
+            "displayName": "Honda CR-V",
+            "description": "Honda CR-V is an SUV with 5 seats from Honda. The model is currently listed by an official or manufacturer-backed source in Vietnam. The dataset records a reference starting price of VND 1,039,000,000 as of 2026-10-01.",
+            "presenceSourceId": "honda_products_2026",
+            "summary": "Honda CR-V là mẫu SUV 5 chỗ của hãng Honda.",
+            "specifications": {
+              "Kiểu xe": "SUV",
+              "Số chỗ": "5 chỗ",
+              "Động cơ": "2.0L",
+              "Nhiên liệu": "Dầu",
+              "Hộp số": "Số sàn"
+            }
+          }
+        ],
+        "grounded": true,
+        "intent": "ask_warranty",
+        "filters": {
+          "brand": "Honda",
+          "bodyType": null,
+          "fuelType": null,
+          "transmission": null,
+          "seats": null,
+          "minPrice": null,
+          "maxPrice": null,
+          "minPriceInclusive": true,
+          "maxPriceInclusive": true,
+          "city": null
+        },
+        "evidence": [
+          {
+            "contextId": "warranty:car:car_34_3:v1",
+            "carId": "car_34_3",
+            "section": "warranty",
+            "content": "Bảo hành tham khảo của Honda CR-V.\nThời hạn: 36 tháng.\nGiới hạn quãng đường: 100000 km.\nChính sách tham khảo tiêu chuẩn, giới hạn nào đến trước áp dụng trước. Xác nhận theo VIN và ngày bán.\nĐây là chính sách theo hãng; cần xác nhận áp dụng cho xe, VIN và ngày bán cụ thể.",
+            "score": 0.01639344262295082,
+            "metadata": {
+              "brand": "Honda",
+              "facts": {
+                "conditions": {
+                  "value": "Chính sách tham khảo tiêu chuẩn, giới hạn nào đến trước áp dụng trước. Xác nhận theo VIN và ngày bán.",
+                  "sourceId": "honda_warranty"
+                },
+                "duration_months": {
+                  "unit": "tháng",
+                  "value": 36,
+                  "sourceId": "honda_warranty"
+                },
+                "distance_limit_km": {
+                  "unit": "km",
+                  "value": 100000,
+                  "sourceId": "honda_warranty"
+                }
+              },
+              "seats": 5,
+              "bodyType": "SUV",
+              "entityId": "car_34_3",
+              "fuelType": "Diesel",
+              "sourceIds": [
+                "honda_warranty"
+              ],
+              "entityType": "car",
+              "displayName": "Honda CR-V",
+              "policyScope": "brand",
+              "transmission": "Manual",
+              "schemaVersion": 1,
+              "marketStatusVn": "official_current",
+              "templateVersion": "vi-v1",
+              "policyConditions": "Chính sách tham khảo tiêu chuẩn, giới hạn nào đến trước áp dụng trước. Xác nhận theo VIN và ngày bán.",
+              "contentHash": "9bfd79cf2b1e191178099c3333f6ad926faa4b6312f4d1add76bc6452a741666"
+            },
+            "sourceIds": [
+              "honda_warranty"
+            ]
+          }
+        ],
+        "retrievedContextIds": [
+          "warranty:car:car_34_3:v1"
+        ],
+        "citations": [
+          {
+            "contextId": "warranty:car:car_34_3:v1",
+            "sourceId": "honda_warranty",
+            "title": "Honda Vietnam automobile warranty FAQ",
+            "url": "https://www.honda.com.vn/cau-hoi-thuong-gap?category=o-to&category_child=dich-vu&category_tab=bao-hanhbao-duong-o-to",
+            "sourceDetailPath": "/sources/honda_warranty"
+          }
+        ],
+        "status": "ok",
+        "generationMode": "bedrock-natural",
+        "retrieval": "postgresql-vector-search"
+      },
+      "responseSeconds": 9.75200158000007
+    },
+    {
+      "question": "So sánh Honda CR-V và Mazda CX-5 về giá và số chỗ",
+      "expectedIntent": "compare_cars",
+      "passed": true,
+      "error": "",
+      "httpStatus": 200,
+      "response": {
+        "answer": "## So sánh Mazda CX-5 và Honda CR-V\n\n| Tiêu chí | Mazda CX-5 | Honda CR-V |\n|---------|-----------|------------|\n| **Giá tham khảo** | 699.000.000 VND | 1.039.000.000 VND |\n| **Số chỗ** | 5 chỗ | 5 chỗ |\n| **Ngày giá** | 2026-10-01 | 2026-10-01 |\n\n**Về giá:** Mazda CX-5 có giá tham khảo thấp hơn Honda CR-V 340.000.000 VND. Cả hai mẫu xe đều được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.\n\n**Về số chỗ:** Cả hai mẫu xe đều có 5 chỗ ngồi.\n\n**Lưu ý:** Đây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực. Thông số catalogue chủ yếu từ DVM-CAR thị trường Anh; chưa xác nhận phiên bản kỹ thuật tại Việt Nam.\n\nThông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.\n\nCần xác nhận điều kiện bảo hành theo xe, VIN và ngày bán cụ thể.\n\nÁp dụng cho xe Mazda bán tại Việt Nam từ 01/10/2023; giới hạn nào đến trước áp dụng trước.\n\nMazda CX-5: Được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.\n\nHonda CR-V: Được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.",
+        "contexts": [
+          {
+            "carId": "car_57_7",
+            "displayName": "Mazda CX-5",
+            "description": "Mazda CX-5 is an SUV with 5 seats from Mazda. The model is currently listed by an official or manufacturer-backed source in Vietnam. The dataset records a reference starting price of VND 699,000,000 as of 2026-10-01.",
+            "presenceSourceId": "mazda_vn_lineup",
+            "summary": "Mazda CX-5 là mẫu SUV 5 chỗ của hãng Mazda.",
+            "specifications": {
+              "Kiểu xe": "SUV",
+              "Số chỗ": "5 chỗ",
+              "Động cơ": "2.2L",
+              "Nhiên liệu": "Dầu",
+              "Hộp số": "Số sàn"
+            }
+          },
+          {
+            "carId": "car_34_3",
+            "displayName": "Honda CR-V",
+            "description": "Honda CR-V is an SUV with 5 seats from Honda. The model is currently listed by an official or manufacturer-backed source in Vietnam. The dataset records a reference starting price of VND 1,039,000,000 as of 2026-10-01.",
+            "presenceSourceId": "honda_products_2026",
+            "summary": "Honda CR-V là mẫu SUV 5 chỗ của hãng Honda.",
+            "specifications": {
+              "Kiểu xe": "SUV",
+              "Số chỗ": "5 chỗ",
+              "Động cơ": "2.0L",
+              "Nhiên liệu": "Dầu",
+              "Hộp số": "Số sàn"
+            }
+          }
+        ],
+        "grounded": true,
+        "intent": "compare_cars",
+        "filters": {
+          "brand": null,
+          "bodyType": null,
+          "fuelType": null,
+          "transmission": null,
+          "seats": null,
+          "minPrice": null,
+          "maxPrice": null,
+          "minPriceInclusive": true,
+          "maxPriceInclusive": true,
+          "city": null
+        },
+        "evidence": [
+          {
+            "contextId": "car:car_34_3:price:v1",
+            "carId": "car_34_3",
+            "section": "price",
+            "content": "Giá tham khảo của Honda CR-V.\nGiá từ: 1039000000 VND.\nNgày giá tham khảo: 2026-10-01.\nĐây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.\nĐược ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.",
+            "score": 0.015384615384615385,
+            "metadata": {
+              "brand": "Honda",
+              "facts": {
+                "price_as_of": {
+                  "value": "2026-10-01",
+                  "sourceId": "honda_products_2026"
+                },
+                "price_vnd_from": {
+                  "unit": "VND",
+                  "value": 1039000000,
+                  "sourceId": "honda_products_2026"
+                }
+              },
+              "seats": 5,
+              "bodyType": "SUV",
+              "entityId": "car_34_3",
+              "fuelType": "Diesel",
+              "sourceIds": [
+                "honda_products_2026"
+              ],
+              "entityType": "car",
+              "displayName": "Honda CR-V",
+              "priceVndFrom": 1039000000,
+              "transmission": "Manual",
+              "schemaVersion": 1,
+              "marketStatusVn": "official_current",
+              "templateVersion": "vi-v1",
+              "contentHash": "d8d1284bcf42027b52b6aae14d9031602c6d6ebf14c751ae645228ebc48b72c2"
+            },
+            "sourceIds": [
+              "honda_products_2026"
+            ]
+          },
+          {
+            "contextId": "car:car_57_7:price:v1",
+            "carId": "car_57_7",
+            "section": "price",
+            "content": "Giá tham khảo của Mazda CX-5.\nGiá từ: 699000000 VND.\nNgày giá tham khảo: 2026-10-01.\nĐây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.\nĐược ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.",
+            "score": 0.01639344262295082,
+            "metadata": {
+              "brand": "Mazda",
+              "facts": {
+                "price_as_of": {
+                  "value": "2026-10-01",
+                  "sourceId": "mazda_vn_lineup"
+                },
+                "price_vnd_from": {
+                  "unit": "VND",
+                  "value": 699000000,
+                  "sourceId": "mazda_vn_lineup"
+                }
+              },
+              "seats": 5,
+              "bodyType": "SUV",
+              "entityId": "car_57_7",
+              "fuelType": "Diesel",
+              "sourceIds": [
+                "mazda_vn_lineup"
+              ],
+              "entityType": "car",
+              "displayName": "Mazda CX-5",
+              "priceVndFrom": 699000000,
+              "transmission": "Manual",
+              "schemaVersion": 1,
+              "marketStatusVn": "official_current",
+              "templateVersion": "vi-v1",
+              "contentHash": "339de31fb6ef650b2d19645dfb1f5b206b1d61d359fbfcc37db43a437bf087be"
+            },
+            "sourceIds": [
+              "mazda_vn_lineup"
+            ]
+          },
+          {
+            "contextId": "car:car_57_7:specifications:v1",
+            "carId": "car_57_7",
+            "section": "specifications",
+            "content": "Thông số tham khảo của Mazda CX-5.\nKiểu xe: SUV.\nSố chỗ: 5 chỗ.\nNhiên liệu: Dầu.\nHộp số: Số sàn.\nĐộng cơ: 2.2L.\nCông suất: 148 hp.\nDài: 4540 mm.\nRộng: 1840 mm.\nCao: 1670 mm.\nChiều dài cơ sở: 2700 mm.\nThông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.",
+            "score": 0.016129032258064516,
+            "metadata": {
+              "brand": "Mazda",
+              "facts": {
+                "seats": {
+                  "unit": "chỗ",
+                  "value": 5,
+                  "sourceId": null
+                },
+                "engine": {
+                  "unit": null,
+                  "value": "2.2L",
+                  "sourceId": null
+                },
+                "width_mm": {
+                  "unit": "mm",
+                  "value": 1840,
+                  "sourceId": null
+                },
+                "body_type": {
+                  "unit": null,
+                  "value": "SUV",
+                  "sourceId": null
+                },
+                "fuel_type": {
+                  "unit": null,
+                  "value": "Diesel",
+                  "sourceId": null
+                },
+                "height_mm": {
+                  "unit": "mm",
+                  "value": 1670,
+                  "sourceId": null
+                },
+                "length_mm": {
+                  "unit": "mm",
+                  "value": 4540,
+                  "sourceId": null
+                },
+                "transmission": {
+                  "unit": null,
+                  "value": "Manual",
+                  "sourceId": null
+                },
+                "wheelbase_mm": {
+                  "unit": "mm",
+                  "value": 2700,
+                  "sourceId": null
+                },
+                "engine_power_hp": {
+                  "unit": "hp",
+                  "value": 148,
+                  "sourceId": null
+                }
+              },
+              "seats": 5,
+              "bodyType": "SUV",
+              "entityId": "car_57_7",
+              "fuelType": "Diesel",
+              "sourceIds": [],
+              "entityType": "car",
+              "displayName": "Mazda CX-5",
+              "transmission": "Manual",
+              "schemaVersion": 1,
+              "marketStatusVn": "official_current",
+              "templateVersion": "vi-v1",
+              "contentHash": "d2f4d1e51b254a5c62093ed030e710c69fb0d8346a6aefb84b22fceadf210337"
+            },
+            "sourceIds": []
+          },
+          {
+            "contextId": "car:car_34_3:specifications:v1",
+            "carId": "car_34_3",
+            "section": "specifications",
+            "content": "Thông số tham khảo của Honda CR-V.\nKiểu xe: SUV.\nSố chỗ: 5 chỗ.\nNhiên liệu: Dầu.\nHộp số: Số sàn.\nĐộng cơ: 2.0L.\nCông suất: 148 hp.\nDài: 4605 mm.\nRộng: 1820 mm.\nCao: 1685 mm.\nChiều dài cơ sở: 2630 mm.\nThông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.",
+            "score": 0.015625,
+            "metadata": {
+              "brand": "Honda",
+              "facts": {
+                "seats": {
+                  "unit": "chỗ",
+                  "value": 5,
+                  "sourceId": null
+                },
+                "engine": {
+                  "unit": null,
+                  "value": "2.0L",
+                  "sourceId": null
+                },
+                "width_mm": {
+                  "unit": "mm",
+                  "value": 1820,
+                  "sourceId": null
+                },
+                "body_type": {
+                  "unit": null,
+                  "value": "SUV",
+                  "sourceId": null
+                },
+                "fuel_type": {
+                  "unit": null,
+                  "value": "Diesel",
+                  "sourceId": null
+                },
+                "height_mm": {
+                  "unit": "mm",
+                  "value": 1685,
+                  "sourceId": null
+                },
+                "length_mm": {
+                  "unit": "mm",
+                  "value": 4605,
+                  "sourceId": null
+                },
+                "transmission": {
+                  "unit": null,
+                  "value": "Manual",
+                  "sourceId": null
+                },
+                "wheelbase_mm": {
+                  "unit": "mm",
+                  "value": 2630,
+                  "sourceId": null
+                },
+                "engine_power_hp": {
+                  "unit": "hp",
+                  "value": 148,
+                  "sourceId": null
+                }
+              },
+              "seats": 5,
+              "bodyType": "SUV",
+              "entityId": "car_34_3",
+              "fuelType": "Diesel",
+              "sourceIds": [],
+              "entityType": "car",
+              "displayName": "Honda CR-V",
+              "transmission": "Manual",
+              "schemaVersion": 1,
+              "marketStatusVn": "official_current",
+              "templateVersion": "vi-v1",
+              "contentHash": "a1f1321bf201fff27724ea72310ff1ed9ac81a16a1e2ed7a7624b3f65e9acf5b"
+            },
+            "sourceIds": []
+          }
+        ],
+        "retrievedContextIds": [
+          "car:car_34_3:price:v1",
+          "car:car_57_7:price:v1",
+          "car:car_57_7:specifications:v1",
+          "car:car_34_3:specifications:v1",
+          "warranty:car:car_57_7:v1"
+        ],
+        "citations": [
+          {
+            "contextId": "car:car_34_3:price:v1",
+            "sourceId": "honda_products_2026",
+            "title": "Honda Vietnam automobiles",
+            "url": "https://www.honda.com.vn/o-to/san-pham",
+            "sourceDetailPath": "/sources/honda_products_2026"
+          },
+          {
+            "contextId": "car:car_57_7:price:v1",
+            "sourceId": "mazda_vn_lineup",
+            "title": "Mazda Vietnam product introduction",
+            "url": "https://mazdamotors.vn/news-and-events/news-and-events-content/news-and-events/chuong-trinh-gioi-thieu-san-pham-mazda-the-he-moi-dang-cap-moi",
+            "sourceDetailPath": "/sources/mazda_vn_lineup"
+          },
+          {
+            "contextId": "car:car_57_7:specifications:v1",
+            "sourceId": null,
+            "title": "Bản ghi dữ liệu — car:car_57_7:specifications:v1",
+            "url": null,
+            "sourceDetailPath": null
+          },
+          {
+            "contextId": "car:car_34_3:specifications:v1",
+            "sourceId": null,
+            "title": "Bản ghi dữ liệu — car:car_34_3:specifications:v1",
+            "url": null,
+            "sourceDetailPath": null
+          }
+        ],
+        "status": "ok",
+        "generationMode": "bedrock-natural",
+        "retrieval": "postgresql-vector-search"
+      },
+      "responseSeconds": 18.246670154999265
+    }
+  ],
+  "llmProvider": "bedrock",
+  "bedrockModel": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+  "awsRegion": "us-east-1"
+}

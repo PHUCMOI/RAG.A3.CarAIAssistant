@@ -36,6 +36,7 @@ public sealed class AssistantDraftActions(OrdersDb db, JourneyTransactions tx, C
                 var turns=JourneyTransactions.Unpack<List<ChatTurn>>(row.Payload);
                 turns.Add(new(input.RequestId,"draft-action",[new("assistant",$"Đã tiếp nhận phiếu {ticket.Code}. Bạn có thể xem trạng thái và phản hồi trong tài khoản. Chưa có thời gian xử lý cam kết.",DateTimeOffset.UtcNow,"SubmitSupportTicket",null,draft.DetailUrl)]));
                 row.Payload=JourneyTransactions.Pack(turns);
+                ChatAttachments.CheckHistory(row.Payload);
             }
             else if (input.Action == "edit")
             {
@@ -60,6 +61,7 @@ public sealed class AssistantDraftActions(OrdersDb db, JourneyTransactions tx, C
                 var turns = JourneyTransactions.Unpack<List<ChatTurn>>(row.Payload);
                 turns.Add(new(input.RequestId, "draft-action", [new("assistant", $"Đã gửi {change.Code}, đang chờ xử lý. Lịch và trạng thái đơn chưa thay đổi.", DateTimeOffset.UtcNow, "SubmitChangeRequest", draft.OrderCode, draft.DetailUrl)]));
                 row.Payload = JourneyTransactions.Pack(turns);
+                ChatAttachments.CheckHistory(row.Payload);
             }
             else throw new BusinessRuleException("Thao tác bản nháp không hợp lệ.");
             draft = draft with { Version = draft.Version + 1, Audit = [..draft.Audit, new(input.Action, DateTimeOffset.UtcNow, input.RequestId, draft.Version)] };

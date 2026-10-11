@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import { request, ApiError, clearRequestState, type User } from "./api";
+import { clearPendingTurn } from '../chat/pendingTurn';
 import { clearChatCache, clearLegacyChatCache } from '../chat/storage';
 const Session = createContext<{
   user: User | null;
@@ -18,7 +19,7 @@ export function OrdersSession({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const owner = useRef<string | null>(null);
   function changeUser(next: User | null) {
-    if (owner.current && owner.current !== next?.id) clearChatCache(owner.current);
+    if (owner.current && owner.current !== next?.id) { clearChatCache(owner.current); void clearPendingTurn().catch(() => {}); }
     owner.current = next?.id || null;
     setUser(next);
   }
