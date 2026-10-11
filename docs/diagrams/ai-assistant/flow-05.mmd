@@ -1,0 +1,18 @@
+sequenceDiagram
+    actor KH as Khách hàng
+    participant Chat as Chat + OrderAssistant
+    participant UI as Draft card
+    participant API as AssistantDraftActions
+    participant DB as PostgreSQL
+    participant Admin as Đại lý / Admin
+    KH->>Chat: Muốn đổi lịch / hủy / chuyển hỗ trợ
+    Chat-->>UI: Bản nháp + thông tin còn thiếu + thời hạn
+    KH->>UI: Sửa lý do, ngày giờ hoặc tóm tắt vấn đề
+    UI->>API: draft-actions: edit
+    API->>DB: Kiểm owner, version, điều kiện, lưu draft
+    KH->>UI: Bấm Xác nhận gửi
+    UI->>API: draft-actions: confirm + requestId + versions
+    API->>DB: Transaction, khóa, revalidate, chống trùng
+    API->>DB: Tạo ChangeRequest hoặc SupportTicket
+    API-->>UI: Đã gửi / chờ xử lý + mã yêu cầu
+    Admin->>DB: Xử lý qua module nghiệp vụ

@@ -1,0 +1,13 @@
+{
+  "recorded_at_utc": "2026-10-11T11:48:03.799230+00:00",
+  "source_sha256": "652b2b3257f27ec24b2cc34cca8d3bc4582dc6840c23e20ca17f60175561f786",
+  "tests": {
+    "grounding": {
+      "passed": 15
+    },
+    "backend_postgresql": {
+      "passed": 192
+    }
+  },
+  "live_verification": "pending; running release container unchanged"
+}

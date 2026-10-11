@@ -1,0 +1,14 @@
+flowchart TD
+    O["Đơn thật: status / tiền còn lại / lịch"] --> P["C# OrderProgress.Build"]
+    P --> A["NextActions: actor / content / detailUrl"]
+    A --> S["Sections.progress trong response"]
+    C["Response: role / status / uncertain / contexts / admin data"] --> N["Frontend nextSteps context"]
+    S --> N
+    N --> R["Rules theo lỗi, quyền, thiếu dữ liệu, role và scope"]
+    R --> V["Lọc actor customer, path allowlist, loại trùng, tối đa 4"]
+    V --> T{"Loại gợi ý?"}
+    T -->|label| L["Hiển thị hướng dẫn"]
+    T -->|path| LINK["Mở trang được phép"]
+    T -->|prompt| Q["Điền composer, focus, chờ người dùng gửi"]
+    Q --> NEXT["Lượt chat mới khi bấm Gửi"]
+    LINK --> FORM["Nếu thay đổi: form/draft xác nhận riêng"]

@@ -1,0 +1,7 @@
+.assistant-next-steps{margin-top:16px;padding:14px 16px;border:1px solid #c9ddd1;border-radius:12px;background:#f4f9f6;color:#254a39;overflow-wrap:anywhere}
+.assistant-next-steps ul{margin:10px 0;padding-left:20px;display:grid;gap:9px}
+.assistant-next-steps button{border:0;background:transparent;padding:0;text-align:left;color:#146445;font:inherit;text-decoration:underline;cursor:pointer;white-space:normal}
+.assistant-next-steps button:disabled{opacity:.6;cursor:wait}
+.assistant-next-steps a{color:#146445;text-decoration:underline}
+.assistant-next-steps small{display:block;font-size:12px;line-height:1.5;color:#52675d}
+.assistant-next-steps button:focus-visible,.assistant-next-steps a:focus-visible{outline:2px solid #146445;outline-offset:3px}

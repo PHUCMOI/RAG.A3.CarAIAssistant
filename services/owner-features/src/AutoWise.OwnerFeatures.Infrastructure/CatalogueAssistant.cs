@@ -21,17 +21,31 @@ public sealed class CatalogueAssistant(OrdersDb db, HttpClient http, CatalogueCh
         if (row.Version != input.Version) throw new VersionConflictException();
         if (turns.Count >= 100) throw new BusinessRuleException("Hội thoại đạt 100 lượt; hãy tạo hội thoại mới.");
     }
-    public async Task<ChatSession> Send(Guid sessionId, Guid userId, CatalogueChatInput input, CancellationToken ct)
+    public async Task<ChatSession> Send(Guid sessionId, Guid userId, CatalogueChatInput input, CancellationToken ct, string? trustedRequestHash=null)
     {
         if (input.RequestId == Guid.Empty || input.Content == null || input.Content.Length > 1000 || string.IsNullOrWhiteSpace(input.Content) && input.ImageBase64 == null)
             throw new BusinessRuleException("Cần câu hỏi hoặc ảnh xe và requestId hợp lệ.");
         var row = await db.ChatSessions.AsNoTracking().SingleOrDefaultAsync(s => s.Id == sessionId && s.UserId == userId, ct) ?? throw new KeyNotFoundException();
-        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(input, OrderStore.Json))));
+        var hash = trustedRequestHash ?? Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(input, OrderStore.Json))));
         var turns = Turns(row); Validate(row, turns, input, hash);
         if (turns.Any(t => t.RequestId == input.RequestId)) return OrderAssistant.View(row);
+        if (RestrictedAdminQuestions.Matches(input.Content) || RestrictedAdminQuestions.Matches(input.OriginalContent ?? ""))
+            return await RestrictedAdminQuestions.Reject(db, sessionId, userId, input.RequestId, input.Version, input.OriginalContent ?? input.Content, hash, ct);
+        if (input.ImageBase64 != null) {
+            if (input.ImageBase64.Length > 14_000_000) throw new BusinessRuleException("Ảnh quá lớn.");
+            byte[] photo;
+            try { photo = Convert.FromBase64String(input.ImageBase64); }
+            catch (FormatException) { throw new BusinessRuleException("Ảnh không hợp lệ."); }
+            await ChatAttachments.CheckBudget(db, sessionId, photo.Length, ct);
+        }
         HttpResponseMessage response;
         string? imageUrl = null;
-        if (input.ImageBase64 != null)
+        if (input.Clarification != null)
+        {
+            response = await http.PostAsJsonAsync("api/chat", new { question=input.Content, clarification=input.Clarification }, ct);
+            if (input.ImageBase64 != null) imageUrl = $"data:{input.MimeType};base64,{input.ImageBase64}";
+        }
+        else if (input.ImageBase64 != null)
         {
             if (input.MimeType is not ("image/jpeg" or "image/png" or "image/webp") || input.ImageBase64.Length > 14_000_000)
                 throw new BusinessRuleException("Chọn ảnh JPEG, PNG hoặc WebP tối đa 10 MB.");
@@ -83,10 +97,15 @@ public sealed class CatalogueAssistant(OrdersDb db, HttpClient http, CatalogueCh
             var current = await db.ChatSessions.SingleAsync(s => s.Id == sessionId && s.UserId == userId, ct);
             var currentTurns = Turns(current); Validate(current, currentTurns, input, hash);
             if (currentTurns.Any(t => t.RequestId == input.RequestId)) return OrderAssistant.View(current);
+            imageUrl = await ChatAttachments.Store(db, sessionId, input.RequestId, imageUrl, ct);
             var at = DateTimeOffset.UtcNow;
             var mode = root.TryGetProperty("generationMode", out var generation) ? generation.GetString() : root.TryGetProperty("generation_mode", out generation) ? generation.GetString() : null;
-            currentTurns.Add(new(input.RequestId, hash, [new("user", input.OriginalContent ?? (string.IsNullOrWhiteSpace(input.Content) ? "Nhận diện xe trong ảnh" : input.Content), at, Catalog: true, ImageUrl: imageUrl), new("assistant", answer, at, Catalog: true, Contexts: contexts, Uncertain: uncertain, GenerationMode: mode)]));
+            List<JsonElement> ReadList(string key) => root.TryGetProperty(key, out var values) && values.ValueKind == JsonValueKind.Array ? values.EnumerateArray().Select(e => e.Clone()).ToList() : [];
+            var grounded = root.TryGetProperty("grounded", out var ground) && ground.ValueKind == JsonValueKind.True;
+            var status = root.TryGetProperty("status", out var state) ? state.GetString() : "no_data";
+            currentTurns.Add(new(input.RequestId, hash, [new("user", input.OriginalContent ?? (string.IsNullOrWhiteSpace(input.Content) ? "Nhận diện xe trong ảnh" : input.Content), at, Catalog: true, ImageUrl: imageUrl), new("assistant", answer, at, Catalog: true, Contexts: contexts, Uncertain: uncertain, GenerationMode: mode, Grounded:grounded, Status:status, Evidence:ReadList("evidence"), Citations:ReadList("citations"))]));
             current.Payload = JsonSerializer.Serialize(currentTurns, OrderStore.Json);
+            ChatAttachments.CheckHistory(current.Payload);
             current.Version++; current.UpdatedAt = at;
             await db.SaveChangesAsync(ct); await tx.CommitAsync(ct);
             return OrderAssistant.View(current);

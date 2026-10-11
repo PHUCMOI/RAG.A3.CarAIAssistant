@@ -1,0 +1,1017 @@
+{
+  "recorded_at": "2026-10-11T12:37:59.582668+00:00",
+  "git_head": "057a74dc74d7a6ed5cb2e51bdf0ec8a08ebe48cf",
+  "scope": "Working tree source hashes and current Docker image identities; source includes uncommitted changes",
+  "services": [
+    {
+      "service": "image-service",
+      "image": "rag-a3-image-service",
+      "image_id": "sha256:b72da7405d05b894a6da12169a9341ad559c21436f2ea049372fb8447574be5f",
+      "state": "running",
+      "health": "healthy",
+      "created_at": "2026-10-11 13:12:03 +0700 +07"
+    },
+    {
+      "service": "api",
+      "image": "rag-a3-api",
+      "image_id": "sha256:6967b0b36a2f500c024db1248a49967d48e2fad84e56023d94ea01f9f945490e",
+      "state": "running",
+      "health": "healthy",
+      "created_at": "2026-10-11 19:30:23 +0700 +07"
+    },
+    {
+      "service": "orders-api",
+      "image": "rag-a3-orders-api",
+      "image_id": "sha256:7e453d8dee8faa3e38a1fe35cf18439e4a6caf44e640ffe2b4e3269548096383",
+      "state": "running",
+      "health": "",
+      "created_at": "2026-10-11 12:35:07 +0700 +07"
+    },
+    {
+      "service": "postgres",
+      "image": "pgvector/pgvector:pg17",
+      "image_id": "sha256:cf134a767f474095eeba57e0117be8e568e011a63f33fbf252f14c9b760f8e6f",
+      "state": "running",
+      "health": "healthy",
+      "created_at": "2026-10-09 22:18:21 +0700 +07"
+    },
+    {
+      "service": "web",
+      "image": "rag-a3-web",
+      "image_id": "sha256:3a62d0a08688e7e2c7022a871e21ee3d6bb516eab27d3acac9c71af1b91ad334",
+      "state": "running",
+      "health": "",
+      "created_at": "2026-10-11 12:35:08 +0700 +07"
+    }
+  ],
+  "source": [
+    {
+      "path": "backend/app/__init__.py",
+      "sha256": "e7314584d398c2fae568144848111f1eea35fbcb4dd3c6c2bacc6982eb12b9f6"
+    },
+    {
+      "path": "backend/app/application/__init__.py",
+      "sha256": "58afe6795fd673e96870b02390808ed494df28d243f212e7f7bcb0d5f5efaf10"
+    },
+    {
+      "path": "backend/app/application/chat.py",
+      "sha256": "fb27c9687fe2fda949358c0a20ac98ff09b89bf72ba042c2516c99106c859cfd"
+    },
+    {
+      "path": "backend/app/application/compare.py",
+      "sha256": "95870d22c394db26500f2a1ae120d01dd2b99084c01e0e2700adaed31a86384b"
+    },
+    {
+      "path": "backend/app/application/rag/__init__.py",
+      "sha256": "0ffe71f7b33a7d33ec8578af69d4f6db6cf3b46ce3016643f5d602eaaa3c40b6"
+    },
+    {
+      "path": "backend/app/application/rag/context_builder.py",
+      "sha256": "d2a414e33959b561a4e3e92f9809e8e114e7eff2d382a4faa4b358881a886d1f"
+    },
+    {
+      "path": "backend/app/application/rag/contracts.py",
+      "sha256": "7ff0615c3b4011d6a6e2c80aa7ae987b7a49f6ba8bf64d4d64d8281605e30e66"
+    },
+    {
+      "path": "backend/app/application/rag/dependencies.py",
+      "sha256": "4294335a6254a1df8665bba8de1568f10c6ba04fcac35a7b044317ef6cc6a02e"
+    },
+    {
+      "path": "backend/app/application/rag/documents.py",
+      "sha256": "9755b56419acb491169ebba8a3ab04c9d31da4aff05c8b283ebe5e2f72d9f5f3"
+    },
+    {
+      "path": "backend/app/application/rag/indexing.py",
+      "sha256": "becfc40219811589a93f8bc558d00d8732cb578f9af934c6653a3cc834cf49a1"
+    },
+    {
+      "path": "backend/app/application/rag/intent.py",
+      "sha256": "c5aaa026fc9c10bd3097fd688549b9c530b61a7d41e6eddd8406897b786c9715"
+    },
+    {
+      "path": "backend/app/application/rag/rag.py",
+      "sha256": "18e6f371c20cc2af4feb73b4a75471e322b2ee1bb4a72d5e2210e937fb632e1f"
+    },
+    {
+      "path": "backend/app/application/rag/text_retriever.py",
+      "sha256": "00788c92eeaf88679d01cee0276a579250e7ef6c1f380034eda24288641e6342"
+    },
+    {
+      "path": "backend/app/core/__init__.py",
+      "sha256": "fa50596f517d83db6ba1dc0b36ad2e2ff2e7f0e414ee4e1da41c9f508e0ff5b5"
+    },
+    {
+      "path": "backend/app/core/chat_access.py",
+      "sha256": "4bc3459c660d7415682bc11e57280cfaa6722a6a63777a0353a81f90d74fbef2"
+    },
+    {
+      "path": "backend/app/core/config.py",
+      "sha256": "22a961266c500825940b93a0e68517cf11f404fe786867ef393c97b8ddd307cf"
+    },
+    {
+      "path": "backend/app/core/database.py",
+      "sha256": "fe17205beac6527b4c18dd44dce8b3a45395ed34c59373a493f147eadeab0dd5"
+    },
+    {
+      "path": "backend/app/core/internal_auth.py",
+      "sha256": "fb0fcafba5f9914b5f750b8367b31f8c80622c1f472835002752db554b64dc1e"
+    },
+    {
+      "path": "backend/app/infrastructure/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "backend/app/infrastructure/ai/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "backend/app/infrastructure/ai/answer_grounding.py",
+      "sha256": "70fedb5bcec71b075ba97d8935ac3f4244412583a98035b348f862680590213e"
+    },
+    {
+      "path": "backend/app/infrastructure/ai/bedrock.py",
+      "sha256": "ca5e85bf35e58aa0afd56188a63482f50d8fd4a5c64ad9ae72158534417bf769"
+    },
+    {
+      "path": "backend/app/infrastructure/ai/conversation_titles.py",
+      "sha256": "a204bbf7c1ea8f1c77f7e5de1301bc17d0bbab9707e1f38ed565e42357528ed8"
+    },
+    {
+      "path": "backend/app/infrastructure/ai/embedding.py",
+      "sha256": "7804cca6af7934ab53b7e8a31f93703402eb71b9b91aa9a41fd701aeac637f2e"
+    },
+    {
+      "path": "backend/app/infrastructure/ai/natural_answers.py",
+      "sha256": "7b0a6434e33754ea1b6676ef3ad42c77ea567a0ae5f3f7813bddcfc701a75842"
+    },
+    {
+      "path": "backend/app/infrastructure/ai/question_understanding.py",
+      "sha256": "946026148a52ce8c8a5192c5de66d90881b616a83bb8d4e0af52e6f8c50eb731"
+    },
+    {
+      "path": "backend/app/infrastructure/ai/structured.py",
+      "sha256": "ced7d053cccc45b34e75f895ec787c198cb2db2b4d32bb1ad37828ff120e6048"
+    },
+    {
+      "path": "backend/app/main.py",
+      "sha256": "44fde0cc104857c6a85981dd42e8e817b14a5542fc5a3f96ca764136a4df5f37"
+    },
+    {
+      "path": "backend/app/models/__init__.py",
+      "sha256": "164e1b5d94e5e4dedba64830155a1abf9f0579982e08103c1ec3491a5fab6d0d"
+    },
+    {
+      "path": "backend/app/models/schemas.py",
+      "sha256": "d5d6590d97b24cb8cbd910b73513793802065e952af8de832645363279b6e112"
+    },
+    {
+      "path": "backend/app/repositories/__init__.py",
+      "sha256": "667e55c33b6562ad06369b112541a0e5d5037b75830837cf4956c5d69c435473"
+    },
+    {
+      "path": "backend/app/repositories/car_repository.py",
+      "sha256": "051acd88de328417386b86ea9652d55b71c9eb8b5e516802037cd227d4c4f49e"
+    },
+    {
+      "path": "backend/app/repositories/chat_catalogue.py",
+      "sha256": "e9a1153336a6a2fc4eb650ef7eb34e621cefe1d8b85b7a26ca08ba50a9dd8cf4"
+    },
+    {
+      "path": "backend/app/repositories/dealer_repository.py",
+      "sha256": "fe7881748aeff448d282e2f2640bc9d31dc4508571e082be86e95e60c8702a9a"
+    },
+    {
+      "path": "backend/app/repositories/rag_repository.py",
+      "sha256": "f08d0b41f279a579586a139c6abfe8d3430c341daac69410431564981f985c6b"
+    },
+    {
+      "path": "backend/app/repositories/source_repository.py",
+      "sha256": "dd194c8cf1ff24f9ed5cf11cd56fbaeb149460962a898b854413a71b8d30bd74"
+    },
+    {
+      "path": "backend/app/repositories/warranty_repository.py",
+      "sha256": "ff1c1cd8328a083259a22e99d2b57d51e1bb6a4cd5cc2495b028883abca88c96"
+    },
+    {
+      "path": "backend/app/routers/__init__.py",
+      "sha256": "23a3305af4561f187af92e4e5f3912f24c1f9cf49231b90c75e2a25097832239"
+    },
+    {
+      "path": "backend/app/routers/cars.py",
+      "sha256": "bea0fdc5d73d2071a85d4dbaad2c77692c38a1870917e9893b06a8ea7ffc30d2"
+    },
+    {
+      "path": "backend/app/routers/chat.py",
+      "sha256": "14684d2ccb9faabf4f4d6020cc028f2ee7fe7fce3cc00db83d8675d26f12cdaa"
+    },
+    {
+      "path": "backend/app/routers/dealers.py",
+      "sha256": "12140834b69708afa3f315c84dbcad07898ee4820db096ce220ad3d114fd1727"
+    },
+    {
+      "path": "backend/app/routers/guest_chat.py",
+      "sha256": "0d956eaa15b1ab421f3ebf3be56aafef6756497ed5b0ab0a6db57c02d8fcc75d"
+    },
+    {
+      "path": "backend/app/routers/health.py",
+      "sha256": "7cc6030e0d85f7ef22c30e6844882b36dfeb036a9253b80557ebeae591d0cf7a"
+    },
+    {
+      "path": "backend/app/routers/search.py",
+      "sha256": "216d63839399854eebc865bfca3d8494e0776d27e37e1848d6d8aa3b5e266aa6"
+    },
+    {
+      "path": "backend/app/routers/sources.py",
+      "sha256": "a25ff3fb428cee13b73e66f7bf31c328c609aca3ce5f0c7c5cdb87d6f5fe8142"
+    },
+    {
+      "path": "backend/app/routers/warranties.py",
+      "sha256": "2ebee509792a25efea97c4a5fe2d1ca206571ec75d8b2e5504035e412f08a9bd"
+    },
+    {
+      "path": "image_service/app/__init__.py",
+      "sha256": "e93d26c1a7b2e2d91ed79a834eda89392b930c2735d242d5ec1e74b143e43369"
+    },
+    {
+      "path": "image_service/app/config.py",
+      "sha256": "17c83576edf27eaa69797895dd77f2c8f758c38323c79295ad9ca6cd21b00cbe"
+    },
+    {
+      "path": "image_service/app/core/__init__.py",
+      "sha256": "32b4b3032d741063e0ef909bc1ae7117f5b42cff4f75c23ec1355fda0c48d697"
+    },
+    {
+      "path": "image_service/app/core/feature_extractor.py",
+      "sha256": "7a40e372909c9b57f0862e5916e2d595cc1ce305bde71634fdb2dc920a5f44a6"
+    },
+    {
+      "path": "image_service/app/core/image_retriever.py",
+      "sha256": "949c04028a668d08f6d8c6ab7e67de1f56e8b30c1237c5e5cc73509ccd015c01"
+    },
+    {
+      "path": "image_service/app/core/rag_adapter.py",
+      "sha256": "9a1cfe959d628afefbc6d5d26c5da1155b66f281d21bcee56d9ff03a73fedf7b"
+    },
+    {
+      "path": "image_service/app/core/vector_index.py",
+      "sha256": "d0aebb3ebbf4412142a42814bca35e4e4bd3eef3c1a682e3e63cb916751f92bf"
+    },
+    {
+      "path": "image_service/app/main.py",
+      "sha256": "d1a14b22949c55619b7ae0bc8f5b26413d9237e7c788ca05f4d8b86421cfbb16"
+    },
+    {
+      "path": "image_service/app/models/__init__.py",
+      "sha256": "c3bcd59de820a64d431e39957d12cb3a6aa8f9aebc3edbc1e862f58cb31d3eeb"
+    },
+    {
+      "path": "image_service/app/models/schemas.py",
+      "sha256": "050ddbc232438f3810abdc04d7289f397371009a956d888e1faeffe22a53cc2c"
+    },
+    {
+      "path": "image_service/app/routers/__init__.py",
+      "sha256": "f8eb094d044972afcb83c5965d7799586e9b75fda9bb23b7349d746c3d06ab6f"
+    },
+    {
+      "path": "image_service/app/routers/cars.py",
+      "sha256": "d0df2909f93ec6c82f6ee6322c35ca62cb2b8d4ef10e360862a8946ee8922182"
+    },
+    {
+      "path": "image_service/app/routers/chat.py",
+      "sha256": "8ec1dd0a9fc6badf2c92121a8e3e0804a4559c6b5eb7e0091fcf6c7883c8e0dc"
+    },
+    {
+      "path": "image_service/app/routers/health.py",
+      "sha256": "aea0be269e85e348eaa8eafbf846aa8e25c633d9516c27a4827a950a7c7edc9b"
+    },
+    {
+      "path": "image_service/app/routers/image_search.py",
+      "sha256": "43742c1f028975dd90095bb31153fa0baa5b950ace4e3e17e34829548550248f"
+    },
+    {
+      "path": "image_service/app/routers/text_search.py",
+      "sha256": "f5c6a8563ab0445aa01e508e5162bdf70e0827a0504a64f266a225f3236c7540"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Api/appsettings.Development.json",
+      "sha256": "73f95f9e0ceb205fc1c4dc50c07697fcfa29d7087868c2aef1d504cb38c771ec"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Api/appsettings.json",
+      "sha256": "646cb2e7e4267758756eb307a7ee4f7ad0d2e3433831c9965f6171a9eb3e32a0"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Api/AutoWise.OwnerFeatures.Api.csproj",
+      "sha256": "f1bad85d914d7d3fdf1c7f1e210e7ea0707d65849ec77418c6a1a77686774caf"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Api/CustomerJourneyEndpoints.cs",
+      "sha256": "a76399eef501c96736225441aac975ab23b374fa5e5c10a368063e2bb7fa03ae"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Api/JourneySeed.cs",
+      "sha256": "710547a56e1747f5e4e69feb96af70123834775f8ba431ae3e8d2f1888da16eb"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Api/NotificationWorker.cs",
+      "sha256": "5ce27b5269d10d7b49e079a635ae91d6477ce9787ee2df9fec298089166487fd"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Api/Program.cs",
+      "sha256": "55e872ad3b7f547affd68d9ac11e7c06279a586ee8fdbd1316d9b8733dba389b"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Api/Properties/launchSettings.json",
+      "sha256": "dead5c3f79bfc1aaa44ee44334394cac2334a3fc4dcee5d8a5eb9fcfa99910f3"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Api/SeedData.cs",
+      "sha256": "d362b0c8bfc505377b65ef0a731873f5c8e9e7f132ddbd20bbc5be93d4db7b57"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Application/AssistantContracts.cs",
+      "sha256": "bb58609caadf19b1de2d721fc3de5b670271a3907023aa94f5a69d7578458590"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Application/AssistantDraft.cs",
+      "sha256": "d403ea5a409282a5d17d47ec0591b1bec4e8448bf266d5edb45c6e6bd8bf1605"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Application/AutoWise.OwnerFeatures.Application.csproj",
+      "sha256": "1cf1b487256ccb1cd6e3241b7ad0d7cb6ae346eb3858516c451be1ca8d7e1670"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Application/Contracts.cs",
+      "sha256": "ce73a5ad2af032ec45e6fe99ee655f6e6340e1d2552b392f407fe3a6de45379b"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Application/ConversationContext.cs",
+      "sha256": "b666073427e0fb95f2f371c3dd25a6c94f4f9668f2f8a2da09f5f613bac5e42e"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Application/ConversationContextBuilder.cs",
+      "sha256": "06e00f17ebc5dc01a280e77b808a58b51909926afea9f66a57e5858a09398598"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Application/CustomerJourneyContracts.cs",
+      "sha256": "98fbbbce0ff62bf181582a1dd0c8d75bffdc7da32f9f50fc1a983665b4d8094a"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Application/OrderEvidence.cs",
+      "sha256": "352362d3f3f76190203b3676e7bc8b572392a52aa2f31d2a00d687b0b17c23cb"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Application/OrderProgress.cs",
+      "sha256": "11a7a78e80d66567c5d23675e6f5ea2228f20476756054e22312fabbbc83998b"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Application/SupportContracts.cs",
+      "sha256": "4a9978bd386314b63e37e3a957ed1de5c0d075af16945b5adcb581b6da5f5134"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Domain/AutoWise.OwnerFeatures.Domain.csproj",
+      "sha256": "254d3f28404a5434746fa208108854a1d0a8f19566524dfa095ccbf566e01d10"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Domain/CustomerJourney.cs",
+      "sha256": "b168e235af282c6da5bba378a43115d7fbffcceeecbae52a42853cbdf26c3cb0"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Domain/Order.cs",
+      "sha256": "b98c64eaca66243d27385db375f51eb544c85f4878f96b36bf5b3f28ae5b34d0"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/AdminAssistant.cs",
+      "sha256": "5de58f9ba4327a830b4caab948d79d51bc7f1c9dd0d746b3124d6343d35f552a"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/AdminFinance.cs",
+      "sha256": "cd25e11da60f357a87d1775d6dbf8cab1d73c816f4158208da377abf9d6fc5be"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/AlignmentMigration.cs",
+      "sha256": "9e1c25eb24bb55a627a219b2dbcf664f419b0c51b16b18515c3d01712d5f14e2"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/AppointmentStore.cs",
+      "sha256": "d5e3a14545cf35b29dae286f6980e7af23da0599f7f72a37ff6cebf63a61a90a"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/AssistantDraftActions.cs",
+      "sha256": "c7848f00c4106beeeb204fbcaaa2d4902f88facae26f1dc9255593781e1caed3"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/AutoWise.OwnerFeatures.Infrastructure.csproj",
+      "sha256": "f98a6a78eae21fa38f4dba9379d84b98efd0f2219b1b0427b7144231fa54c14f"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/BedrockAssistant.cs",
+      "sha256": "ff316bde0c7d71069915dcbe8711d785bbab57ff454d6f73297e4d2f4b1a148a"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/CatalogueAssistant.cs",
+      "sha256": "26d7c0558a78bbe8f649ef3e8559bb144461e35a3f070118c755b7a778d30d59"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/ChatAttachments.cs",
+      "sha256": "c4364db384fea34d5ed0e38d1050cd70d8b33e5588e25dad466dac04f0075f54"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/CommonCatalogue.cs",
+      "sha256": "4a00bf06f4e4362fec58eb97f089d30cf520f2c44b3f277e3cb1c7a72caa4f26"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/ConversationTitles.cs",
+      "sha256": "577a5ad443dd2322666b73c20849b57b758e1ee48e6e2303161b2be7e3aee43d"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/CustomerAccountStore.cs",
+      "sha256": "2d13cc0a6c99bbb5d56018a680664524fe8ad0238c9195e95536c8e908e2796e"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/CustomerJourneyRecords.cs",
+      "sha256": "0b78246e701de503d57fae1c5c4340f2c1e64001d791218298b04e71f99cfb1e"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/DesignTimeOrdersDb.cs",
+      "sha256": "e2d9d072144d16d6a7dc4d843c8e5b1eb0fece5768b87ff9d51a5ef7a2333493"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/InitialOrdersMigration.cs",
+      "sha256": "12012e48dfa35bb3cd98373e63a97da79e5084bed1b48fa94e732e9e4145eaee"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/InitialOrdersMigration.Designer.cs",
+      "sha256": "0804c91d53e07cde816a2176a5b6563017add4f9e4c63d4d1d6495b8dc9b8420"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/JourneyTransactions.cs",
+      "sha256": "143fedde9e22c22e2cb49ed08c10f13079f01350ead2a8783f5a9b416e0229b5"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/Migrations/20261002162444_CustomerOrderAssistant.cs",
+      "sha256": "a72dfa3a241f71818e208e4e8341c446c7415c4283ee2064f5913bdba0a55968"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/Migrations/20261002162444_CustomerOrderAssistant.Designer.cs",
+      "sha256": "abb7dc3721c1899227c284942c9033830d2e9b90d743eced3732b95108dd7b98"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/Migrations/20261002180256_FullCustomerJourney.cs",
+      "sha256": "6314b3669bba51497f23e6b6789bb208f07d4bde2cbbc01bd80cfeb12e2b5232"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/Migrations/20261002180256_FullCustomerJourney.Designer.cs",
+      "sha256": "56232d5f17ef342e824ad0675c53999e844dc0819ef5cd1143b7a366053c82b4"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/Migrations/20261003170327_ConversationContext.cs",
+      "sha256": "cef5edb30fd1f3738669560c0b4e5c7fa007cc5a0f87f145cdbac78316edab23"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/Migrations/20261003170327_ConversationContext.Designer.cs",
+      "sha256": "efa5a64d3995c644ad64e3934bdb759d9e62eaeea1db99e925a324454afbfa29"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/Migrations/20261004125508_OrderDocumentChecklist.cs",
+      "sha256": "9b11506ae8e2e87060b23bfc9352420601114169efd25dfd43f0cb45d8c7c7fd"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/Migrations/20261004125508_OrderDocumentChecklist.Designer.cs",
+      "sha256": "80b694f87675285198f795eaa2c5b1e65ea7e7d2754eb20e7017336834bb01ce"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/Migrations/20261004131616_SupportTickets.cs",
+      "sha256": "2b8f54022864dc90d60543c589d133d1aef4a1138c12852062eb9bde0a63c96f"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/Migrations/20261004131616_SupportTickets.Designer.cs",
+      "sha256": "3a3967a90694379ba60f8261ae388dbbaf9ed1f1f36ac4d7e577b205dd196bbc"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/Migrations/20261004133456_ProactiveNotifications.cs",
+      "sha256": "172044b6e678ade408721f56abfcdcd364964a7b25c05271e6c75d11a567932e"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/Migrations/20261004133456_ProactiveNotifications.Designer.cs",
+      "sha256": "080498b88f1a403e8a301af2a48b79a9ce79c92da3c2594340e9787275c90682"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/Migrations/20261009151449_ChatAttachments.cs",
+      "sha256": "6f0bd13946fcde8572cc13485d7a7bbc58b1f86dc06eef300e2294a1fe1de2c2"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/Migrations/20261009151449_ChatAttachments.Designer.cs",
+      "sha256": "f3ed62dcdbb8b6c8e959ca05f6172a072ab5ae68ff5d4f2b3aba8f70d30fb027"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/Migrations/OrdersDbModelSnapshot.cs",
+      "sha256": "ce1d1eb639343d30a96f38a3965f933df66d90c704d20c8d6d28d1ba51ca610f"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/NaturalAnswers.cs",
+      "sha256": "d4c3529e2e3883ed6ce191e3e1ba3b9ee8ab0c46ac5eba04ffee6e6416be80a8"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/NotificationDelivery.cs",
+      "sha256": "0ad9598751df8aa95eb0f8325b26ae822c3a469062ec3e89f004cd4538270039"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/OrderAssistant.cs",
+      "sha256": "0108b53b63956007686f21a29779b8b362d474357e9633ac05abad087c8e56a1"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/OrderEvidenceStore.cs",
+      "sha256": "df0bd8cfb710a472cecad7aed193a0288a2d1d7d329ff041eaab63c6dc47802a"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/OrdersDb.cs",
+      "sha256": "bae6f7bf017a3027c83a03c74da6bf92d4b5fce53458376516fce0c8fa0b6764"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/OrderStore.cs",
+      "sha256": "7cb7cb52769f662a236dfeee152d16d38528dcc2b93e2e7c110305ec1aa4a935"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/PurchaseStore.cs",
+      "sha256": "88bcd8ede3a9633c9a05e4dcc4a7790d1e73967f50786b0e4c1b7d4968121f2a"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/RestrictedAdminQuestions.cs",
+      "sha256": "8066f9800d0576f6932cf9772d40148bf560714a19a57f30ab798110e2d73675"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/SupportStore.cs",
+      "sha256": "34138f38e5f7f5ef21b011ca2040d16af16e87f7b21b1f21b69dd524d272fbec"
+    },
+    {
+      "path": "services/owner-features/src/AutoWise.OwnerFeatures.Infrastructure/UnifiedAssistant.cs",
+      "sha256": "e508027aa28b0eeb21b91ff3806ee64705ad764b9502d86bf19c8ef25e361a37"
+    },
+    {
+      "path": "frontend/src/app/providers.tsx",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/app/router.tsx",
+      "sha256": "42019559ae867952579899c21bc4ca151c78f7a28e5b77497e0f82a9fb66c947"
+    },
+    {
+      "path": "frontend/src/app/routes.ts",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/app/SiteLayouts.tsx",
+      "sha256": "1229cf8b1935e94d459adc31e12e67aa991cb9ec4340943bd646f499e203e8ee"
+    },
+    {
+      "path": "frontend/src/App.tsx",
+      "sha256": "bed5c08e726a0c7a4c4dc63aff1aa77d399bc3c334ac42d3ad892ccb0e46edda"
+    },
+    {
+      "path": "frontend/src/entities/car/api.ts",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/entities/car/CarCard.tsx",
+      "sha256": "efd8f1ec2b62127f1b769b8033f0daf4b6a7a0753709268e00de320c1f0594b6"
+    },
+    {
+      "path": "frontend/src/entities/car/CarGallery.tsx",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/entities/car/labels.ts",
+      "sha256": "daa3a857dd97400ad964768a8da217e03928cf8c4b17d587a92e3548ad0ba070"
+    },
+    {
+      "path": "frontend/src/entities/car/model.ts",
+      "sha256": "52309c0fead7d0effd62a0777e7d8080fc1a2378813cf57eb542d2ffa6616344"
+    },
+    {
+      "path": "frontend/src/entities/dealer/api.ts",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/entities/dealer/DealerCard.tsx",
+      "sha256": "a4b95ce32ff7de3785da9c9c5615bef5e560a33f06ccbc62078405138bda8fee"
+    },
+    {
+      "path": "frontend/src/entities/dealer/model.ts",
+      "sha256": "ab556af9da5a75ea8738ec8ac3f60c94eb60c6cf25c9ef6922e1199f8c80a200"
+    },
+    {
+      "path": "frontend/src/entities/source/api.ts",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/entities/source/model.ts",
+      "sha256": "052edc02b52267423359b10b08d9dd2f69a1ec19f3918f403e5121e86f122b26"
+    },
+    {
+      "path": "frontend/src/entities/source/SourceLink.tsx",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/entities/warranty/api.ts",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/entities/warranty/model.ts",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/entities/warranty/WarrantyCard.tsx",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/features/account/AccountHome.tsx",
+      "sha256": "88ef198aa079bb121d8c91d789538815cfa6b350aca425dd51db3471ceee999a"
+    },
+    {
+      "path": "frontend/src/features/account/AccountPages.tsx",
+      "sha256": "6fb198f87956d2cee5439b17e9bb4b265b83254529fc2d060b11f607bcc4f63f"
+    },
+    {
+      "path": "frontend/src/features/account/JourneyPages.tsx",
+      "sha256": "ab61b37e44aecf4b296a06a2cda26d4db1b8fdbc07eb4849fe127d754000f007"
+    },
+    {
+      "path": "frontend/src/features/account/PurchasePages.tsx",
+      "sha256": "0557aded130b95b68bc7ffa7000fc45c3eb2597dc4d5ce480e931b25813b43c6"
+    },
+    {
+      "path": "frontend/src/features/account/shared.tsx",
+      "sha256": "fc5f8200e2050d868a4abb5aa73c82993552bec5b14adcc147a3665ae227454c"
+    },
+    {
+      "path": "frontend/src/features/account/SupportPages.tsx",
+      "sha256": "32ff72c00188cd7ed3b3100dee2296d2219e9f481604a55a65e9fc4ad753e351"
+    },
+    {
+      "path": "frontend/src/features/admin/AdminAssistantPage.tsx",
+      "sha256": "1a0d31dc5995e8d3022eb625af2c090ed6acabb71677ea5d573a2587d3ce8b07"
+    },
+    {
+      "path": "frontend/src/features/admin/AdminCreateOrder.tsx",
+      "sha256": "0d0c10ac8d8f3cc7fa67ba75789daaf15925ad6461e7dca69a7ca882953c44ca"
+    },
+    {
+      "path": "frontend/src/features/admin/AdminEvidence.tsx",
+      "sha256": "29d6674125e0b8dcffbd4e29e7abc385edc25bf79888405d43ed77bfb60781ff"
+    },
+    {
+      "path": "frontend/src/features/admin/AdminLists.tsx",
+      "sha256": "f5472d23278935738958b765c657e680dda1c462f46388e21df799568f8cc83e"
+    },
+    {
+      "path": "frontend/src/features/admin/AdminOrdersList.tsx",
+      "sha256": "fe1199173c17c345ba19917e92e4eb00d94b745ec50bea7fcb7ed02db6b4bbd4"
+    },
+    {
+      "path": "frontend/src/features/admin/ui.tsx",
+      "sha256": "095bad45bb4b31c22428d8ec3319c66954d038f3841d6b8f192bf9df5b5c395c"
+    },
+    {
+      "path": "frontend/src/features/admin/useAdminWrite.ts",
+      "sha256": "8bb5cf946272b2a140649616aeab122961ebd221dcdc2d87403feffe817be10e"
+    },
+    {
+      "path": "frontend/src/features/admin-data/api.ts",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/features/admin-data/DataEditor.tsx",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/features/admin-data/ImportDialog.tsx",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/features/admin-data/types.ts",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/features/car-compare/api.ts",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/features/car-compare/CompareTray.tsx",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/features/car-compare/ComparisonTable.tsx",
+      "sha256": "6753ca7483b3fd83b6456e54e55170e46f350b6a174bf646106320648de56c04"
+    },
+    {
+      "path": "frontend/src/features/car-compare/hooks.ts",
+      "sha256": "9c8678212a891b0a659eab8bba0d04f2f922b367970579379ee93840cee7c3f3"
+    },
+    {
+      "path": "frontend/src/features/car-compare/types.ts",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/features/car-search/api.ts",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/features/car-search/CarFilters.tsx",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/features/car-search/CarRelatedInfo.tsx",
+      "sha256": "3eb6116362a719891657fac692f541870e60ee388059e7a2a1160bd057ac8448"
+    },
+    {
+      "path": "frontend/src/features/car-search/CarResults.tsx",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/features/car-search/catalog.ts",
+      "sha256": "07c2f8555edace3ac2f84cc1f15ccd52ec452415fdd60eea297c56b3978b61ac"
+    },
+    {
+      "path": "frontend/src/features/car-search/hooks.ts",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/features/car-search/types.ts",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/features/chat/answerFormatting.ts",
+      "sha256": "76ca5291ad292748b89c92eac32de413898bd37115ab60000223372c47df4a2a"
+    },
+    {
+      "path": "frontend/src/features/chat/api.ts",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/features/chat/carContext.ts",
+      "sha256": "c8d69530711e7c3156fce93d37e06758728ad8d389432f4ae0426db2306313ae"
+    },
+    {
+      "path": "frontend/src/features/chat/ChatComposer.tsx",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/features/chat/ChatContent.tsx",
+      "sha256": "7facafd7bc721a8d5f788762291bae104e668fc3c3f8099a7501c356d96ac47b"
+    },
+    {
+      "path": "frontend/src/features/chat/ChatHistory.tsx",
+      "sha256": "be9b1f84dc0218f68a831907e64b4d8cc67b872d4afb4ca38101d179e1dae019"
+    },
+    {
+      "path": "frontend/src/features/chat/ChatLayout.tsx",
+      "sha256": "c1bd89cf426731d644dfb1cd9613c5b767d20943544676753f737f50c0cb50a0"
+    },
+    {
+      "path": "frontend/src/features/chat/ChatMessage.tsx",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/features/chat/ChatSidebar.tsx",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/features/chat/ChatUtilities.tsx",
+      "sha256": "b4a8c0831764dcd322aebbdee37b52c441e1aa92b87c4ae0502e2ade6fb5e42c"
+    },
+    {
+      "path": "frontend/src/features/chat/hooks.ts",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/features/chat/NextSteps.tsx",
+      "sha256": "7acfaabac1efb89c2ee9c0e30c0caa6a2cd44b149fe432365eca7049d5a49336"
+    },
+    {
+      "path": "frontend/src/features/chat/pendingTurn.ts",
+      "sha256": "366620569d6782433fea08fe300ca1a09b4488f04af8f488c8f358b1b2cce0a5"
+    },
+    {
+      "path": "frontend/src/features/chat/routing.ts",
+      "sha256": "2eae1d0c0689ca3636119a0e743bbec48f2650c69e9e930f7acd56c854d9ed73"
+    },
+    {
+      "path": "frontend/src/features/chat/storage.ts",
+      "sha256": "8c832a979bab7ce427ece6b2ca47f7b771dd37eb958554048ca775e608a24405"
+    },
+    {
+      "path": "frontend/src/features/chat/types.ts",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/features/chat/useCarQuestion.ts",
+      "sha256": "d5e05432a292031274a650e641e77050cf894ea69ad921587ab66238b0e8235f"
+    },
+    {
+      "path": "frontend/src/features/dealer-filter/api.ts",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/features/dealer-filter/DealerFilters.tsx",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/features/dealer-filter/hooks.ts",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/features/dealer-filter/search.ts",
+      "sha256": "49077504911b423e84bdaa4cabab0ee59feb0ee7329fe24599ddcd18fb333289"
+    },
+    {
+      "path": "frontend/src/features/dealer-filter/types.ts",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/features/orders/api.ts",
+      "sha256": "4c11a7cffc07c839617d0ab606d3f40f2a75e901def34fd0e31db4e2e1d6bcdb"
+    },
+    {
+      "path": "frontend/src/features/orders/AssistantDraftCard.tsx",
+      "sha256": "f9569b2806a605b34b95118d8b3438411b4725f3522ffe496595322677f4dc32"
+    },
+    {
+      "path": "frontend/src/features/orders/LoginPage.tsx",
+      "sha256": "a055967955a50aa15624b4082c7f144e7265f937318ee3b5417ba4a8b14d9b51"
+    },
+    {
+      "path": "frontend/src/features/orders/OrderAssistantPage.tsx",
+      "sha256": "267cacff7725273befe9b3eb0877364e6deb936b314912f5bdfcc6b8a010006d"
+    },
+    {
+      "path": "frontend/src/features/orders/OrderEvidenceCards.tsx",
+      "sha256": "d1ffad24eb516cf919fdee4168a9ce702303fb1fb583c001eec996376b9652d2"
+    },
+    {
+      "path": "frontend/src/features/orders/OrderProgressCard.tsx",
+      "sha256": "d1c92c64d3e9cd858b10f75890ba65a745e112c80a050bac7a3f7cd19bc768eb"
+    },
+    {
+      "path": "frontend/src/features/orders/OrdersPages.tsx",
+      "sha256": "23e791f93c440029ac6582d15246f71774f5d1ffe118b74b54f00ff069a380ad"
+    },
+    {
+      "path": "frontend/src/features/orders/Session.tsx",
+      "sha256": "276b54e22dec02b694d5d9521165fbf410ceec416bf0f6996ee8a833c76e47f6"
+    },
+    {
+      "path": "frontend/src/features/orders/SupportContext.tsx",
+      "sha256": "0dc43b6a934d2b8f3a8eda3cf2a1141cfc41a324692d056b3542450d676c3c4d"
+    },
+    {
+      "path": "frontend/src/features/orders/SupportDraftCard.tsx",
+      "sha256": "c2de0ad2e62490ebf19ede6c1716b2fdd5caad6903f78b17fd4279ea6223aa57"
+    },
+    {
+      "path": "frontend/src/features/rag-settings/api.ts",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/features/rag-settings/PipelineStatus.tsx",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/features/rag-settings/RetrievalTester.tsx",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/features/rag-settings/types.ts",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/main.tsx",
+      "sha256": "d120bd2409d17425490177a032668fac47cc29457a5b163a74ed8ed3ba668823"
+    },
+    {
+      "path": "frontend/src/pages/AdminDataPage/index.tsx",
+      "sha256": "e1960b8751d077add8f733d498f8f420ced57959d524f06054832049ef63cfc2"
+    },
+    {
+      "path": "frontend/src/pages/CarCatalogPage/CarCatalogPage.test.tsx",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/pages/CarCatalogPage/index.tsx",
+      "sha256": "b068092a50bdc7db676c58db3a11697d6e063aeb65ed47c0a3f0a09063532e6d"
+    },
+    {
+      "path": "frontend/src/pages/CarDetailPage/CarDetailPage.test.tsx",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/pages/CarDetailPage/index.tsx",
+      "sha256": "b27095f5b52d5b131ccbd2147dda63b18972ee57af2110f128f63908fcc6cf96"
+    },
+    {
+      "path": "frontend/src/pages/ChatPage/ChatPage.test.tsx",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/pages/ChatPage/index.tsx",
+      "sha256": "2f4925985dc54f3eb23a9f6fb8843b032361acec7a900ed01efe8562605263d4"
+    },
+    {
+      "path": "frontend/src/pages/ComparePage/ComparePage.test.tsx",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/pages/ComparePage/index.tsx",
+      "sha256": "02cc668cbc1337220c93f06251772b97a8eb6ce5e629cfed4d5352ea91e27e47"
+    },
+    {
+      "path": "frontend/src/pages/DealersPage/DealersPage.test.tsx",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/pages/DealersPage/index.tsx",
+      "sha256": "bc0123c6d8d8a7c7df8ca72d029740a358b4edffbb1bb155c65fd2dbf8b0984a"
+    },
+    {
+      "path": "frontend/src/pages/HomePage/index.tsx",
+      "sha256": "5078b3dbacffba1205dd4c7d58fb3a95b3511646a505d7e5bfcd04f6e0ee412c"
+    },
+    {
+      "path": "frontend/src/pages/ImageSearchPage/index.tsx",
+      "sha256": "95b0f402bd2da1850e17e7774082700462750c82e043b2bb53ffd399c957f8bc"
+    },
+    {
+      "path": "frontend/src/pages/RagSettingsPage/index.tsx",
+      "sha256": "084987c0399bb24ccb80d5c5280ef634c60e6e6d29211dd60e6ac020ecc8e605"
+    },
+    {
+      "path": "frontend/src/pages/SourceDetailPage/index.tsx",
+      "sha256": "516ecc065e415c044cfec40193d772d09854861d1727cf69ffe683cdc98a6451"
+    },
+    {
+      "path": "frontend/src/shared/api/client.ts",
+      "sha256": "0cf3712427c6f742e52414ba3c295fed3582ab686bf4aec3c1554a532f22291b"
+    },
+    {
+      "path": "frontend/src/shared/api/problemDetails.ts",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/shared/components/AppFooter.tsx",
+      "sha256": "da2585c0362c02c95e632aead3bc5f04d5ea706c1eb895e1c08ff9a7d819e2d8"
+    },
+    {
+      "path": "frontend/src/shared/components/AppHeader.tsx",
+      "sha256": "9d45886af358d8885d6f808d402b70c0ca8bb71ffabeeffc23f3bb567b23bff1"
+    },
+    {
+      "path": "frontend/src/shared/components/ChevronDown.tsx",
+      "sha256": "a75a0cf58160ff396920c87c38b75c4d4b0f7289da7e4eba2f51a2cbc863e32b"
+    },
+    {
+      "path": "frontend/src/shared/components/EmptyState.tsx",
+      "sha256": "d393d1a1d1a5d89ad392332be4f4dea3fc4d0ab212091af8251142174d41366b"
+    },
+    {
+      "path": "frontend/src/shared/components/ErrorState.tsx",
+      "sha256": "12610a241c27114d7cc127a1275db26ea872ed21e3cb3799aee90ec55f03f813"
+    },
+    {
+      "path": "frontend/src/shared/components/ImageIcon.tsx",
+      "sha256": "75e7f624518c0cdae80ef22a60bd84fdaeb3bd8665b166ee1ec6f4419c0316c9"
+    },
+    {
+      "path": "frontend/src/shared/components/LoadingSkeleton.tsx",
+      "sha256": "8fb1a12d295b098bf94f53d73dd28bba6cb8c329791aa842ade52b51213c27fe"
+    },
+    {
+      "path": "frontend/src/shared/components/Pagination.tsx",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/shared/components/StatusBadge.tsx",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/shared/formatting/currency.ts",
+      "sha256": "19425b79ae2893c0faae7f0a3831c590928faa6346b6cad8d63f1997be8515e1"
+    },
+    {
+      "path": "frontend/src/shared/formatting/date.ts",
+      "sha256": "2b5eaa94187acb8594305814605092b70442a4bafe53a4ed5439278a5be3316a"
+    },
+    {
+      "path": "frontend/src/shared/hooks/useDebounce.ts",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/shared/hooks/useMediaQuery.ts",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/vite-env.d.ts",
+      "sha256": "65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5"
+    }
+  ]
+}

@@ -1,0 +1,297 @@
+{
+  "recordedAt": "2026-10-11T11:17:26.300Z",
+  "baseUrl": "http://localhost:5173",
+  "scope": "Silent local app recording: catalogue, compare, guest text and image chat; no customer/admin demo",
+  "turns": [
+    {
+      "question": "Giá Honda CR-V",
+      "httpStatus": 200,
+      "response": {
+        "answer": "**Honda CR-V** có giá tham khảo từ **1.039.000.000 VND** (ngày giá tham khảo: 2026-10-01).\n\nĐây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực. Honda CR-V được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.\n\nHonda CR-V: Được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.",
+        "contexts": [
+          {
+            "carId": "car_34_3",
+            "displayName": "Honda CR-V",
+            "description": "Honda CR-V is an SUV with 5 seats from Honda. The model is currently listed by an official or manufacturer-backed source in Vietnam. The dataset records a reference starting price of VND 1,039,000,000 as of 2026-10-01.",
+            "presenceSourceId": "honda_products_2026",
+            "summary": "Honda CR-V là mẫu SUV 5 chỗ của hãng Honda.",
+            "specifications": {
+              "Kiểu xe": "SUV",
+              "Số chỗ": "5 chỗ",
+              "Động cơ": "2.0L",
+              "Nhiên liệu": "Dầu",
+              "Hộp số": "Số sàn"
+            }
+          }
+        ],
+        "grounded": true,
+        "intent": "ask_price",
+        "filters": {
+          "brand": "Honda",
+          "bodyType": null,
+          "fuelType": null,
+          "transmission": null,
+          "seats": null,
+          "minPrice": null,
+          "maxPrice": null,
+          "minPriceInclusive": true,
+          "maxPriceInclusive": true,
+          "city": null
+        },
+        "evidence": [
+          {
+            "contextId": "car:car_34_3:price:v1",
+            "carId": "car_34_3",
+            "section": "price",
+            "content": "Giá tham khảo của Honda CR-V.\nGiá từ: 1039000000 VND.\nNgày giá tham khảo: 2026-10-01.\nĐây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.\nĐược ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.",
+            "score": 0.03278688524590164,
+            "metadata": {
+              "brand": "Honda",
+              "facts": {
+                "price_as_of": {
+                  "value": "2026-10-01",
+                  "sourceId": "honda_products_2026"
+                },
+                "price_vnd_from": {
+                  "unit": "VND",
+                  "value": 1039000000,
+                  "sourceId": "honda_products_2026"
+                }
+              },
+              "seats": 5,
+              "bodyType": "SUV",
+              "entityId": "car_34_3",
+              "fuelType": "Diesel",
+              "sourceIds": [
+                "honda_products_2026"
+              ],
+              "entityType": "car",
+              "displayName": "Honda CR-V",
+              "priceVndFrom": 1039000000,
+              "transmission": "Manual",
+              "schemaVersion": 1,
+              "marketStatusVn": "official_current",
+              "templateVersion": "vi-v1",
+              "contentHash": "d8d1284bcf42027b52b6aae14d9031602c6d6ebf14c751ae645228ebc48b72c2"
+            },
+            "sourceIds": [
+              "honda_products_2026"
+            ]
+          }
+        ],
+        "retrievedContextIds": [
+          "car:car_34_3:price:v1"
+        ],
+        "citations": [
+          {
+            "contextId": "car:car_34_3:price:v1",
+            "sourceId": "honda_products_2026",
+            "title": "Honda Vietnam automobiles",
+            "url": "https://www.honda.com.vn/o-to/san-pham",
+            "sourceDetailPath": "/sources/honda_products_2026"
+          }
+        ],
+        "status": "ok",
+        "generationMode": "bedrock-natural",
+        "retrieval": "postgresql-hybrid-search"
+      }
+    },
+    {
+      "question": "Xe trong ảnh gần giống mẫu xe nào?",
+      "httpStatus": 200,
+      "response": {
+        "answer": "Mẫu xe gần giống nhất trong ảnh là **Toyota RAV4**, với độ tương đồng **95%**.\n\nToyota RAV4 là một chiếc SUV 5 chỗ, được trang bị động cơ 2.0L dầu, công suất 150 hp, hộp số số sàn. Kích thước xe: dài 4570 mm, rộng 1845 mm, cao 1705 mm, chiều dài cơ sở 2660 mm.\n\nXe có mặt tại Việt Nam qua kênh nhập khẩu; không khẳng định phân phối chính hãng. Thông số catalogue chủ yếu từ DVM-CAR thị trường Anh; chưa xác nhận phiên bản kỹ thuật tại Việt Nam.\n\nThông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.\n\nToyota RAV4: Có mặt qua nhập khẩu; không khẳng định phân phối chính hãng.",
+        "generation_mode": "bedrock-natural",
+        "evidence": [
+          {
+            "contextId": "car:car_92_34:overview:v1",
+            "carId": "car_92_34",
+            "section": "overview",
+            "content": "Xe: Toyota RAV4. Hãng: Toyota.\nTên khác: RAV4.\nCó mặt qua nhập khẩu; không khẳng định phân phối chính hãng.",
+            "score": 0.01639344262295082,
+            "metadata": {
+              "brand": "Toyota",
+              "facts": {
+                "display_name": {
+                  "value": "Toyota RAV4",
+                  "sourceId": "toyota_vn_company"
+                },
+                "market_status_vn": {
+                  "value": "present_via_import",
+                  "sourceId": "toyota_vn_company"
+                }
+              },
+              "seats": 5,
+              "bodyType": "SUV",
+              "entityId": "car_92_34",
+              "fuelType": "Diesel",
+              "sourceIds": [
+                "toyota_vn_company"
+              ],
+              "entityType": "car",
+              "displayName": "Toyota RAV4",
+              "transmission": "Manual",
+              "schemaVersion": 1,
+              "marketStatusVn": "present_via_import",
+              "templateVersion": "vi-v1",
+              "contentHash": "dcc9b1a7e64e130c6f5d795206a4384187c6be783da9267c061845918f5b70b7"
+            },
+            "sourceIds": [
+              "toyota_vn_company"
+            ]
+          },
+          {
+            "contextId": "car:car_92_34:specifications:v1",
+            "carId": "car_92_34",
+            "section": "specifications",
+            "content": "Thông số tham khảo của Toyota RAV4.\nKiểu xe: SUV.\nSố chỗ: 5 chỗ.\nNhiên liệu: Dầu.\nHộp số: Số sàn.\nĐộng cơ: 2.0L.\nCông suất: 150 hp.\nDài: 4570 mm.\nRộng: 1845 mm.\nCao: 1705 mm.\nChiều dài cơ sở: 2660 mm.\nThông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.",
+            "score": 0.016129032258064516,
+            "metadata": {
+              "brand": "Toyota",
+              "facts": {
+                "seats": {
+                  "unit": "chỗ",
+                  "value": 5,
+                  "sourceId": null
+                },
+                "engine": {
+                  "unit": null,
+                  "value": "2.0L",
+                  "sourceId": null
+                },
+                "width_mm": {
+                  "unit": "mm",
+                  "value": 1845,
+                  "sourceId": null
+                },
+                "body_type": {
+                  "unit": null,
+                  "value": "SUV",
+                  "sourceId": null
+                },
+                "fuel_type": {
+                  "unit": null,
+                  "value": "Diesel",
+                  "sourceId": null
+                },
+                "height_mm": {
+                  "unit": "mm",
+                  "value": 1705,
+                  "sourceId": null
+                },
+                "length_mm": {
+                  "unit": "mm",
+                  "value": 4570,
+                  "sourceId": null
+                },
+                "transmission": {
+                  "unit": null,
+                  "value": "Manual",
+                  "sourceId": null
+                },
+                "wheelbase_mm": {
+                  "unit": "mm",
+                  "value": 2660,
+                  "sourceId": null
+                },
+                "engine_power_hp": {
+                  "unit": "hp",
+                  "value": 150,
+                  "sourceId": null
+                }
+              },
+              "seats": 5,
+              "bodyType": "SUV",
+              "entityId": "car_92_34",
+              "fuelType": "Diesel",
+              "sourceIds": [],
+              "entityType": "car",
+              "displayName": "Toyota RAV4",
+              "transmission": "Manual",
+              "schemaVersion": 1,
+              "marketStatusVn": "present_via_import",
+              "templateVersion": "vi-v1",
+              "contentHash": "46967c457963d8e9b36a9a797dece74f7cae2dcf5adc863596244b5c69287013"
+            },
+            "sourceIds": []
+          }
+        ],
+        "retrieved_context_ids": [
+          "car:car_92_34:overview:v1",
+          "car:car_92_34:specifications:v1"
+        ],
+        "citations": [
+          {
+            "contextId": "car:car_92_34:overview:v1",
+            "sourceId": "toyota_vn_company",
+            "title": "Toyota Vietnam sustainability report 2023",
+            "url": "https://www.toyota.com.vn/media/ccje2e4a/baocao-ptbv-toyota-2023_sua05162024-final-1.pdf",
+            "sourceDetailPath": "/sources/toyota_vn_company"
+          },
+          {
+            "contextId": "car:car_92_34:specifications:v1",
+            "sourceId": null,
+            "title": "Bản ghi dữ liệu — car:car_92_34:specifications:v1",
+            "url": null,
+            "sourceDetailPath": null
+          }
+        ],
+        "status": "ok",
+        "grounded": true,
+        "intent": "ask_specification",
+        "catalog_contexts": [
+          {
+            "carId": "car_92_34",
+            "displayName": "Toyota RAV4",
+            "description": "Toyota RAV4 is an SUV with 5 seats from Toyota. The model is present in Vietnam through referenced or import channels, so specifications may vary by vehicle. The dataset records a reference starting price of VND 2,400,000,000 as of 2026-09-01.",
+            "presenceSourceId": "toyota_vn_company",
+            "summary": "Toyota RAV4 là mẫu SUV 5 chỗ của hãng Toyota.",
+            "specifications": {
+              "Kiểu xe": "SUV",
+              "Số chỗ": "5 chỗ",
+              "Động cơ": "2.0L",
+              "Nhiên liệu": "Dầu",
+              "Hộp số": "Số sàn"
+            }
+          }
+        ],
+        "identified_cars": [
+          {
+            "car_id": "car_92_34",
+            "brand": "Toyota",
+            "model": "RAV4",
+            "similarity": 0.9504
+          }
+        ],
+        "contexts": [
+          {
+            "carId": "car_92_34",
+            "displayName": "Toyota RAV4",
+            "description": "Toyota RAV4 is an SUV with 5 seats from Toyota. The model is present in Vietnam through referenced or import channels, so specifications may vary by vehicle. The dataset records a reference starting price of VND 2,400,000,000 as of 2026-09-01.",
+            "presenceSourceId": "toyota_vn_company",
+            "summary": "Toyota RAV4 là mẫu SUV 5 chỗ của hãng Toyota.",
+            "specifications": {
+              "Kiểu xe": "SUV",
+              "Số chỗ": "5 chỗ",
+              "Động cơ": "2.0L",
+              "Nhiên liệu": "Dầu",
+              "Hộp số": "Số sàn"
+            }
+          }
+        ],
+        "uncertain": false,
+        "latency_ms": 15432.7,
+        "retrievedContextIds": [
+          "car:car_92_34:overview:v1",
+          "car:car_92_34:specifications:v1"
+        ],
+        "generationMode": "bedrock-natural",
+        "requiresLogin": false
+      }
+    }
+  ],
+  "pageErrors": [],
+  "completed": true,
+  "video": null,
+  "recordingMode": "screenshots-only"
+}

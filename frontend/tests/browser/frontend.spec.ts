@@ -154,7 +154,7 @@ async function mockApi(page: Page, role: 'Guest' | 'Customer' | 'Admin' = 'Guest
     if (path.endsWith('/auth/logout')) { expired = true; return route.fulfill({ status: 204 }) }
     if (path.endsWith('/my/profile')) return reply({ id: 'customer-a', displayName: 'Khách thử nghiệm', email: 'test@example.com', createdAt: '2026-10-01T00:00:00Z', version: 0 })
     if (path.endsWith('/assistant/sessions')) return reply(route.request().method() === 'POST' ? chat : [])
-    if (path.endsWith('/catalogue-messages')) {
+    if (path.includes('/assistant/sessions/') && path.endsWith('/turns')) {
       chat = { ...chat, version: chat.version + 1, messages: [...chat.messages, { role: 'user', content: route.request().postDataJSON().content, catalog: true }, { role: 'assistant', content: 'Mẫu xe phù hợp với nhu cầu.', catalog: true, contexts: [{ carId: '1', displayName: cars[0].displayName, presenceSourceId: 'source-presence' }] }] }
       return reply(chat)
     }
@@ -165,9 +165,8 @@ async function mockApi(page: Page, role: 'Guest' | 'Customer' | 'Admin' = 'Guest
     if (path.startsWith('/api/cars/')) return reply(cars.find(c => c.carId === path.split('/').at(-1)) || {}, cars.some(c => c.carId === path.split('/').at(-1)) ? 200 : 404)
     if (path === '/api/warranties') return reply({ items: [{ durationMonths: 36, distanceLimitKm: 100000, conditions: 'Xác nhận theo VIN.', sourceId: 'warranty-source' }] })
     if (path === '/api/dealers') return reply({ items: [{ dealerId: 1, name: 'Đại lý Toyota', supportedBrands: ['Toyota'], address: 'Hà Nội', city: 'Hà Nội', checkedAt: '2026-10-01' }] })
-    if (path === '/api/chat/understand') { const body = route.request().postDataJSON(); return reply({ question: body.question, route: /đơn|thanh toán|AW-/i.test(body.question) ? 'orders' : 'catalogue', needsClarification: false, clarification: null }) }
-    if (path === '/api/chat/compose') return reply({ answer: 'Bạn cần đăng nhập để tra cứu và xử lý đơn hàng của mình.', generationMode: 'bedrock-natural' })
-    if (path === '/api/chat') return reply({ answer: 'Mẫu xe phù hợp với nhu cầu.', contexts: [{ carId: '1', displayName: cars[0].displayName, presenceSourceId: 'source-presence' }] })
+    if (path === '/api/chat/turns' && /đơn|thanh toán|AW-/i.test(route.request().postDataJSON().question)) return reply({ answer: 'Bạn cần đăng nhập để tra cứu và xử lý đơn hàng của mình.', generationMode: 'bedrock-natural', requiresLogin: true })
+    if (path === '/api/chat/turns') return reply({ answer: 'Mẫu xe phù hợp với nhu cầu.', contexts: [{ carId: '1', displayName: cars[0].displayName, presenceSourceId: 'source-presence' }] })
     return reply({ items: [], count: 0 })
   })
 }
@@ -216,7 +215,7 @@ test('catalogue, mobile menu, filters, comparison and detail', async ({ page }, 
 })
 test('guest chat retries, keyboard and refresh', async ({ page }, info) => {
   await mockApi(page); let tries = 0
-  await page.route('**/api/chat', route => { tries++; return tries === 1 ? route.fulfill({ status: 503, json: {} }) : route.fulfill({ json: { answer: 'Câu trả lời đã phục hồi', contexts: [] } }) })
+  await page.route('**/api/chat/turns', route => { tries++; return tries === 1 ? route.fulfill({ status: 503, json: {} }) : route.fulfill({ json: { answer: 'Câu trả lời đã phục hồi', contexts: [] } }) })
   await page.goto('/chat')
   await expect(page.getByRole('heading', { name: 'Trợ lý AI của bạn.' })).toBeVisible()
   await page.getByRole('button', { name: /Tìm chiếc xe phù hợp/ }).click()
@@ -320,7 +319,7 @@ test('desktop chat formats answers and preserves drafting during a request', asy
   await mockApi(page, 'Customer')
   let release!: () => void
   const waiting = new Promise<void>(resolve => { release = resolve })
-  await page.route('**/catalogue-messages', async route => {
+  await page.route('**/assistant/sessions/*/turns', async route => {
     await waiting
     await route.fulfill({ json: { id: 'persisted-session', version: 1, selectedOrderId: null, messages: [{ role: 'assistant', catalog: true, content: '## Xe phù hợp\n- **Toyota**: dễ sử dụng\n- Mazda: nhiều trang bị\n\n| Xe | Giá tham khảo |\n| --- | --- |\n| Toyota | 800 triệu |', contexts: [{ carId: '1', displayName: 'Toyota', presenceSourceId: 's1' }] }] } })
   })
@@ -345,7 +344,7 @@ test('desktop chat formats answers and preserves drafting during a request', asy
 })
 test('car answers display grouped facts and caveats without mobile overflow', async ({ page }, info) => {
   await mockApi(page)
-  await page.route('**/api/chat', route => route.fulfill({ json: {
+  await page.route('**/api/chat/turns', route => route.fulfill({ json: {
     answer: 'Honda CR-V — Hộp số: Tự động.\n\nHonda CR-V có 5 chỗ.\n\nHonda CR-V có giá tham khảo từ 998.000.000 VND.\n\nToyota RAV4 — Hộp số: Tự động.\n\nToyota RAV4 có 5 chỗ.\n\nĐây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.', contexts: [],
   } }))
   await page.goto('/chat')
@@ -367,7 +366,7 @@ test('car answers display grouped facts and caveats without mobile overflow', as
 })
 test('Bedrock prose and horizontal comparisons render without duplicate templates', async ({ page }, info) => {
   await mockApi(page)
-  await page.route('**/api/chat', route => route.fulfill({ json: {
+  await page.route('**/api/chat/turns', route => route.fulfill({ json: {
     answer: '**Ford Edge** là mẫu SUV 5 chỗ.\n\n### So sánh xe\n| Tiêu chí | Ford Edge | Honda CR-V |\n| --- | --- | --- |\n| Số chỗ | 5 | 7 |\n\n• **Hộp số:** Tự động\n• **Nhiên liệu:** Diesel\n\n*Giá chỉ mang tính tham khảo.*',
     generationMode: 'bedrock-natural', contexts: [{ carId: 'car_29_5', displayName: 'Ford Edge', description: 'Original English description' }],
   } }))
@@ -384,7 +383,7 @@ test('Bedrock prose and horizontal comparisons render without duplicate template
 
 test('single car answer uses narrative sections without repeated price', async ({ page }, info) => {
   await mockApi(page)
-  await page.route('**/api/chat', route => route.fulfill({ json: {
+  await page.route('**/api/chat/turns', route => route.fulfill({ json: {
     answer: 'Xe gần giống nhất trong ảnh: **Ford Edge** (độ tương đồng 95.3%).\n\nFord Edge có giá tham khảo từ 1.560.000.000 VND.\n\nGiá tham khảo của Ford Edge.\nGiá từ: 1560000000 VND.\nNgày giá tham khảo: 2022-01-01.\nĐây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.\nFord Edge: Có mặt qua nhập khẩu; không khẳng định phân phối chính hãng.',
     contexts: [{ carId: 'car_29_5', displayName: 'Ford Edge' }],
   } }))
@@ -435,6 +434,7 @@ test('dealers filters, search, URL navigation and contact links', async ({ page 
 })
 test('admin route remains guarded and visible', async ({ page }, info) => {
   await mockApi(page, 'Admin'); await page.goto('/cars'); await expect(page).toHaveURL(/\/admin\/orders/)
+  if (page.viewportSize()!.width < 768) await page.getByRole('button', { name: 'Mở menu', exact: true }).click()
   await expect(page.getByRole('navigation', { name: 'Điều hướng quản trị' })).toBeVisible()
   await page.screenshot({ path: info.outputPath('admin.png'), fullPage: true })
   await expect(page.locator('.admin-header')).toBeVisible()

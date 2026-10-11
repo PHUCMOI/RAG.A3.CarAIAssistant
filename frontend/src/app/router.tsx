@@ -22,6 +22,7 @@ import { useLocation } from "react-router-dom";
 function AssistantRedirect() { const location = useLocation(); return <Navigate to={"/chat" + location.search} replace />; }
 import { SupportList, SupportDetail } from "../features/account/SupportPages";
 import RagSettingsPage from "../pages/RagSettingsPage";
+import AdminAssistantPage from "../features/admin/AdminAssistantPage";
 
 import { AccountLayout } from "../features/account/shared";
 import {
@@ -63,6 +64,7 @@ export function AppRouter() {
             />
             <Route path="appointments" element={<AppointmentsPage admin />} />
             <Route path="customers" element={<CustomersPage />} />
+            <Route path="assistant" element={<AdminAssistantPage />} />
             <Route path="support-tickets" element={<SupportList admin />} />
             <Route path="support-tickets/:id" element={<SupportDetail admin />} />
             <Route path="data" element={<AdminDataPage />} />

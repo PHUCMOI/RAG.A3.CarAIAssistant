@@ -36,6 +36,30 @@ def test_range_and_inclusive_bound():
     assert parse("SUV không quá 1 tỷ").filters.max_price_inclusive is True
 
 
+@pytest.mark.parametrize("question,expected", [
+    ("có xe nào hợp tài chính 900tr và 5 chỗ ngồi không", 900_000_000),
+    ("Tìm xe ngân sách 1,2 tỷ 5 chỗ", 1_200_000_000),
+    ("Ngân sách 900.000.000 VND 5 chỗ", 900_000_000),
+])
+def test_affordable_budget_is_an_inclusive_ceiling(question, expected):
+    from app.application.rag.intent import matches_filters
+    result = parse(question)
+    assert result.intent == "find_car"
+    assert result.filters.max_price == expected
+    assert result.filters.max_price_inclusive
+    assert result.filters.seats == 5
+    candidate = car().model_copy(update={"seats": 5, "price_vnd_from": expected, "price_source_id": "verified"})
+    assert matches_filters(candidate, result.filters)
+    assert matches_filters(candidate.model_copy(update={"price_vnd_from": expected - 1}), result.filters)
+    assert not matches_filters(candidate.model_copy(update={"price_vnd_from": expected + 1}), result.filters)
+    assert not matches_filters(candidate.model_copy(update={"seats": 7}), result.filters)
+
+
+def test_budget_does_not_override_strict_bound_or_turn_seats_into_money():
+    assert not parse("Ngân sách dưới 900 triệu").filters.max_price_inclusive
+    assert parse("Ngân sách cho xe 5 chỗ").filters.max_price is None
+
+
 def test_alias_boundaries_and_longest_match():
     cars = [car("a", "Honda City", ["City"]), car("b", "Honda City Hatchback", ["City Hatchback"])]
     assert parse("Giá Honda City Hatchback", cars).car_ids == ["b"]
@@ -84,3 +108,25 @@ def test_near_model_names_resolve_both_comparison_subjects(question):
     assert set(result.car_ids) == {"t", "h"}
     assert result.intent == "compare_cars"
     assert not result.ambiguities
+
+
+def test_bare_brand_is_not_a_fuzzy_model_and_exact_model_wins():
+    cars = [car('m2', 'Mazda2', [], brand_name='Mazda'), car('m3', 'Mazda3', [], brand_name='Mazda'),
+            car('m6', 'Mazda6', [], brand_name='Mazda')]
+    brand = parse('Tìm xe Mazda dưới 1 tỷ', cars)
+    assert brand.car_ids == [] and not brand.ambiguities
+    model = parse('Giá Mazda3?', cars)
+    assert model.car_ids == ['m3'] and not model.ambiguities
+
+
+def test_generic_vietnamese_cho_is_not_a_seating_or_car_intent():
+    result = parse('Hãy chỉ cho tôi cách làm bánh mì.')
+    assert result.intent == 'other' and result.filters.seats is None
+
+
+def test_saloon_filter_does_not_widen_to_all_brand_models():
+    cars = [car('a', 'Honda Accord', [], body_type='Saloon'), car('b', 'Honda CR-V', [], body_type='SUV')]
+    result = parse('Tìm xe Honda kiểu Saloon 5 chỗ dưới 2 tỷ.', cars)
+    assert result.filters.body_type == 'Saloon'
+    from app.application.rag.intent import matches_filters
+    assert not matches_filters(cars[1], result.filters)

@@ -262,7 +262,7 @@ compare_cars
 other
 ```
 
-Llama 2 có thể được sử dụng để phát hiện intent. Nếu chạy trên máy cá nhân, nhóm có thể sử dụng phiên bản lượng tử hóa qua Ollama hoặc llama.cpp. Ngoài ra, một instruct model nhỏ hoặc phương pháp prompting cũng đủ cho phạm vi đồ án.
+Llama 2 có thể được sử dụng để phát hiện intent. Nếu chạy trên máy cá nhân, nhóm có thể sử dụng phiên bản lượng tử hóa qua Amazon Bedrock. Ngoài ra, một instruct model nhỏ hoặc phương pháp prompting cũng đủ cho phạm vi đồ án.
 
 ---
 
@@ -510,7 +510,7 @@ Một cấu hình có thể chạy trên máy cá nhân:
 | Text embedding | Mô hình multilingual hỗ trợ tiếng Việt |
 | Image embedding | CLIP |
 | LLM cục bộ | Llama 2 quantized hoặc instruct model nhỏ |
-| LLM runtime | Ollama hoặc llama.cpp |
+| LLM runtime | Amazon Bedrock |
 | Framework RAG | Có thể dùng LangChain/LlamaIndex hoặc tự triển khai |
 | Đánh giá | RAGAS kết hợp metric tự viết |
 

@@ -1,0 +1,80 @@
+{
+  "date": "2026-10-11",
+  "record_type": "Agent-recorded outcomes observed from tool command output",
+  "backend": {
+    "passed": 194,
+    "failed": 0,
+    "scope": "pytest backend/tests with TEST_DATABASE_URL; PostgreSQL integration enabled"
+  },
+  "frontend_unit": {
+    "passed": 96,
+    "files": 19,
+    "failed": 0
+  },
+  "frontend_build": {
+    "passed": true,
+    "warning": "JavaScript bundle exceeds 500 kB"
+  },
+  "frontend_browser": {
+    "passed": 78,
+    "skipped": 20,
+    "failed": 0,
+    "viewports": [
+      375,
+      1280
+    ],
+    "scope": "API fixture browser tests, not live Bedrock end-to-end"
+  },
+  "csharp": {
+    "passed": 142,
+    "skipped": 5,
+    "failed": 0,
+    "scope": "CONTEXT_TEST_DATABASE enabled; AWS/HTTP opt-in skipped"
+  },
+  "image_service": {
+    "passed": 24,
+    "failed": 0,
+    "scope": "Container CLIP/index tests; chat adapter fixtures do not call AWS"
+  },
+  "fresh_database": {
+    "passed": true,
+    "evidence": "fresh-database.json",
+    "scope": "Isolated SQL initialization"
+  },
+  "clean_archive_build": {
+    "passed": true,
+    "scope": "Extracted source npm ci and frontend build, zero npm vulnerabilities; not full deployment on a new machine"
+  },
+  "whitespace": {
+    "passed": true,
+    "scope": "git diff --check, CRLF warnings only"
+  },
+  "human_review_complete": false,
+  "live_evaluation": {
+    "completed": 200,
+    "success": 197,
+    "errors": [
+      "Q014",
+      "Q087",
+      "Q099"
+    ],
+    "evidence": "release-evaluation.summary.json",
+    "scope": "Release runtime before final reviewer repair; labels pending"
+  },
+  "fresh_source_database": {
+    "passed": true,
+    "backend_tests": 194,
+    "evidence": "fresh-source-database.json",
+    "scope": "Extracted source plus its SQL on a fresh isolated database; host Python dependencies reused"
+  },
+  "final_regression": {
+    "cases": 11,
+    "passed": 11,
+    "evidence": "reference-repair-evaluation.summary.json"
+  },
+  "final_smoke": {
+    "cases": 5,
+    "passed": 5,
+    "evidence": "reference-repair-smoke.json"
+  }
+}

@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from app.core.config import get_settings
 from app.core.database import close_db_pool, init_db_pool
-from app.routers import cars, chat, dealers, health, search, sources, warranties
+from app.routers import cars, chat, guest_chat, dealers, health, search, sources, warranties
 
 logging.basicConfig(
     level=logging.INFO,
@@ -79,5 +79,6 @@ app.include_router(cars.router, prefix="/api")
 app.include_router(dealers.router, prefix="/api")
 app.include_router(search.router, prefix="/api")
 app.include_router(chat.router, prefix="/api")
+app.include_router(guest_chat.router, prefix="/api")
 app.include_router(sources.router, prefix="/api")
 app.include_router(warranties.router, prefix="/api")

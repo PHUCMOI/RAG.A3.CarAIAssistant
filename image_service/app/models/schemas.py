@@ -91,6 +91,11 @@ class ChatResponse(BaseModel):
     """Kết quả trả về của endpoint POST /chat."""
     answer: str = Field(..., description="Câu trả lời từ RAG assistant")
     generation_mode: Optional[str] = None
+    evidence: List[Dict[str, Any]] = Field(default_factory=list)
+    retrieved_context_ids: List[str] = Field(default_factory=list)
+    citations: List[Dict[str, Any]] = Field(default_factory=list)
+    status: str = "no_data"
+    grounded: bool = False
     intent: str = Field("unknown", description="Ý định câu hỏi được phát hiện")
     catalog_contexts: List[Dict[str, Any]] = Field(default_factory=list)
     identified_cars: List[IdentifiedCar] = Field(

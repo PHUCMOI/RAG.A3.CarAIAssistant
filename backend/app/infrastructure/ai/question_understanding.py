@@ -25,6 +25,8 @@ Chấp nhận đảo ký tự trong từ ('hnah' gần 'hành', 'taon' gần 'to
 không đổi thành hỏi giá. Với câu đa chủ đề giữ tất cả chủ đề trong question.
 route=orders cho câu về đơn thuộc tài khoản, thanh toán/cọc/nợ, lịch nhận xe, giấy tờ đơn, hồ sơ,
 bảo mật, lịch hẹn, thông báo hoặc yêu cầu thao tác. catalogue cho tư vấn/so sánh/thông tin xe, ảnh.
+Nếu có ảnh kèm câu hỏi về đơn AW- hoặc đối chiếu ảnh với xe trên đơn, route=orders.
+hasImage không được ghi đè ý định đơn hàng; backend sẽ kết hợp nhận diện ảnh và tra cứu đơn.
 Với câu tiếp nối ngắn như 'đúng', 'còn cái đó', 'bao giờ', chỉ kế thừa chủ đề rõ trong context.
 Không dùng context để thay tên xe/mã đơn mới được nêu rõ. Không đoán khi nhiều cách hiểu.
 Nếu không đủ hiểu ý định, route=clarification, needsClarification=true và clarification là câu hỏi

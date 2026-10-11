@@ -59,7 +59,7 @@ public class ContextDatabaseTests
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
         {
             Bodies.Add(await request.Content!.ReadAsStringAsync(ct));
-            return new(System.Net.HttpStatusCode.OK) { Content = new StringContent("{\"answer\":\"Honda CR-V\",\"contexts\":[{\"carId\":\"car_34_3\",\"displayName\":\"Honda CR-V\",\"description\":\"SUV catalogue description\"}]}") };
+            return new(System.Net.HttpStatusCode.OK) { Content = new StringContent("{\"answer\":\"Honda CR-V\",\"grounded\":true,\"status\":\"partial\",\"evidence\":[{\"contextId\":\"price\",\"section\":\"price\",\"content\":\"Verified source\"}],\"citations\":[{\"contextId\":\"price\",\"title\":\"Honda source\"}],\"contexts\":[{\"carId\":\"car_34_3\",\"displayName\":\"Honda CR-V\",\"description\":\"SUV catalogue description\"}]}") };
         }
     }
     [ContextDatabaseFact]
@@ -80,6 +80,10 @@ public class ContextDatabaseTests
             var restored = await orders.Get(session.Id, user.Id, default);
             Assert.Equal("car_34_3", restored.Messages.Last().Contexts![0].CarId);
             Assert.True(restored.Messages.Last().Catalog);
+            Assert.True(restored.Messages.Last().Grounded);
+            Assert.Equal("partial", restored.Messages.Last().Status);
+            Assert.Single(restored.Messages.Last().Evidence!);
+            Assert.Single(restored.Messages.Last().Citations!);
             Assert.Equal("SUV catalogue description", restored.Messages.Last().Contexts![0].Description);
             await service.Send(session.Id, user.Id, input, default);
             Assert.Single(handler.Bodies);
@@ -90,7 +94,8 @@ public class ContextDatabaseTests
             session = await service.Send(session.Id, user.Id, new(Guid.NewGuid(), session.Version, "Ảnh xe", "AQID", "image/png"), default);
             db.ChangeTracker.Clear();
             restored = await orders.Get(session.Id, user.Id, default);
-            Assert.Equal("data:image/png;base64,AQID", restored.Messages[^2].ImageUrl);
+            Assert.StartsWith($"/api/orders-service/assistant/sessions/{session.Id}/attachments/", restored.Messages[^2].ImageUrl);
+            Assert.DoesNotContain("base64", (await db.ChatSessions.AsNoTracking().SingleAsync(s=>s.Id==session.Id)).Payload);
             Assert.Equal(6, restored.Messages.Count);
         } finally {
             await db.ChatSessions.Where(s=>s.UserId==user.Id).ExecuteDeleteAsync();

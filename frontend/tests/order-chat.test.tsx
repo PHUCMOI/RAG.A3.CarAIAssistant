@@ -13,7 +13,7 @@ it('lets a typed order code override the order linked to the chat', async () => 
     if (path === '/my/orders?pageSize=100') return { items: [{ id: 'old', code: 'AW-OLD', carName: 'Old car' }] }
     if (path === '/my/orders/old') return { id: 'old', code: 'AW-OLD', carName: 'Old car' }
     if (path === '/assistant/sessions') return method === 'POST' ? initial : []
-    if (path.endsWith('/messages')) {
+    if (path.endsWith('/turns')) {
       bodies.push(body as typeof bodies[number])
       return { ...initial, version: 1, messages: [{ role: 'assistant', content: 'Đã tra cứu đơn mới' }] }
     }
@@ -34,7 +34,7 @@ it('retries an order question with the original request ID and no duplicate mess
   vi.mocked(request).mockImplementation(async (path, method, body) => {
     if (path === '/my/orders?pageSize=100') return { items: [] }
     if (path === '/assistant/sessions') return method === 'POST' ? initial : []
-    if (path.endsWith('/messages')) {
+    if (path.endsWith('/turns')) {
       bodies.push(body); attempts++
       if (attempts === 1) throw new Error('Mất kết nối')
       return { ...initial, version: 1, messages: [{ role: 'user', content: 'Đơn hàng của tôi' }, { role: 'assistant', content: 'Đơn đang chuẩn bị.' }] }
@@ -79,7 +79,7 @@ it('automatically routes catalogue prompts without topic controls', async () => 
   expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Gửi câu hỏi' }))
   await screen.findByText('Gợi ý SUV')
-  expect(vi.mocked(request).mock.calls.some(([path, method]) => path.endsWith('/catalogue-messages') && method === 'POST')).toBe(true)
+  expect(vi.mocked(request).mock.calls.some(([path, method]) => path.endsWith('/turns') && method === 'POST')).toBe(true)
 })
 it('keeps the chat and draft visible during a retry of order data', async () => {
   let retryStarted = false

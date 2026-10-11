@@ -1,0 +1,10 @@
+flowchart LR
+    RAW["Corpus / curated data"] --> BUILD["build_dataset + validation"]
+    BUILD --> SQL["Seed / migration PostgreSQL"]
+    SQL --> DOC["build_text_index: documents tiếng Việt + facts + sourceIds"]
+    DOC --> CH["Chunk giữ nguyên claim + content hash"]
+    CH --> E5["E5 passage embeddings 768 chiều"]
+    E5 --> PG["documents + pgvector + model revision"]
+    PG --> CHECK["validate_rag_index"]
+    PH["Ảnh catalogue"] --> IE["Extractor + preprocessing tương thích"]
+    IE --> FA["FAISS index + metadata carId"]

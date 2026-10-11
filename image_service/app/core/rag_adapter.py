@@ -46,7 +46,7 @@ async def answer_rag(
         payload["carIds"] = car_ids
     if image_match is not None:
         payload["imageMatch"] = image_match
-    async with httpx.AsyncClient(timeout=settings.rag_timeout_seconds, transport=transport) as client:
+    async with httpx.AsyncClient(timeout=settings.rag_timeout_seconds, transport=transport, headers={"X-AutoWise-Internal-Token": settings.internal_token}) as client:
         response = await client.post(settings.rag_api_url.rstrip("/") + "/api/chat", json=payload)
         response.raise_for_status()
         result = response.json()
@@ -56,17 +56,21 @@ async def answer_rag(
                  "text": c.get("description") or c.get("displayName") or c["carId"],
                  "source_name": c.get("presenceSourceId")}
                 for c in result.get("contexts", [])]
-    return {"answer": result["answer"], "intent": result.get("intent", "other"), "contexts": contexts, "catalog_contexts": result.get("contexts", []), "generation_mode": result.get("generationMode")}
+    return {"answer": result["answer"], "intent": result.get("intent", "other"), "contexts": contexts,
+            "catalog_contexts": result.get("contexts", []), "generation_mode": result.get("generationMode"),
+            "evidence": result.get("evidence", []), "citations": result.get("citations", []),
+            "retrieved_context_ids": result.get("retrievedContextIds", []),
+            "status": result.get("status", "no_data"), "grounded": result.get("grounded", False)}
 
 
 async def compose_image_answer(question, data):
     import httpx
     settings = get_settings()
-    async with httpx.AsyncClient(timeout=settings.rag_timeout_seconds) as client:
+    async with httpx.AsyncClient(timeout=settings.rag_timeout_seconds, headers={"X-AutoWise-Internal-Token": settings.internal_token}) as client:
         response = await client.post(settings.rag_api_url.rstrip("/") + "/api/chat/compose",
                                      json={"question": question, "verifiedData": data})
         response.raise_for_status()
-        return response.json()["answer"]
+        return response.json()
 
 
 def search_text_cars(

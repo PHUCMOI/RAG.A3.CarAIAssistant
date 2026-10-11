@@ -11,5 +11,7 @@ backend/CarRag.Api
 
 **/bin
 **/obj
+**/test-results
+**/playwright-report
 
 services/owner-features/.tools

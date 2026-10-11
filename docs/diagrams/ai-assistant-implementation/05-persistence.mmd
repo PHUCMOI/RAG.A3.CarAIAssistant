@@ -1,0 +1,11 @@
+flowchart TD
+    R["RequestId + version + hash + owner"] --> E{"Đã lưu request này?"}
+    E -->|cùng hash| RE["Replay session, không gọi model lại"]
+    E -->|khác hash/version cũ| CO["Conflict, đồng bộ lại"]
+    E -->|request mới hợp lệ| AI["Routing, tools, viết và review"]
+    AI --> OK{"Thành công?"}
+    OK -->|không| ERR["Giữ câu hỏi để retry, không tăng version"]
+    OK -->|có| LOCK["Transaction + khóa session + kiểm replay/version lại"]
+    LOCK --> SAVE["Lưu messages, metadata, context, attachments"]
+    SAVE --> VER["Tăng version, trả session"]
+    VER --> UI["Render answer, cards, sources, NextSteps"]

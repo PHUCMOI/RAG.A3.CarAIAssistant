@@ -13,7 +13,7 @@ public class NaturalAnswersTests
         {
             Assert.EndsWith("/api/chat/compose", request.RequestUri!.ToString());
             Body = await request.Content!.ReadAsStringAsync(ct);
-            return new(Status) { Content = new StringContent("{\"answer\":\"Bạn muốn hỏi đơn nào?\"}", Encoding.UTF8, "application/json") };
+            return new(Status) { Content = new StringContent("{\"answer\":\"Bạn muốn hỏi đơn nào?\",\"grounded\":false,\"status\":\"needs_clarification\",\"evidence\":[],\"citations\":[]}", Encoding.UTF8, "application/json") };
         }
     }
     [Fact]

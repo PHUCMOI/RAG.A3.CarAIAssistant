@@ -181,7 +181,7 @@ class ImageRetriever:
             uncertain = True
         else:
             top_1_sim = final_top[0]["similarity"]
-            top_2_sim = final_top[1]["similarity"] if len(final_top) > 1 else 0.0
+            top_2_sim = ranked_cars[1]["similarity"] if len(ranked_cars) > 1 else 0.0
             margin = round(top_1_sim - top_2_sim, 4)
 
             if top_1_sim < self.settings.threshold_medium:
@@ -192,7 +192,7 @@ class ImageRetriever:
                 uncertain = False
             else:
                 confidence = "medium"
-                uncertain = (top_1_sim < 0.55)
+                uncertain = (top_1_sim < 0.55 or margin < self.settings.margin_threshold)
 
         return {
             "results": final_top,

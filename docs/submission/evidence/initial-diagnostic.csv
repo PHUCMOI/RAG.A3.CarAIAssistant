@@ -1,0 +1,128 @@
+﻿id,split,input_type,intent_correct,status_correct,http_status_correct,context_precision_at_5,context_recall_at_5,image_recall_at_1,image_recall_at_5,image_mrr_at_5,faithfulness,answer_completeness,human_review,error,http_status,response_seconds,generation_mode,retrieval_mode,grounded,answer,retrieved_context_ids,answer_context_ids,image_ranked_car_ids,citations,required_answer_facts
+Q001,development,text,,,0,,,,,,,,pending,HTTPStatusError,503,15.59692940000059,,,,,,,,,
+Q002,development,text,1,1,1,0.4,1.0,,,,,,pending,,200,18.65755519999948,bedrock-natural,postgresql-vector-search,True,"Các mẫu xe phù hợp:
+
+**Ford EcoSport** — 5 chỗ, giá tham khảo 603.000.000 VND (ngày giá: 2021-11-01)
+
+**Ford Edge** — 5 chỗ, giá tham khảo 1.560.000.000 VND (ngày giá: 2022-01-01)
+
+Cả hai mẫu đều là SUV 5 chỗ nằm trong ngân sách không quá 1.600.000.000 VND. Giá trên là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực. Ford EcoSport từng phân phối chính hãng; chưa xác nhận đang bán. Ford Edge có mặt qua nhập khẩu; không khẳng định phân phối chính hãng.
+
+Đây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.
+
+Thông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.
+
+Ford EcoSport: Từng phân phối chính hãng; chưa xác nhận đang bán.
+
+Ford Edge: Có mặt qua nhập khẩu; không khẳng định phân phối chính hãng.","[""car:car_29_5:price:v1"", ""car:car_29_4:specifications:v1"", ""car:car_29_4:overview:v1"", ""car:car_29_4:price:v1"", ""car:car_29_5:specifications:v1""]","[""car:car_29_5:price:v1"", ""car:car_29_4:specifications:v1"", ""car:car_29_4:overview:v1"", ""car:car_29_4:price:v1"", ""car:car_29_5:specifications:v1""]",[],"[{""contextId"": ""car:car_29_5:price:v1"", ""sourceId"": ""ford_import_values"", ""title"": ""Ford import price and registration valuation references"", ""url"": ""https://thuvienphapluat.vn/hoi-dap-phap-luat/bang-gia-tinh-le-phi-truoc-ba-xe-o-to-ford-phan-1-267552.html"", ""sourceDetailPath"": ""/sources/ford_import_values""}, {""contextId"": ""car:car_29_4:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_29_4:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}, {""contextId"": ""car:car_29_4:overview:v1"", ""sourceId"": ""ford_owner_manuals"", ""title"": ""Ford Vietnam owner manual archive"", ""url"": ""https://www.ford.com.vn/support/owner-manuals/owner-manuals-sitemap/"", ""sourceDetailPath"": ""/sources/ford_owner_manuals""}, {""contextId"": ""car:car_29_4:price:v1"", ""sourceId"": ""ford_historical_prices"", ""title"": ""Ford historical Vietnam price references"", ""url"": ""https://xe.chotot.com/oto-ford-ecosport-sd6a0e"", ""sourceDetailPath"": ""/sources/ford_historical_prices""}, {""contextId"": ""car:car_29_5:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_29_5:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}]","[""Ford EcoSport: price_as_of=2021-11-01"", ""Ford EcoSport: price_vnd_from=603000000"", ""Ford Edge: price_as_of=2022-01-01"", ""Ford Edge: price_vnd_from=1560000000""]"
+Q003,development,text,1,1,1,0.2,1.0,,,,,,pending,,200,16.51550959999986,bedrock-natural,postgresql-vector-search,True,"Các mẫu xe phù hợp:
+
+**Ford Explorer** — 7 chỗ, giá tham khảo từ 2.099.000.000 VND (ngày giá: 2026-10-01).
+
+Ford Explorer là SUV 7 chỗ được ghi nhận phân phối chính hãng. Xe trang bị hộp số tự động, nhiên liệu xăng.
+
+**Lưu ý:** Giá là tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực. Thông số kỹ thuật chủ yếu từ DVM-CAR thị trường Anh; chưa xác nhận phiên bản tại Việt Nam. Bảo hành tiêu chuẩn 36 tháng/100.000 km; một số model có thể được 60 tháng hoặc 150.000 km — cần xác nhận theo model, VIN và ngày bán cụ thể.
+
+Đây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.
+
+Thông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.
+
+Cần xác nhận điều kiện bảo hành theo xe, VIN và ngày bán cụ thể.
+
+Bảo hành xe mới tiêu chuẩn; một số model có thể được 60 tháng hoặc 150.000 km. Xác nhận theo model và VIN.","[""car:car_29_9:specifications:v1"", ""car:car_29_9:price:v1"", ""car:car_29_9:overview:v1"", ""warranty:car:car_29_9:v1"", ""warranty:brand:ford:v1""]","[""car:car_29_9:specifications:v1"", ""car:car_29_9:price:v1"", ""car:car_29_9:overview:v1"", ""warranty:car:car_29_9:v1""]",[],"[{""contextId"": ""car:car_29_9:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_29_9:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}, {""contextId"": ""car:car_29_9:price:v1"", ""sourceId"": ""ford_prices_2026"", ""title"": ""Ford Vietnam price list"", ""url"": ""https://www.ford.com.vn/shopping/price-list/"", ""sourceDetailPath"": ""/sources/ford_prices_2026""}, {""contextId"": ""car:car_29_9:overview:v1"", ""sourceId"": ""ford_current_lineup"", ""title"": ""Ford Vietnam current models"", ""url"": ""https://www.ford.com.vn/support/how-tos/support-search-only/ph%C6%B0%C6%A1ng-ti%E1%BB%87n-li%C3%AAn-quan/c%C3%A1c-d%C3%B2ng-xe-n%C3%A0o-%C4%91ang-%C4%91%C6%B0%E1%BB%A3c-ph%C3%A2n-ph%E1%BB%91i-t%E1%BA%A1i-th%E1%BB%9Di-%C4%91i%E1%BB%83m-hi%E1%BB%87n-t%E1%BA%A1i"", ""sourceDetailPath"": ""/sources/ford_current_lineup""}, {""contextId"": ""warranty:car:car_29_9:v1"", ""sourceId"": ""ford_warranty"", ""title"": ""Ford Vietnam new vehicle warranty FAQ"", ""url"": ""https://www.ford.com.vn/owner/vehicle-support/faqs/"", ""sourceDetailPath"": ""/sources/ford_warranty""}]","[""Ford Explorer: price_as_of=2026-10-01"", ""Ford Explorer: price_vnd_from=2099000000""]"
+Q004,development,text,1,1,1,0.2,1.0,,,,,,pending,,200,18.85976599999958,bedrock-natural,postgresql-vector-search,True,"Các mẫu xe phù hợp:
+
+**Ford Fiesta** — 5 chỗ, giá tham khảo từ 545.000.000 VND (ngày giá: 2018-01-01)
+
+Ford Fiesta là hatchback 5 chỗ từng được phân phối chính hãng tại Việt Nam. Xe sử dụng động cơ xăng, hộp số sàn.
+
+**Lưu ý:** Giá là tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực. Ford Fiesta chưa xác nhận đang bán hiện tại. Thông số kỹ thuật chủ yếu từ dữ liệu thị trường Anh; chưa xác nhận phiên bản tại Việt Nam. Bảo hành tiêu chuẩn 36 tháng/100.000 km; một số model có thể được 60 tháng hoặc 150.000 km — cần xác nhận theo model, VIN và ngày bán cụ thể.
+
+Đây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.
+
+Thông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.
+
+Cần xác nhận điều kiện bảo hành theo xe, VIN và ngày bán cụ thể.
+
+Bảo hành xe mới tiêu chuẩn; một số model có thể được 60 tháng hoặc 150.000 km. Xác nhận theo model và VIN.
+
+Ford Fiesta: Từng phân phối chính hãng; chưa xác nhận đang bán.","[""car:car_29_13:overview:v1"", ""car:car_29_13:specifications:v1"", ""car:car_29_13:price:v1"", ""warranty:brand:ford:v1"", ""warranty:car:car_29_13:v1""]","[""car:car_29_13:overview:v1"", ""car:car_29_13:specifications:v1"", ""car:car_29_13:price:v1"", ""warranty:car:car_29_13:v1""]",[],"[{""contextId"": ""car:car_29_13:overview:v1"", ""sourceId"": ""ford_owner_manuals"", ""title"": ""Ford Vietnam owner manual archive"", ""url"": ""https://www.ford.com.vn/support/owner-manuals/owner-manuals-sitemap/"", ""sourceDetailPath"": ""/sources/ford_owner_manuals""}, {""contextId"": ""car:car_29_13:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_29_13:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}, {""contextId"": ""car:car_29_13:price:v1"", ""sourceId"": ""ford_historical_prices"", ""title"": ""Ford historical Vietnam price references"", ""url"": ""https://xe.chotot.com/oto-ford-ecosport-sd6a0e"", ""sourceDetailPath"": ""/sources/ford_historical_prices""}, {""contextId"": ""warranty:car:car_29_13:v1"", ""sourceId"": ""ford_warranty"", ""title"": ""Ford Vietnam new vehicle warranty FAQ"", ""url"": ""https://www.ford.com.vn/owner/vehicle-support/faqs/"", ""sourceDetailPath"": ""/sources/ford_warranty""}]","[""Ford Fiesta: price_as_of=2018-01-01"", ""Ford Fiesta: price_vnd_from=545000000""]"
+Q005,development,text,1,1,1,0.2,0.5,,,,,,pending,,200,17.089261899998746,bedrock-natural,postgresql-vector-search,True,"Các mẫu xe phù hợp:
+
+**Ford Fiesta** — 5 chỗ, giá tham khảo 545.000.000 VND (ngày giá: 2018-01-01)
+
+**Ford Focus** — 5 chỗ, giá tham khảo 626.000.000 VND (ngày giá: 2018-01-01)
+
+Cả hai mẫu đều là Hatchback 5 chỗ nằm trong ngân sách của bạn. Đây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực. Cả Ford Fiesta và Ford Focus đều từng phân phối chính hãng; chưa xác nhận đang bán.
+
+Thông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.
+
+Ford Fiesta: Từng phân phối chính hãng; chưa xác nhận đang bán.
+
+Ford Focus: Từng phân phối chính hãng; chưa xác nhận đang bán.","[""car:car_29_14:specifications:v1"", ""car:car_29_13:overview:v1"", ""car:car_29_13:specifications:v1"", ""car:car_29_13:price:v1"", ""car:car_29_14:overview:v1""]","[""car:car_29_14:specifications:v1"", ""car:car_29_13:overview:v1"", ""car:car_29_13:specifications:v1"", ""car:car_29_13:price:v1"", ""car:car_29_14:overview:v1""]",[],"[{""contextId"": ""car:car_29_14:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_29_14:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}, {""contextId"": ""car:car_29_13:overview:v1"", ""sourceId"": ""ford_owner_manuals"", ""title"": ""Ford Vietnam owner manual archive"", ""url"": ""https://www.ford.com.vn/support/owner-manuals/owner-manuals-sitemap/"", ""sourceDetailPath"": ""/sources/ford_owner_manuals""}, {""contextId"": ""car:car_29_13:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_29_13:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}, {""contextId"": ""car:car_29_13:price:v1"", ""sourceId"": ""ford_historical_prices"", ""title"": ""Ford historical Vietnam price references"", ""url"": ""https://xe.chotot.com/oto-ford-ecosport-sd6a0e"", ""sourceDetailPath"": ""/sources/ford_historical_prices""}, {""contextId"": ""car:car_29_14:overview:v1"", ""sourceId"": ""ford_owner_manuals"", ""title"": ""Ford Vietnam owner manual archive"", ""url"": ""https://www.ford.com.vn/support/owner-manuals/owner-manuals-sitemap/"", ""sourceDetailPath"": ""/sources/ford_owner_manuals""}]","[""Ford Fiesta: price_as_of=2018-01-01"", ""Ford Fiesta: price_vnd_from=545000000"", ""Ford Focus: price_as_of=2018-01-01"", ""Ford Focus: price_vnd_from=626000000""]"
+Q006,development,text,1,1,1,0.2,1.0,,,,,,pending,,200,18.395541900001263,bedrock-natural,postgresql-vector-search,True,"Các mẫu xe phù hợp:
+
+**Ford Mustang** — 4 chỗ, giá tham khảo từ 2.850.000.000 VND (ngày giá: 2026-10-01).
+
+Ford Mustang là coupe 4 chỗ có mặt qua nhập khẩu tại Việt Nam. Giá tham khảo là 2.850.000.000 VND, nằm trong ngân sách của bạn.
+
+**Lưu ý:** Giá là tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực. Thông số kỹ thuật chủ yếu từ dữ liệu thị trường Anh; chưa xác nhận phiên bản kỹ thuật tại Việt Nam. Ford Mustang có mặt qua nhập khẩu; không khẳng định phân phối chính hãng. Bảo hành tham khảo 36 tháng hoặc 100.000 km; một số model có thể được 60 tháng hoặc 150.000 km — cần xác nhận theo model, VIN và ngày bán cụ thể.
+
+Đây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.
+
+Thông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.
+
+Cần xác nhận điều kiện bảo hành theo xe, VIN và ngày bán cụ thể.
+
+Bảo hành xe mới tiêu chuẩn; một số model có thể được 60 tháng hoặc 150.000 km. Xác nhận theo model và VIN.
+
+Ford Mustang: Có mặt qua nhập khẩu; không khẳng định phân phối chính hãng.","[""car:car_29_28:specifications:v1"", ""car:car_29_28:price:v1"", ""car:car_29_28:overview:v1"", ""warranty:brand:ford:v1"", ""warranty:car:car_29_28:v1""]","[""car:car_29_28:specifications:v1"", ""car:car_29_28:price:v1"", ""car:car_29_28:overview:v1"", ""warranty:car:car_29_28:v1""]",[],"[{""contextId"": ""car:car_29_28:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_29_28:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}, {""contextId"": ""car:car_29_28:price:v1"", ""sourceId"": ""ford_mustang_import_price_2026"", ""title"": ""Ford Mustang private-import Vietnam price reference"", ""url"": ""https://fumo.com.vn/gia-xe-ford-mustang-bao-nhieu.html"", ""sourceDetailPath"": ""/sources/ford_mustang_import_price_2026""}, {""contextId"": ""car:car_29_28:overview:v1"", ""sourceId"": ""ford_owner_manuals"", ""title"": ""Ford Vietnam owner manual archive"", ""url"": ""https://www.ford.com.vn/support/owner-manuals/owner-manuals-sitemap/"", ""sourceDetailPath"": ""/sources/ford_owner_manuals""}, {""contextId"": ""warranty:car:car_29_28:v1"", ""sourceId"": ""ford_warranty"", ""title"": ""Ford Vietnam new vehicle warranty FAQ"", ""url"": ""https://www.ford.com.vn/owner/vehicle-support/faqs/"", ""sourceDetailPath"": ""/sources/ford_warranty""}]","[""Ford Mustang: price_as_of=2026-10-01"", ""Ford Mustang: price_vnd_from=2850000000""]"
+Q007,development,text,1,1,1,0.2,1.0,,,,,,pending,,200,20.22831479999877,bedrock-natural,postgresql-vector-search,True,"Các mẫu xe phù hợp:
+
+**Ford Ranger** — 5 chỗ, giá tham khảo từ 707.000.000 VND (ngày giá: 2026-10-01)
+
+Ford Ranger là xe bán tải được ghi nhận phân phối chính hãng. Xe có 5 chỗ ngồi, động cơ 3.2L, hộp số sàn, kích thước dài 5362 mm, rộng 1860 mm, cao 1815 mm.
+
+**Bảo hành tham khảo:** 36 tháng hoặc 100.000 km (điều kiện nào đến trước); một số model có thể được 60 tháng hoặc 150.000 km — cần xác nhận theo model và VIN.
+
+**Lưu ý:** Giá là tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực. Thông số kỹ thuật chủ yếu từ DVM-CAR thị trường Anh; chưa xác nhận phiên bản tại Việt Nam. Điều kiện bảo hành cần xác nhận theo xe, VIN và ngày bán cụ thể.
+
+Đây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.
+
+Thông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.
+
+Cần xác nhận điều kiện bảo hành theo xe, VIN và ngày bán cụ thể.
+
+Bảo hành xe mới tiêu chuẩn; một số model có thể được 60 tháng hoặc 150.000 km. Xác nhận theo model và VIN.","[""car:car_29_30:price:v1"", ""car:car_29_30:overview:v1"", ""warranty:brand:ford:v1"", ""car:car_29_30:specifications:v1"", ""warranty:car:car_29_30:v1""]","[""car:car_29_30:price:v1"", ""car:car_29_30:overview:v1"", ""warranty:brand:ford:v1"", ""car:car_29_30:specifications:v1"", ""warranty:car:car_29_30:v1""]",[],"[{""contextId"": ""car:car_29_30:price:v1"", ""sourceId"": ""ford_prices_2026"", ""title"": ""Ford Vietnam price list"", ""url"": ""https://www.ford.com.vn/shopping/price-list/"", ""sourceDetailPath"": ""/sources/ford_prices_2026""}, {""contextId"": ""car:car_29_30:overview:v1"", ""sourceId"": ""ford_prices_2026"", ""title"": ""Ford Vietnam price list"", ""url"": ""https://www.ford.com.vn/shopping/price-list/"", ""sourceDetailPath"": ""/sources/ford_prices_2026""}, {""contextId"": ""warranty:brand:ford:v1"", ""sourceId"": ""ford_warranty"", ""title"": ""Ford Vietnam new vehicle warranty FAQ"", ""url"": ""https://www.ford.com.vn/owner/vehicle-support/faqs/"", ""sourceDetailPath"": ""/sources/ford_warranty""}, {""contextId"": ""car:car_29_30:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_29_30:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}, {""contextId"": ""warranty:car:car_29_30:v1"", ""sourceId"": ""ford_warranty"", ""title"": ""Ford Vietnam new vehicle warranty FAQ"", ""url"": ""https://www.ford.com.vn/owner/vehicle-support/faqs/"", ""sourceDetailPath"": ""/sources/ford_warranty""}]","[""Ford Ranger: price_as_of=2026-10-01"", ""Ford Ranger: price_vnd_from=707000000""]"
+Q008,development,text,,,0,,,,,,,,pending,HTTPStatusError,503,21.00094379999973,,,,,,,,,
+Q009,development,text,1,1,1,0.2,0.5,,,,,,pending,,200,19.32235219999893,bedrock-natural,postgresql-vector-search,True,"Các mẫu xe phù hợp:
+
+**Honda HR-V** — 5 chỗ, giá tham khảo 669.000.000 VND (ngày 2026-10-01)
+
+**Honda CR-V** — 5 chỗ, giá tham khảo 1.039.000.000 VND (ngày 2026-10-01)
+
+Cả hai mẫu đều là SUV được ghi nhận phân phối chính hãng theo dữ liệu. Giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực. Thông số catalogue chủ yếu từ DVM-CAR thị trường Anh; chưa xác nhận phiên bản kỹ thuật tại Việt Nam.
+
+Đây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.
+
+Thông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.","[""car:car_34_8:overview:v1"", ""car:car_34_3:overview:v1"", ""car:car_34_8:specifications:v1"", ""car:car_34_8:price:v1"", ""car:car_34_3:specifications:v1""]","[""car:car_34_8:overview:v1"", ""car:car_34_3:overview:v1"", ""car:car_34_8:specifications:v1"", ""car:car_34_8:price:v1"", ""car:car_34_3:specifications:v1""]",[],"[{""contextId"": ""car:car_34_8:overview:v1"", ""sourceId"": ""honda_products_2026"", ""title"": ""Honda Vietnam automobiles"", ""url"": ""https://www.honda.com.vn/o-to/san-pham"", ""sourceDetailPath"": ""/sources/honda_products_2026""}, {""contextId"": ""car:car_34_3:overview:v1"", ""sourceId"": ""honda_products_2026"", ""title"": ""Honda Vietnam automobiles"", ""url"": ""https://www.honda.com.vn/o-to/san-pham"", ""sourceDetailPath"": ""/sources/honda_products_2026""}, {""contextId"": ""car:car_34_8:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_34_8:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}, {""contextId"": ""car:car_34_8:price:v1"", ""sourceId"": ""honda_products_2026"", ""title"": ""Honda Vietnam automobiles"", ""url"": ""https://www.honda.com.vn/o-to/san-pham"", ""sourceDetailPath"": ""/sources/honda_products_2026""}, {""contextId"": ""car:car_34_3:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_34_3:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}]","[""Honda CR-V: price_as_of=2026-10-01"", ""Honda CR-V: price_vnd_from=1039000000"", ""Honda HR-V: price_as_of=2026-10-01"", ""Honda HR-V: price_vnd_from=669000000""]"
+Q010,development,text,1,1,1,0.2,0.5,,,,,,pending,,200,22.786378900000273,bedrock-natural,postgresql-vector-search,True,"Các mẫu xe phù hợp:
+
+**Honda Civic** — 5 chỗ, giá tham khảo 789.000.000 VND (ngày giá 2026-10-01).
+
+**Honda Jazz** — 5 chỗ, giá tham khảo 544.000.000 VND (ngày giá 2020-08-01).
+
+Đây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực. Thông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Honda Jazz: Từng phân phối chính hãng; chưa xác nhận đang bán.
+
+Thông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.","[""car:car_34_2:specifications:v1"", ""car:car_34_11:overview:v1"", ""car:car_34_2:price:v1"", ""car:car_34_2:overview:v1"", ""car:car_34_11:specifications:v1""]","[""car:car_34_2:specifications:v1"", ""car:car_34_11:overview:v1"", ""car:car_34_2:price:v1"", ""car:car_34_2:overview:v1"", ""car:car_34_11:specifications:v1""]",[],"[{""contextId"": ""car:car_34_2:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_34_2:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}, {""contextId"": ""car:car_34_11:overview:v1"", ""sourceId"": ""honda_vn_recall"", ""title"": ""Honda Vietnam recall archive"", ""url"": ""https://www.honda.com.vn/o-to/trieu-hoi"", ""sourceDetailPath"": ""/sources/honda_vn_recall""}, {""contextId"": ""car:car_34_2:price:v1"", ""sourceId"": ""honda_products_2026"", ""title"": ""Honda Vietnam automobiles"", ""url"": ""https://www.honda.com.vn/o-to/san-pham"", ""sourceDetailPath"": ""/sources/honda_products_2026""}, {""contextId"": ""car:car_34_2:overview:v1"", ""sourceId"": ""honda_products_2026"", ""title"": ""Honda Vietnam automobiles"", ""url"": ""https://www.honda.com.vn/o-to/san-pham"", ""sourceDetailPath"": ""/sources/honda_products_2026""}, {""contextId"": ""car:car_34_11:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_34_11:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}]","[""Honda Civic: price_as_of=2026-10-01"", ""Honda Civic: price_vnd_from=789000000"", ""Honda Jazz: price_as_of=2020-08-01"", ""Honda Jazz: price_vnd_from=544000000""]"
+Q011,evaluation,text,1,1,1,0.2,1.0,,,,,,pending,,200,19.137620500001503,bedrock-natural,postgresql-vector-search,True,"Các mẫu xe phù hợp:
+
+**Honda HR-V** — 5 chỗ, giá tham khảo từ 669.000.000 VND (ngày giá: 2026-10-01)
+
+Xe được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra. Đây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực. Thông số catalogue chủ yếu từ DVM-CAR thị trường Anh; chưa xác nhận phiên bản kỹ thuật tại Việt Nam.
+
+Thông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.
+
+Cần xác nhận điều kiện bảo hành theo xe, VIN và ngày bán cụ thể.
+
+Chính sách tham khảo tiêu chuẩn, giới hạn nào đến trước áp dụng trước. Xác nhận theo VIN và ngày bán.","[""car:car_34_8:overview:v1"", ""car:car_34_8:price:v1"", ""car:car_34_8:specifications:v1"", ""warranty:car:car_34_8:v1"", ""warranty:brand:honda:v1""]","[""car:car_34_8:overview:v1"", ""car:car_34_8:price:v1"", ""car:car_34_8:specifications:v1"", ""warranty:car:car_34_8:v1""]",[],"[{""contextId"": ""car:car_34_8:overview:v1"", ""sourceId"": ""honda_products_2026"", ""title"": ""Honda Vietnam automobiles"", ""url"": ""https://www.honda.com.vn/o-to/san-pham"", ""sourceDetailPath"": ""/sources/honda_products_2026""}, {""contextId"": ""car:car_34_8:price:v1"", ""sourceId"": ""honda_products_2026"", ""title"": ""Honda Vietnam automobiles"", ""url"": ""https://www.honda.com.vn/o-to/san-pham"", ""sourceDetailPath"": ""/sources/honda_products_2026""}, {""contextId"": ""car:car_34_8:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_34_8:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}, {""contextId"": ""warranty:car:car_34_8:v1"", ""sourceId"": ""honda_warranty"", ""title"": ""Honda Vietnam automobile warranty FAQ"", ""url"": ""https://www.honda.com.vn/cau-hoi-thuong-gap?category=o-to&category_child=dich-vu&category_tab=bao-hanhbao-duong-o-to"", ""sourceDetailPath"": ""/sources/honda_warranty""}]","[""Honda HR-V: price_as_of=2026-10-01"", ""Honda HR-V: price_vnd_from=669000000""]"

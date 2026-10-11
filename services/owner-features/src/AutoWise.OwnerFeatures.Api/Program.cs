@@ -1,4 +1,6 @@
 using System.Security.Claims;
+using Microsoft.AspNetCore.HttpOverrides;
+using System.Net;
 using AutoWise.OwnerFeatures.Api;
 using AutoWise.OwnerFeatures.Application;
 using AutoWise.OwnerFeatures.Domain;
@@ -12,6 +14,16 @@ using Microsoft.EntityFrameworkCore;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.Configure<ForwardedHeadersOptions>(options => {
+    options.ForwardedHeaders = ForwardedHeaders.None;
+    options.ForwardLimit = 1;
+    options.KnownProxies.Clear();
+    options.KnownIPNetworks.Clear();
+    if (IPAddress.TryParse(builder.Configuration["TrustedProxy"], out var proxy)) {
+        options.KnownProxies.Add(proxy);
+        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    }
+});
 var connection = builder.Configuration["OrdersDatabase"] ?? "Host=localhost;Database=car_rag;Username=car_rag;Password=car_rag_dev";
 builder.Services.AddDbContext<OrdersDb>(o => o.UseNpgsql(connection, np => np.MigrationsHistoryTable("__EFMigrationsHistory", "orders_service")));
 builder.Services.AddScoped<OrderStore>();
@@ -26,10 +38,12 @@ builder.Services.AddScoped<OrderEvidenceStore>();
 builder.Services.AddScoped<SupportStore>();
 builder.Services.AddScoped<AppointmentStore>();
 builder.Services.AddScoped<IOrderAssistant, OrderAssistant>();
-builder.Services.AddHttpClient<NaturalAnswers>(c => { c.BaseAddress = new(builder.Configuration["PythonApiUrl"] ?? "http://localhost:5080/"); c.Timeout = TimeSpan.FromSeconds(90); });
-builder.Services.AddHttpClient<ConversationTitles>(c => { c.BaseAddress = new(builder.Configuration["PythonApiUrl"] ?? "http://localhost:5080/"); c.Timeout = TimeSpan.FromSeconds(10); });
+builder.Services.AddScoped<AdminAssistant>();
+builder.Services.AddHttpClient<NaturalAnswers>(c => { c.BaseAddress = new(builder.Configuration["PythonApiUrl"] ?? "http://localhost:5080/"); c.Timeout = TimeSpan.FromSeconds(240); c.DefaultRequestHeaders.Add("X-AutoWise-Internal-Token", builder.Configuration["AiInternalToken"] ?? ""); });
+builder.Services.AddHttpClient<ConversationTitles>(c => { c.BaseAddress = new(builder.Configuration["PythonApiUrl"] ?? "http://localhost:5080/"); c.Timeout = TimeSpan.FromSeconds(10); c.DefaultRequestHeaders.Add("X-AutoWise-Internal-Token", builder.Configuration["AiInternalToken"] ?? ""); });
 builder.Services.AddSingleton(new CatalogueChatOptions(builder.Configuration["ImageApiUrl"] ?? "http://localhost:8000/"));
-builder.Services.AddHttpClient<CatalogueAssistant>(c => { c.BaseAddress = new(builder.Configuration["PythonApiUrl"] ?? "http://localhost:5080/"); c.Timeout = TimeSpan.FromSeconds(90); });
+builder.Services.AddHttpClient<CatalogueAssistant>(c => { c.BaseAddress = new(builder.Configuration["PythonApiUrl"] ?? "http://localhost:5080/"); c.Timeout = TimeSpan.FromSeconds(240); c.DefaultRequestHeaders.Add("X-AutoWise-Internal-Token", builder.Configuration["AiInternalToken"] ?? ""); });
+builder.Services.AddHttpClient<UnifiedAssistant>(c => { c.BaseAddress = new(builder.Configuration["PythonApiUrl"] ?? "http://localhost:5080/"); c.Timeout = TimeSpan.FromSeconds(240); c.DefaultRequestHeaders.Add("X-AutoWise-Internal-Token", builder.Configuration["AiInternalToken"] ?? ""); });
 var bedrockOptions = new BedrockOptions();
 builder.Configuration.GetSection("Bedrock").Bind(bedrockOptions);
 builder.Services.AddSingleton(bedrockOptions);
@@ -61,8 +75,12 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     o.Events.OnRedirectToAccessDenied = ctx => { ctx.Response.StatusCode = 403; return Task.CompletedTask; };
 });
 builder.Services.AddAuthorization();
-builder.Services.AddRateLimiter(o => { o.RejectionStatusCode = 429; o.AddPolicy("password", ctx => RateLimitPartition.GetFixedWindowLimiter(ctx.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "anonymous", _ => new FixedWindowRateLimiterOptions {PermitLimit=5,Window=TimeSpan.FromMinutes(5),QueueLimit=0})); o.AddPolicy("login", ctx => RateLimitPartition.GetFixedWindowLimiter(ctx.Connection.RemoteIpAddress?.ToString() ?? "local", _ => new FixedWindowRateLimiterOptions { PermitLimit = 10, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 })); });
+builder.Services.AddRateLimiter(o => o.AddPolicy("admin-ai", ctx => RateLimitPartition.GetFixedWindowLimiter(
+    ctx.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "anonymous",
+    _ => new FixedWindowRateLimiterOptions { PermitLimit = 10, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 })));
+builder.Services.AddRateLimiter(o => { o.RejectionStatusCode = 429; o.AddPolicy("password", ctx => RateLimitPartition.GetFixedWindowLimiter(ctx.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "anonymous", _ => new FixedWindowRateLimiterOptions {PermitLimit=5,Window=TimeSpan.FromMinutes(5),QueueLimit=0})); o.AddPolicy("login", ctx => RateLimitPartition.GetFixedWindowLimiter(ctx.Connection.RemoteIpAddress?.MapToIPv6().ToString() ?? "local", _ => new FixedWindowRateLimiterOptions { PermitLimit = 10, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 })); });
 var app = builder.Build();
+app.UseForwardedHeaders();
 app.Use(async (ctx, next) =>
 {
     try { await next(); }
@@ -119,6 +137,15 @@ mine.MapGet("/support-tickets",(int? page,int? pageSize,HttpContext ctx,SupportS
 mine.MapGet("/support-tickets/{id:guid}",(Guid id,int? page,HttpContext ctx,SupportStore store,CancellationToken ct)=>store.Get(id,Guid.Parse(Actor(ctx)),page??1,20,ct));
 mine.MapPost("/support-tickets/{id:guid}/replies",(Guid id,TicketReplyInput input,HttpContext ctx,SupportStore store,CancellationToken ct)=>store.Reply(id,Guid.Parse(Actor(ctx)),false,input,Key(ctx),ct));
 var assistant=api.MapGroup("/assistant").RequireAuthorization(p=>p.RequireRole("Customer"));
+assistant.MapGet("/sessions/{id:guid}/attachments/{attachmentId:guid}", async (Guid id, Guid attachmentId, HttpContext ctx, OrdersDb db, CancellationToken ct) => {
+    var owner = Guid.Parse(Actor(ctx));
+    if (!await db.ChatSessions.AnyAsync(s => s.Id == id && s.UserId == owner, ct)) return Results.NotFound();
+    var attachment = await db.ChatAttachments.AsNoTracking().SingleOrDefaultAsync(a => a.SessionId == id && a.Id == attachmentId, ct);
+    ctx.Response.Headers.CacheControl = "private, no-store";
+    ctx.Response.Headers.XContentTypeOptions = "nosniff";
+    return attachment == null ? Results.NotFound() : Results.File(attachment.Data, attachment.MimeType);
+});
+assistant.MapPost("/sessions/{id:guid}/turns",(Guid id,UnifiedChatInput input,HttpContext ctx,UnifiedAssistant service,CancellationToken ct)=>service.Send(id,Guid.Parse(Actor(ctx)),input,ct));
 assistant.MapPost("/sessions/{id:guid}/title",(Guid id,HttpContext ctx,ConversationTitles service,CancellationToken ct)=>service.Generate(id,Guid.Parse(Actor(ctx)),ct));
 assistant.MapPost("/sessions/{id:guid}/catalogue-messages",(Guid id,CatalogueChatInput input,HttpContext ctx,CatalogueAssistant service,CancellationToken ct)=>service.Send(id,Guid.Parse(Actor(ctx)),input,ct));
 assistant.MapGet("/sessions",(HttpContext ctx,IOrderAssistant service,CancellationToken ct)=>service.List(Guid.Parse(Actor(ctx)),ct));
@@ -127,6 +154,10 @@ assistant.MapGet("/sessions/{id:guid}",(Guid id,HttpContext ctx,IOrderAssistant 
 assistant.MapPost("/sessions/{id:guid}/messages",(Guid id,ChatInput input,HttpContext ctx,IOrderAssistant service,CancellationToken ct)=>service.Send(id,Guid.Parse(Actor(ctx)),input,ct));
 assistant.MapPost("/sessions/{id:guid}/draft-actions",(Guid id,DraftAction input,HttpContext ctx,AssistantDraftActions service,CancellationToken ct)=>service.Act(id,Guid.Parse(Actor(ctx)),input,ct));
 var admin = api.MapGroup("/admin").RequireAuthorization(p => p.RequireRole("Admin"));
+admin.MapPost("/assistant/messages", async (AdminChatInput input, HttpContext ctx, AdminAssistant service, CancellationToken ct) => {
+    ctx.Response.Headers.CacheControl = "private, no-store";
+    return await service.Send(Guid.Parse(Actor(ctx)), input, ct);
+}).RequireRateLimiting("admin-ai");
 admin.MapGet("/customers", async (OrdersDb db, CancellationToken ct) => Results.Ok(await db.Users.Where(x => x.Role == "Customer").OrderBy(x => x.DisplayName).Select(x => new { x.Id, x.DisplayName, x.Email }).ToListAsync(ct)));
 admin.MapPost("/customers", async (CustomerRequest input, OrdersDb db, CancellationToken ct) =>
 {

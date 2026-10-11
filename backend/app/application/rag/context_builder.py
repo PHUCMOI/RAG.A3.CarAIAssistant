@@ -1,8 +1,9 @@
 import json
 import re
+from dataclasses import replace
 from urllib.parse import quote
 from app.application.rag.contracts import Citation, ContextPackage
-from app.application.rag.documents import ENUMS, STATUS
+from app.application.rag.documents import ENUMS, STATUS, build_documents, make_document
 from app.application.rag.intent import normalize
 
 SPEC_LIMITATION = "Thông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu."
@@ -12,6 +13,32 @@ LABELS = {"body_type": "Kiểu xe", "seats": "Số chỗ", "fuel_type": "Nhiên 
           "engine": "Động cơ", "engine_power_hp": "Công suất", "length_mm": "Dài", "width_mm": "Rộng",
           "height_mm": "Cao", "wheelbase_mm": "Chiều dài cơ sở", "price_as_of": "Ngày giá tham khảo",
           "duration_months": "Thời hạn bảo hành", "distance_limit_km": "Giới hạn bảo hành", "conditions": "Điều kiện bảo hành"}
+
+
+def composition_retrieval(result):
+    """Bind SQL discovery facts to sources without changing ranked retrieval."""
+    if result.analysis.intent != 'find_car':
+        return result
+    evidence = list(result.evidence)
+    parents = {e.metadata.get('parentContextId', e.context_id) for e in evidence}
+    for document in build_documents(result.cars, [], []):
+        if document.section == 'price' and document.metadata['facts'] and document.document_id not in parents:
+            document.metadata['retrievalOrigin'] = 'sql-catalogue'
+            evidence.append(document.evidence())
+        if document.section == 'specifications':
+            covered = {key for e in evidence if e.car_id == document.car_id and e.section == 'specifications'
+                       for key in e.metadata.get('facts', {})}
+            facts = {key: value for key, value in document.metadata['facts'].items()
+                     if key in {'body_type', 'seats'} and key not in covered}
+            if facts:
+                lines = [f"Dữ liệu catalogue SQL của {document.metadata['displayName']}."]
+                lines += [f"{LABELS[key]}: {ENUMS.get(fact['value'], fact['value'])}{(' ' + fact['unit']) if fact.get('unit') else ''}."
+                          for key, fact in facts.items()]
+                lines.append(SPEC_LIMITATION)
+                bound = make_document(document.document_id, document.car_id, 'specifications',
+                                      lines, facts, dict(document.metadata, retrievalOrigin='sql-catalogue'))
+                evidence.append(bound.evidence())
+    return replace(result, evidence=evidence)
 
 
 def requested_spec_fields(question):
@@ -59,7 +86,7 @@ def required_qualifiers(result, context_ids=None):
             if condition:
                 lines.append(condition)
     for c in result.cars:
-        if any(e.car_id == c.car_id for e in used) and c.market_status_vn != "official_current":
+        if any(e.car_id == c.car_id for e in used):
             lines.append(f"{c.display_name}: " + STATUS.get(c.market_status_vn, "Chưa xác minh tình trạng thị trường."))
     return list(dict.fromkeys(lines))
 

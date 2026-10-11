@@ -6,11 +6,13 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    ai_internal_token: SecretStr = SecretStr("")
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
         extra="ignore",
         case_sensitive=False,
+        env_ignore_empty=True,
     )
 
     port: int = 5080
@@ -32,7 +34,8 @@ class Settings(BaseSettings):
     embedding_model: str = "intfloat/multilingual-e5-base"
     embedding_revision: str = "main"
     embedding_cache_dir: Optional[str] = None
-    llm_provider: Literal["ollama", "bedrock"] = "ollama"
+    llm_provider: Literal["bedrock"] = "bedrock"
+    image_api_url: str = "http://localhost:8000"
     aws_region: str = "us-east-1"
     aws_profile: Optional[str] = None
     aws_access_key_id: Optional[SecretStr] = Field(default=None, repr=False)
@@ -40,13 +43,10 @@ class Settings(BaseSettings):
     aws_session_token: Optional[SecretStr] = Field(default=None, repr=False)
     bedrock_model_id: str = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
     bedrock_timeout: float = Field(default=30.0, gt=0)
-    ollama_url: str = "http://localhost:11434"
-    ollama_model: str = "qwen2.5:3b"
-    ollama_timeout: float = 90.0
 
     @property
     def generation_timeout(self) -> float:
-        return self.bedrock_timeout if self.llm_provider == "bedrock" else self.ollama_timeout
+        return self.bedrock_timeout
 
     @field_validator("database_url")
     @classmethod

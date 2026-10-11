@@ -55,8 +55,17 @@ class BedrockProvider(StructuredProvider):
                    "inferenceConfig": {"temperature": 0, "maxTokens": num_predict}}
         started = time.perf_counter()
         deadline = timeout or self.timeout
+        async def invoke():
+            for attempt in range(3):
+                try:
+                    return await asyncio.to_thread(self._converse, request, deadline)
+                except Exception as exc:
+                    code = getattr(exc, 'response', {}).get('Error', {}).get('Code')
+                    if code not in {'ThrottlingException', 'TooManyRequestsException'} or attempt == 2:
+                        raise
+                    await asyncio.sleep(2 ** attempt)
         try:
-            result = await asyncio.wait_for(asyncio.to_thread(self._converse, request, deadline), deadline)
+            result = await asyncio.wait_for(invoke(), deadline)
         except Exception as exc:
             logger.warning("Bedrock request unavailable (%s)", type(exc).__name__)
             raise RuntimeError("Bedrock request unavailable") from exc

@@ -1,0 +1,166 @@
+﻿id,split,input_type,intent_correct,status_correct,http_status_correct,context_precision_at_5,context_recall_at_5,image_recall_at_1,image_recall_at_5,image_mrr_at_5,faithfulness,answer_completeness,human_review,error,http_status,generation_mode,retrieval_mode,grounded,answer,retrieved_context_ids,answer_context_ids,image_ranked_car_ids,citations,required_answer_facts,response_seconds
+Q014,evaluation,text,1,1,1,0.2,0.5,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"Các mẫu xe phù hợp:
+
+**Hyundai Grand i10** — 5 chỗ, giá tham khảo 360.000.000 VND (ngày 2026-10-01)
+
+**Hyundai Elantra** — 5 chỗ, giá tham khảo 579.000.000 VND (ngày 2026-10-01)
+
+Đây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực. Thông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu. Cần xác nhận điều kiện bảo hành theo xe, VIN và ngày bán cụ thể. Chính sách tham khảo cho xe du lịch Hyundai lắp ráp trong nước do Hyundai Thành Công phân phối; xe nhập khẩu có thể khác.
+
+Hyundai Grand i10: Được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.
+
+Hyundai Elantra: Được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.","[""car:car_36_4:specifications:v1"", ""car:car_36_8:specifications:v1"", ""car:car_36_4:overview:v1"", ""car:car_36_4:price:v1"", ""warranty:brand:hyundai:v1""]","[""car:car_36_4:specifications:v1"", ""car:car_36_8:specifications:v1"", ""car:car_36_4:overview:v1"", ""car:car_36_4:price:v1"", ""warranty:brand:hyundai:v1"", ""car:car_36_8:price:v1""]",[],"[{""contextId"": ""car:car_36_4:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_36_4:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}, {""contextId"": ""car:car_36_8:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_36_8:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}, {""contextId"": ""car:car_36_4:overview:v1"", ""sourceId"": ""hyundai_products_2026"", ""title"": ""Hyundai Thanh Cong products"", ""url"": ""https://hyundai.thanhcong.vn/san-pham"", ""sourceDetailPath"": ""/sources/hyundai_products_2026""}, {""contextId"": ""car:car_36_4:price:v1"", ""sourceId"": ""hyundai_authorized_prices_2026"", ""title"": ""Hyundai Vinh Yen authorized dealer price list"", ""url"": ""https://hyundaigiatot.vn/"", ""sourceDetailPath"": ""/sources/hyundai_authorized_prices_2026""}, {""contextId"": ""warranty:brand:hyundai:v1"", ""sourceId"": ""hyundai_warranty"", ""title"": ""Hyundai Thanh Cong electronic warranty policy"", ""url"": ""https://hyundai.thanhcong.vn/dich-vu-ky-thuat/chinh-sach-bao-hanh?isTabActive=1"", ""sourceDetailPath"": ""/sources/hyundai_warranty""}, {""contextId"": ""car:car_36_8:price:v1"", ""sourceId"": ""hyundai_authorized_prices_2026"", ""title"": ""Hyundai Vinh Yen authorized dealer price list"", ""url"": ""https://hyundaigiatot.vn/"", ""sourceDetailPath"": ""/sources/hyundai_authorized_prices_2026""}]","[""Hyundai Elantra: price_as_of=2026-10-01"", ""Hyundai Elantra: price_vnd_from=579000000"", ""Hyundai Grand i10: price_as_of=2026-10-01"", ""Hyundai Grand i10: price_vnd_from=360000000""]",34.2451301000001
+Q085,evaluation,text,1,1,1,0.2,0.2,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"Các mẫu xe phù hợp:
+
+**Honda HR-V** – 5 chỗ, 669.000.000 VND (ngày giá: 2026-10-01)
+
+**Honda Civic** – 5 chỗ, 789.000.000 VND (ngày giá: 2026-10-01)
+
+**Honda CR-V** – 5 chỗ, 1.039.000.000 VND (ngày giá: 2026-10-01)
+
+**Honda Jazz** – 5 chỗ, 544.000.000 VND (ngày giá: 2020-08-01)
+
+**Honda Accord** – 5 chỗ, 1.319.000.000 VND (ngày giá: 2024-04-01)
+
+Giá trên là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực. Honda HR-V, Honda Civic và Honda CR-V được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra. Honda Jazz và Honda Accord từng phân phối chính hãng; chưa xác nhận đang bán.
+
+Đây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.
+
+Thông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.
+
+Honda Jazz: Từng phân phối chính hãng; chưa xác nhận đang bán.
+
+Honda HR-V: Được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.
+
+Honda Civic: Được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.
+
+Honda CR-V: Được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.
+
+Honda Accord: Từng phân phối chính hãng; chưa xác nhận đang bán.","[""car:car_34_8:overview:v1"", ""car:car_34_1:overview:v1"", ""car:car_34_2:price:v1"", ""car:car_34_11:overview:v1"", ""car:car_34_3:overview:v1""]","[""car:car_34_8:overview:v1"", ""car:car_34_1:overview:v1"", ""car:car_34_2:price:v1"", ""car:car_34_11:overview:v1"", ""car:car_34_3:overview:v1"", ""car:car_34_1:price:v1"", ""car:car_34_11:price:v1"", ""car:car_34_3:price:v1"", ""car:car_34_8:price:v1""]",[],"[{""contextId"": ""car:car_34_8:overview:v1"", ""sourceId"": ""honda_products_2026"", ""title"": ""Honda Vietnam automobiles"", ""url"": ""https://www.honda.com.vn/o-to/san-pham"", ""sourceDetailPath"": ""/sources/honda_products_2026""}, {""contextId"": ""car:car_34_1:overview:v1"", ""sourceId"": ""honda_vn_recall"", ""title"": ""Honda Vietnam recall archive"", ""url"": ""https://www.honda.com.vn/o-to/trieu-hoi"", ""sourceDetailPath"": ""/sources/honda_vn_recall""}, {""contextId"": ""car:car_34_2:price:v1"", ""sourceId"": ""honda_products_2026"", ""title"": ""Honda Vietnam automobiles"", ""url"": ""https://www.honda.com.vn/o-to/san-pham"", ""sourceDetailPath"": ""/sources/honda_products_2026""}, {""contextId"": ""car:car_34_11:overview:v1"", ""sourceId"": ""honda_vn_recall"", ""title"": ""Honda Vietnam recall archive"", ""url"": ""https://www.honda.com.vn/o-to/trieu-hoi"", ""sourceDetailPath"": ""/sources/honda_vn_recall""}, {""contextId"": ""car:car_34_3:overview:v1"", ""sourceId"": ""honda_products_2026"", ""title"": ""Honda Vietnam automobiles"", ""url"": ""https://www.honda.com.vn/o-to/san-pham"", ""sourceDetailPath"": ""/sources/honda_products_2026""}, {""contextId"": ""car:car_34_1:price:v1"", ""sourceId"": ""honda_historical_prices"", ""title"": ""Honda Accord and Jazz historical Vietnam prices"", ""url"": ""https://www.danhgiaxe.com/danh-gia/danh-gia-so-bo-xe-honda-jazz-2020-29023"", ""sourceDetailPath"": ""/sources/honda_historical_prices""}, {""contextId"": ""car:car_34_11:price:v1"", ""sourceId"": ""honda_historical_prices"", ""title"": ""Honda Accord and Jazz historical Vietnam prices"", ""url"": ""https://www.danhgiaxe.com/danh-gia/danh-gia-so-bo-xe-honda-jazz-2020-29023"", ""sourceDetailPath"": ""/sources/honda_historical_prices""}, {""contextId"": ""car:car_34_3:price:v1"", ""sourceId"": ""honda_products_2026"", ""title"": ""Honda Vietnam automobiles"", ""url"": ""https://www.honda.com.vn/o-to/san-pham"", ""sourceDetailPath"": ""/sources/honda_products_2026""}, {""contextId"": ""car:car_34_8:price:v1"", ""sourceId"": ""honda_products_2026"", ""title"": ""Honda Vietnam automobiles"", ""url"": ""https://www.honda.com.vn/o-to/san-pham"", ""sourceDetailPath"": ""/sources/honda_products_2026""}]","[""Honda Jazz: price_as_of=2020-08-01"", ""Honda Jazz: price_vnd_from=544000000"", ""Honda HR-V: price_as_of=2026-10-01"", ""Honda HR-V: price_vnd_from=669000000"", ""Honda Civic: price_as_of=2026-10-01"", ""Honda Civic: price_vnd_from=789000000"", ""Honda CR-V: price_as_of=2026-10-01"", ""Honda CR-V: price_vnd_from=1039000000"", ""Honda Accord: price_as_of=2024-04-01"", ""Honda Accord: price_vnd_from=1319000000""]",9.947771600000124
+Q087,evaluation,text,1,1,1,0.2,0.2,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"Các mẫu xe phù hợp:
+
+**Mazda2** — 5 chỗ, giá tham khảo từ 418.000.000 VND (ngày giá: 2026-10-01). Được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.
+
+**Mazda3** — 5 chỗ, giá tham khảo từ 569.000.000 VND (ngày giá: 2026-10-01). Được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.
+
+**Mazda CX-5** — 5 chỗ, giá tham khảo từ 699.000.000 VND (ngày giá: 2026-10-01). Được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.
+
+**Mazda BT-50** — 5 chỗ, giá tham khảo từ 554.000.000 VND (ngày giá: 2026-09-03). Từng phân phối chính hãng; chưa xác nhận đang bán.
+
+**Mazda6** — 5 chỗ, giá tham khảo từ 769.000.000 VND (ngày giá: 2024-08-16). Từng phân phối chính hãng; chưa xác nhận đang bán.
+
+Giá là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.
+
+Đây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.
+
+Thông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.
+
+Mazda2: Được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.
+
+Mazda BT-50: Từng phân phối chính hãng; chưa xác nhận đang bán.
+
+Mazda3: Được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.
+
+Mazda CX-5: Được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.
+
+Mazda6: Từng phân phối chính hãng; chưa xác nhận đang bán.","[""car:car_57_10:price:v1"", ""car:car_57_7:overview:v1"", ""car:car_57_13:overview:v1"", ""car:car_57_5:overview:v1"", ""car:car_57_11:overview:v1""]","[""car:car_57_10:price:v1"", ""car:car_57_7:overview:v1"", ""car:car_57_13:overview:v1"", ""car:car_57_5:overview:v1"", ""car:car_57_11:overview:v1"", ""car:car_57_10:specifications:v1"", ""car:car_57_11:specifications:v1"", ""car:car_57_11:price:v1"", ""car:car_57_13:specifications:v1"", ""car:car_57_13:price:v1"", ""car:car_57_5:specifications:v1"", ""car:car_57_5:price:v1"", ""car:car_57_7:specifications:v1"", ""car:car_57_7:price:v1""]",[],"[{""contextId"": ""car:car_57_10:price:v1"", ""sourceId"": ""mazda_vn_lineup"", ""title"": ""Mazda Vietnam product introduction"", ""url"": ""https://mazdamotors.vn/news-and-events/news-and-events-content/news-and-events/chuong-trinh-gioi-thieu-san-pham-mazda-the-he-moi-dang-cap-moi"", ""sourceDetailPath"": ""/sources/mazda_vn_lineup""}, {""contextId"": ""car:car_57_7:overview:v1"", ""sourceId"": ""mazda_vn_lineup"", ""title"": ""Mazda Vietnam product introduction"", ""url"": ""https://mazdamotors.vn/news-and-events/news-and-events-content/news-and-events/chuong-trinh-gioi-thieu-san-pham-mazda-the-he-moi-dang-cap-moi"", ""sourceDetailPath"": ""/sources/mazda_vn_lineup""}, {""contextId"": ""car:car_57_13:overview:v1"", ""sourceId"": ""mazda_vn_lineup"", ""title"": ""Mazda Vietnam product introduction"", ""url"": ""https://mazdamotors.vn/news-and-events/news-and-events-content/news-and-events/chuong-trinh-gioi-thieu-san-pham-mazda-the-he-moi-dang-cap-moi"", ""sourceDetailPath"": ""/sources/mazda_vn_lineup""}, {""contextId"": ""car:car_57_5:overview:v1"", ""sourceId"": ""mazda_vn_lineup"", ""title"": ""Mazda Vietnam product introduction"", ""url"": ""https://mazdamotors.vn/news-and-events/news-and-events-content/news-and-events/chuong-trinh-gioi-thieu-san-pham-mazda-the-he-moi-dang-cap-moi"", ""sourceDetailPath"": ""/sources/mazda_vn_lineup""}, {""contextId"": ""car:car_57_11:overview:v1"", ""sourceId"": ""mazda_vn_lineup"", ""title"": ""Mazda Vietnam product introduction"", ""url"": ""https://mazdamotors.vn/news-and-events/news-and-events-content/news-and-events/chuong-trinh-gioi-thieu-san-pham-mazda-the-he-moi-dang-cap-moi"", ""sourceDetailPath"": ""/sources/mazda_vn_lineup""}, {""contextId"": ""car:car_57_10:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_57_10:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}, {""contextId"": ""car:car_57_11:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_57_11:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}, {""contextId"": ""car:car_57_11:price:v1"", ""sourceId"": ""mazda_vn_lineup"", ""title"": ""Mazda Vietnam product introduction"", ""url"": ""https://mazdamotors.vn/news-and-events/news-and-events-content/news-and-events/chuong-trinh-gioi-thieu-san-pham-mazda-the-he-moi-dang-cap-moi"", ""sourceDetailPath"": ""/sources/mazda_vn_lineup""}, {""contextId"": ""car:car_57_13:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_57_13:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}, {""contextId"": ""car:car_57_13:price:v1"", ""sourceId"": ""mazda6_price_2024"", ""title"": ""Mazda6 official price announcement"", ""url"": ""https://mazdamotors.vn/news-and-events/news-and-events-content/news-and-events/mazda6-them-tinh-nang-cong-nghe-gia-chi-tu-769-trieu"", ""sourceDetailPath"": ""/sources/mazda6_price_2024""}, {""contextId"": ""car:car_57_5:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_57_5:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}, {""contextId"": ""car:car_57_5:price:v1"", ""sourceId"": ""mazda_bt50_price_2026"", ""title"": ""Mazda BT-50 Vietnam reference price"", ""url"": ""https://baolamdong.vn/gia-xe-o-to/mazda/bt-50"", ""sourceDetailPath"": ""/sources/mazda_bt50_price_2026""}, {""contextId"": ""car:car_57_7:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_57_7:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}, {""contextId"": ""car:car_57_7:price:v1"", ""sourceId"": ""mazda_vn_lineup"", ""title"": ""Mazda Vietnam product introduction"", ""url"": ""https://mazdamotors.vn/news-and-events/news-and-events-content/news-and-events/chuong-trinh-gioi-thieu-san-pham-mazda-the-he-moi-dang-cap-moi"", ""sourceDetailPath"": ""/sources/mazda_vn_lineup""}]","[""Mazda2: price_as_of=2026-10-01"", ""Mazda2: price_vnd_from=418000000"", ""Mazda CX-3: price_as_of=2026-10-01"", ""Mazda CX-3: price_vnd_from=519000000"", ""Mazda BT-50: price_as_of=2026-09-03"", ""Mazda BT-50: price_vnd_from=554000000"", ""Mazda3: price_as_of=2026-10-01"", ""Mazda3: price_vnd_from=569000000"", ""Mazda CX-5: price_as_of=2026-10-01"", ""Mazda CX-5: price_vnd_from=699000000""]",15.717231999999967
+Q089,evaluation,text,1,1,1,0.2,0.25,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"Các mẫu xe phù hợp:
+
+• **Ford Fiesta** – 5 chỗ, giá tham khảo 545.000.000 VND (ngày 2018-01-01)
+
+• **Ford EcoSport** – 5 chỗ, giá tham khảo 603.000.000 VND (ngày 2021-11-01)
+
+• **Ford Focus** – 5 chỗ, giá tham khảo 626.000.000 VND (ngày 2018-01-01)
+
+• **Ford Ranger** – 5 chỗ, giá tham khảo 707.000.000 VND (ngày 2026-10-01)
+
+Tất cả các mẫu xe trên đều nằm trong ngân sách không quá 1.500.000.000 VND. Ford Fiesta, EcoSport và Focus từng phân phối chính hãng; chưa xác nhận đang bán. Ford Ranger được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.
+
+Giá là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.
+
+Đây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực.
+
+Thông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.
+
+Ford Fiesta: Từng phân phối chính hãng; chưa xác nhận đang bán.
+
+Ford EcoSport: Từng phân phối chính hãng; chưa xác nhận đang bán.
+
+Ford Focus: Từng phân phối chính hãng; chưa xác nhận đang bán.
+
+Ford Ranger: Được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.","[""car:car_29_13:overview:v1"", ""car:car_29_14:overview:v1"", ""car:car_29_4:overview:v1"", ""car:car_29_30:overview:v1"", ""car:car_29_13:price:v1""]","[""car:car_29_13:overview:v1"", ""car:car_29_14:overview:v1"", ""car:car_29_4:overview:v1"", ""car:car_29_30:overview:v1"", ""car:car_29_13:price:v1"", ""car:car_29_13:specifications:v1"", ""car:car_29_14:specifications:v1"", ""car:car_29_14:price:v1"", ""car:car_29_30:specifications:v1"", ""car:car_29_30:price:v1"", ""car:car_29_4:specifications:v1"", ""car:car_29_4:price:v1""]",[],"[{""contextId"": ""car:car_29_13:overview:v1"", ""sourceId"": ""ford_owner_manuals"", ""title"": ""Ford Vietnam owner manual archive"", ""url"": ""https://www.ford.com.vn/support/owner-manuals/owner-manuals-sitemap/"", ""sourceDetailPath"": ""/sources/ford_owner_manuals""}, {""contextId"": ""car:car_29_14:overview:v1"", ""sourceId"": ""ford_owner_manuals"", ""title"": ""Ford Vietnam owner manual archive"", ""url"": ""https://www.ford.com.vn/support/owner-manuals/owner-manuals-sitemap/"", ""sourceDetailPath"": ""/sources/ford_owner_manuals""}, {""contextId"": ""car:car_29_4:overview:v1"", ""sourceId"": ""ford_owner_manuals"", ""title"": ""Ford Vietnam owner manual archive"", ""url"": ""https://www.ford.com.vn/support/owner-manuals/owner-manuals-sitemap/"", ""sourceDetailPath"": ""/sources/ford_owner_manuals""}, {""contextId"": ""car:car_29_30:overview:v1"", ""sourceId"": ""ford_prices_2026"", ""title"": ""Ford Vietnam price list"", ""url"": ""https://www.ford.com.vn/shopping/price-list/"", ""sourceDetailPath"": ""/sources/ford_prices_2026""}, {""contextId"": ""car:car_29_13:price:v1"", ""sourceId"": ""ford_historical_prices"", ""title"": ""Ford historical Vietnam price references"", ""url"": ""https://xe.chotot.com/oto-ford-ecosport-sd6a0e"", ""sourceDetailPath"": ""/sources/ford_historical_prices""}, {""contextId"": ""car:car_29_13:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_29_13:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}, {""contextId"": ""car:car_29_14:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_29_14:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}, {""contextId"": ""car:car_29_14:price:v1"", ""sourceId"": ""ford_historical_prices"", ""title"": ""Ford historical Vietnam price references"", ""url"": ""https://xe.chotot.com/oto-ford-ecosport-sd6a0e"", ""sourceDetailPath"": ""/sources/ford_historical_prices""}, {""contextId"": ""car:car_29_30:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_29_30:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}, {""contextId"": ""car:car_29_30:price:v1"", ""sourceId"": ""ford_prices_2026"", ""title"": ""Ford Vietnam price list"", ""url"": ""https://www.ford.com.vn/shopping/price-list/"", ""sourceDetailPath"": ""/sources/ford_prices_2026""}, {""contextId"": ""car:car_29_4:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_29_4:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}, {""contextId"": ""car:car_29_4:price:v1"", ""sourceId"": ""ford_historical_prices"", ""title"": ""Ford historical Vietnam price references"", ""url"": ""https://xe.chotot.com/oto-ford-ecosport-sd6a0e"", ""sourceDetailPath"": ""/sources/ford_historical_prices""}]","[""Ford Fiesta: price_as_of=2018-01-01"", ""Ford Fiesta: price_vnd_from=545000000"", ""Ford EcoSport: price_as_of=2021-11-01"", ""Ford EcoSport: price_vnd_from=603000000"", ""Ford Focus: price_as_of=2018-01-01"", ""Ford Focus: price_vnd_from=626000000"", ""Ford Ranger: price_as_of=2026-10-01"", ""Ford Ranger: price_vnd_from=707000000""]",14.404208599999947
+Q099,evaluation,text,1,1,1,0.5,1.0,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"Dữ liệu catalogue hiện có chưa đủ xác nhận phiên bản kỹ thuật tại Việt Nam. Thông số trong database chủ yếu từ DVM-CAR thị trường Anh, không xác minh riêng cho bản Việt Nam.
+
+Thông số tham khảo của Honda CR-V:
+
+**Thông số chính:**
+- **Kiểu xe:** SUV
+- **Số chỗ:** 5 chỗ
+- **Nhiên liệu:** Dầu
+- **Hộp số:** Số sàn
+- **Động cơ:** 2.0L
+- **Công suất:** 148 hp
+
+**Kích thước:**
+- **Dài:** 4605 mm
+- **Rộng:** 1820 mm
+- **Cao:** 1685 mm
+- **Chiều dài cơ sở:** 2630 mm
+
+*Thông số từ catalogue thị trường Anh, chưa xác nhận phiên bản tại Việt Nam.*
+
+Honda CR-V được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra. Để xác nhận thông số kỹ thuật chính xác cho bản Việt Nam, bạn nên liên hệ trực tiếp đại lý Honda chính hãng.
+
+Dữ liệu ở cấp model, chưa xác minh năm/phiên bản cụ thể.
+
+Thông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.
+
+Honda CR-V: Được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.","[""car:car_34_3:specifications:v1"", ""car:car_34_3:overview:v1""]","[""car:car_34_3:specifications:v1"", ""car:car_34_3:overview:v1""]",[],"[{""contextId"": ""car:car_34_3:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_34_3:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}, {""contextId"": ""car:car_34_3:overview:v1"", ""sourceId"": ""honda_products_2026"", ""title"": ""Honda Vietnam automobiles"", ""url"": ""https://www.honda.com.vn/o-to/san-pham"", ""sourceDetailPath"": ""/sources/honda_products_2026""}]","[""Honda CR-V: seats=5"", ""Honda CR-V: engine=2.0L"", ""Honda CR-V: width_mm=1820"", ""Honda CR-V: body_type=SUV"", ""Honda CR-V: fuel_type=Diesel"", ""Honda CR-V: height_mm=1685"", ""Honda CR-V: length_mm=4605"", ""Honda CR-V: transmission=Manual"", ""Honda CR-V: wheelbase_mm=2630"", ""Honda CR-V: engine_power_hp=148""]",23.01286760000039
+Q103,development,image_text,1,1,1,,,1,1,1.0,,,pending,,200,bedrock-natural,,True,"Mẫu xe gần giống nhất trong ảnh là **Toyota RAV4**, với độ tương đồng **95%**.
+
+Toyota RAV4 là một chiếc SUV 5 chỗ, được trang bị động cơ 2.0L dầu, công suất 150 hp, hộp số số sàn. Kích thước xe: dài 4570 mm, rộng 1845 mm, cao 1705 mm, chiều dài cơ sở 2660 mm.
+
+Xe có mặt qua nhập khẩu tại Việt Nam; không khẳng định phân phối chính hãng. Thông số catalogue chủ yếu từ DVM-CAR thị trường Anh; chưa xác nhận phiên bản kỹ thuật tại Việt Nam.
+
+Thông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.
+
+Toyota RAV4: Có mặt qua nhập khẩu; không khẳng định phân phối chính hãng.","[""car:car_92_34:overview:v1"", ""car:car_92_34:specifications:v1""]","[""car:car_92_34:overview:v1"", ""car:car_92_34:specifications:v1""]","[""car_92_34"", ""car_34_3"", ""car_92_21"", ""car_57_5"", ""car_43_10""]","[{""contextId"": ""car:car_92_34:overview:v1"", ""sourceId"": ""toyota_vn_company"", ""title"": ""Toyota Vietnam sustainability report 2023"", ""url"": ""https://www.toyota.com.vn/media/ccje2e4a/baocao-ptbv-toyota-2023_sua05162024-final-1.pdf"", ""sourceDetailPath"": ""/sources/toyota_vn_company""}, {""contextId"": ""car:car_92_34:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_92_34:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}]","[""Toyota RAV4"", ""mẫu xe gần giống""]",22.264680600000247
+Q150,evaluation,image_text,1,1,1,,,,,,,,pending,,200,bedrock-natural,,False,Chưa xác định chắc chắn mẫu xe trong ảnh. Hãy gửi ảnh rõ hơn hoặc nêu tên xe để tra cứu thông tin.,[],[],[],[],"[""Ảnh không đọc được; yêu cầu gửi lại hoặc nêu tên xe.""]",20.356278700000075
+Q152,development,text,1,1,1,1.0,1.0,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"**Đại lý Toyota tại Thành phố Hồ Chí Minh:**
+
+**Tên:** Toyota An Suong
+
+**Số điện thoại:** 1900 7339
+
+**Địa chỉ:** 382 Le Quang Dao Street, Trung My Tay Ward
+
+**Website:** http://www.toyota-ansuong.vn/
+
+(Thông tin kiểm tra ngày 01/10/2026)","[""dealer:2:profile:v1""]","[""dealer:2:profile:v1""]",[],"[{""contextId"": ""dealer:2:profile:v1"", ""sourceId"": ""toyota_dealers"", ""title"": ""Toyota Vietnam dealer locator"", ""url"": ""https://www.toyota.com.vn/lien-he-dai-ly"", ""sourceDetailPath"": ""/sources/toyota_dealers""}]","[""2: name=Toyota An Suong"", ""2: phone=1900 7339""]",22.770669700000326
+Q173,evaluation,text,1,1,1,0.8,1.0,,,,,,pending,,200,bedrock-natural,postgresql-vector-search,True,"## So sánh Ford EcoSport và Hyundai Elantra
+
+| Tiêu chí | Ford EcoSport | Hyundai Elantra |
+|---------|---------------|----------------|
+| **Giá tham khảo** | 603.000.000 VND | 579.000.000 VND |
+| **Ngày giá** | 2021-11-01 | 2026-10-01 |
+| **Số chỗ** | 5 chỗ | 5 chỗ |
+
+**Về giá:** Hyundai Elantra có giá tham khảo thấp hơn Ford EcoSport 24.000.000 VND. Tuy nhiên, giá Ford EcoSport là từ năm 2021, trong khi giá Hyundai Elantra được cập nhật gần đây hơn (tháng 10/2026).
+
+**Về số chỗ:** Cả hai mẫu xe đều có 5 chỗ ngồi.
+
+**Lưu ý:** Đây là giá tham khảo từ dữ liệu, không phải báo giá đại lý theo thời gian thực. Hyundai Elantra được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra; Ford EcoSport từng phân phối chính hãng nhưng chưa xác nhận đang bán.
+
+Thông số trong database chủ yếu từ DVM-CAR thị trường Anh; không xác nhận phiên bản kỹ thuật tại Việt Nam. Trường chưa có nguồn riêng chỉ dẫn tới bản ghi dữ liệu.
+
+Cần xác nhận điều kiện bảo hành theo xe, VIN và ngày bán cụ thể.
+
+Bảo hành xe mới tiêu chuẩn; một số model có thể được 60 tháng hoặc 150.000 km. Xác nhận theo model và VIN.
+
+Hyundai Elantra: Được ghi nhận phân phối chính hãng theo dữ liệu đã kiểm tra.
+
+Ford EcoSport: Từng phân phối chính hãng; chưa xác nhận đang bán.","[""car:car_29_4:price:v1"", ""car:car_36_4:price:v1"", ""car:car_29_4:specifications:v1"", ""car:car_36_4:specifications:v1"", ""warranty:car:car_29_4:v1""]","[""car:car_29_4:price:v1"", ""car:car_36_4:price:v1"", ""car:car_29_4:specifications:v1"", ""car:car_36_4:specifications:v1""]",[],"[{""contextId"": ""car:car_29_4:price:v1"", ""sourceId"": ""ford_historical_prices"", ""title"": ""Ford historical Vietnam price references"", ""url"": ""https://xe.chotot.com/oto-ford-ecosport-sd6a0e"", ""sourceDetailPath"": ""/sources/ford_historical_prices""}, {""contextId"": ""car:car_36_4:price:v1"", ""sourceId"": ""hyundai_authorized_prices_2026"", ""title"": ""Hyundai Vinh Yen authorized dealer price list"", ""url"": ""https://hyundaigiatot.vn/"", ""sourceDetailPath"": ""/sources/hyundai_authorized_prices_2026""}, {""contextId"": ""car:car_29_4:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_29_4:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}, {""contextId"": ""car:car_36_4:specifications:v1"", ""sourceId"": null, ""title"": ""Bản ghi dữ liệu — car:car_36_4:specifications:v1"", ""url"": null, ""sourceDetailPath"": null}]","[""Ford EcoSport: price_vnd_from=603000000"", ""Ford EcoSport: seats=5"", ""Hyundai Elantra: price_vnd_from=579000000"", ""Hyundai Elantra: seats=5""]",18.705847500000345
+Q194,evaluation,text,1,1,1,,,,,,,,pending,,200,bedrock-natural,postgresql-structured-search,False,"Xin lỗi, hiện tại chúng tôi chưa có dữ liệu về các đại lý Honda tại Cần Thơ. Để tìm thông tin chi tiết về đại lý Honda gần bạn, bạn có thể liên hệ trực tiếp với Honda Việt Nam hoặc truy cập website chính thức của hãng để được hỗ trợ tốt nhất.",[],[],[],[],"[""Nêu rõ dữ liệu thiếu hoặc yêu cầu làm rõ""]",9.749537800000326
+Q196,evaluation,text,1,1,1,,,,,,,,pending,,200,bedrock-natural,postgresql-structured-search,False,"Xin lỗi, tôi là trợ lý AutoWise chuyên tư vấn về ô tô. Câu hỏi của bạn về cách làm bánh mì nằm ngoài lĩnh vực hỗ trợ của tôi.
+
+Nếu bạn có câu hỏi về xe ô tô, tìm kiếm mẫu xe phù hợp, so sánh thông số kỹ thuật, giá tham khảo hoặc bảo hành, tôi rất sẵn lòng giúp đỡ.",[],[],[],[],"[""Nêu rõ dữ liệu thiếu hoặc yêu cầu làm rõ""]",18.359233600000152

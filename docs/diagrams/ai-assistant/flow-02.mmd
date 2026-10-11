@@ -1,0 +1,20 @@
+flowchart TD
+    Q["Câu hỏi đã diễn giải + carIds nếu có"] --> I["Phân tích intent / entities / filters"]
+    I --> AM{"Mơ hồ hoặc thiếu xe?"}
+    AM -->|Có| CL["Yêu cầu làm rõ"]
+    AM -->|Không| SQL["SQL chọn xe theo hãng, chỗ, giá, kiểu xe, IDs"]
+    SQL --> SNAP["Snapshot xe / bảo hành / đại lý / sources"]
+    SNAP --> DOC["Documents tiếng Việt theo section và facts"]
+    DOC --> L["PostgreSQL lexical search"]
+    DOC --> V["E5 query embedding 768 chiều + pgvector"]
+    L --> F["RRF hợp nhất thứ hạng"]
+    V --> F
+    F --> FRESH["Loại chunks cũ theo content hash"]
+    FRESH --> TOP["Chọn topK; dành evidence cho từng xe"]
+    DOC -->|Bổ sung facts SQL khi retrieval thiếu| TOP
+    TOP --> PK["Context package: factId / contextId / sources / qualifiers"]
+    PK --> D["Draft chọn statements được phép bằng Bedrock"]
+    D --> VD["Kiểm tra exact statements và references; sửa tối đa một lần"]
+    VD --> PRE["Draft hợp lệ hoặc template facts nội bộ"]
+    PRE --> N["compose_grounded: câu trả lời tự nhiên cuối"]
+    CL --> N

@@ -1,0 +1,28 @@
+flowchart TD
+    U["Người dùng: text hoặc ảnh"] --> UI["React: /chat"]
+    UI --> AUTH{"Đã đăng nhập customer?"}
+    AUTH -->|Chưa| G["Python: POST /api/chat/turns"]
+    AUTH -->|Rồi| C["C#: POST /assistant/sessions/id/turns"]
+    C --> CHECK["Owner session + requestId + hash + version"]
+    G --> POLICY["Chặn câu hỏi quản trị ngoài quyền"]
+    CHECK --> POLICY
+    POLICY --> UNDER["Bedrock hiểu câu hỏi và context"]
+    UNDER --> ROUTE{"Backend phân nhánh"}
+    ROUTE -->|Catalogue, text| RAG["Python Text RAG"]
+    ROUTE -->|Catalogue, ảnh| IMG["Image service: tìm mẫu gần giống"]
+    IMG --> RAG
+    ROUTE -->|Đơn, guest| LOGIN["Yêu cầu đăng nhập"]
+    ROUTE -->|Đơn, customer| ORDER["C# OrderAssistant: công cụ theo owner"]
+    ORDER -->|Ảnh kèm đơn| MATCH["Top 1 ảnh đối chiếu carId trên đơn"]
+    MATCH --> E["Evidence đã truy xuất"]
+    ORDER --> E
+    RAG --> E
+    LOGIN --> E
+    E --> FINAL["Python compose_grounded: viết + kiểm chứng"]
+    FINAL --> OK{"Đạt kiểm tra?"}
+    OK -->|Có| STORE["Customer: lưu DB; guest: cache trình duyệt"]
+    STORE --> VIEW["Câu trả lời + nguồn + thẻ nghiệp vụ + gợi ý"]
+    OK -->|Không, sau một lần sửa| ERR["503: giữ input để thử lại"]
+    A["Admin: /admin/assistant"] --> AC["C#: role Admin + CSRF + rate limit"]
+    AC --> AT["Công cụ overview / orders / customers / support / revenue"]
+    AT --> FINAL

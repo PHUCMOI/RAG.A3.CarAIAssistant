@@ -1,0 +1,24 @@
+{
+  "passed": true,
+  "counts": {
+    "cars": 50,
+    "images": 215,
+    "dealers": 22,
+    "warranties": 9,
+    "sources": 61,
+    "documents": 0
+  },
+  "initialization_files": [
+    "000_extensions.sql",
+    "001_schema.sql",
+    "seed.sql",
+    "002_add_descriptions.sql",
+    "003_enrich_missing_data.sql",
+    "004_seed_dealers.sql",
+    "005_use_curated_image_paths.sql",
+    "006_verify_seed.sql",
+    "007_text_rag.sql"
+  ],
+  "isolation": "No host ports, no network, own temporary container and anonymous volume",
+  "scope": "Fresh SQL initialization; not full new-machine deployment or live model download"
+}

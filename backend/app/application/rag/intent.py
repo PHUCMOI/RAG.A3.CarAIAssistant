@@ -50,8 +50,8 @@ async def analyze(question: str, catalogue, classifier=None, car_ids=None) -> Qu
     if len(mentioned_brands) == 1:
         filters["brand"] = mentioned_brands[0]
     synonyms = {
-        "body_type": {"SUV": ["suv", "gam cao"], "Sedan": ["sedan"], "Hatchback": ["hatchback"],
-                      "MPV": ["mpv"], "Pickup": ["pickup", "ban tai"]},
+        "body_type": {"SUV": ["suv", "gam cao"], "Sedan": ["sedan"], "Saloon": ["saloon"], "Hatchback": ["hatchback"],
+                      "MPV": ["mpv"], "Pickup": ["pickup", "ban tai"], "Coupe": ["coupe"]},
         "fuel_type": {"Petrol": ["xang"], "Diesel": ["diesel", "may dau"],
                       "Electric": ["xe dien", "electric"], "Hybrid": ["hybrid", "lai xang dien"]},
         "transmission": {"Automatic": ["so tu dong", "automatic"], "Manual": ["so san", "manual"], "CVT": ["cvt"]},
@@ -104,13 +104,19 @@ async def analyze(question: str, catalogue, classifier=None, car_ids=None) -> Qu
             if len(set(matches)) > 1:
                 result.ambiguities.append("Có nhiều giới hạn giá khác nhau.")
             filters[f"{field}_price"], filters[f"{field}_price_inclusive"] = matches[0]
+    # An affordable budget is a ceiling, not a request for an exact sticker price.
+    # Do not turn every currency mention (e.g. a named car's price) into a filter.
+    if "max_price" not in filters and "min_price" not in filters:
+        budget = re.search(r"(?:ngan sach|tai chinh|kinh phi)\s*(?:(?:toi da|khoang|tam|la|chi|co)\s*)?" + amount, q)
+        if budget and (budget.group(2) or money(budget.group(1), None) >= 1000000):
+            filters.update(max_price=money(*budget.groups()), max_price_inclusive=True)
     result.filters = RagFilters(**filters)
     if result.filters.min_price is not None and result.filters.max_price is not None:
         if result.filters.min_price > result.filters.max_price or (result.filters.min_price == result.filters.max_price and
                 not (result.filters.min_price_inclusive and result.filters.max_price_inclusive)):
             result.ambiguities.append("Khoảng giá không có giá trị phù hợp.")
 
-    matches = []
+    matches, fuzzy_matches = [], []
     tokens = list(re.finditer(r"[a-z0-9]+", q))
     for c in catalogue:
         model_name = re.sub(r"\s+(?:19|20)\d{2}\b", "", c.display_name)
@@ -129,17 +135,21 @@ async def analyze(question: str, catalogue, classifier=None, car_ids=None) -> Qu
                     window = tokens[i:i + width]
                     candidate = ''.join(t.group() for t in window)
                     exact = candidate == compact
-                    fuzzy = (len(compact) >= 5 and abs(len(candidate)-len(compact)) <= 1
+                    fuzzy = (candidate not in {normalize(b) for b in brands}
+                             and len(compact) >= 5 and abs(len(candidate)-len(compact)) <= 1
                              and candidate[:1] == compact[:1]
                              and SequenceMatcher(None, candidate, compact).ratio() >= .8)
-                    if exact or fuzzy:
+                    if exact:
                         matches.append((window[0].start(), window[-1].end(), c.car_id))
+                    elif fuzzy:
+                        fuzzy_matches.append((window[0].start(), window[-1].end(), c.car_id))
     selected = []
-    for start, end, cid in sorted(matches, key=lambda item: (-(item[1] - item[0]), item[0], item[2])):
+    candidates = [(0, *m) for m in matches] + [(1, *m) for m in fuzzy_matches]
+    for quality, start, end, cid in sorted(candidates, key=lambda item: (item[0], -(item[2] - item[1]), item[1], item[3])):
         overlapping = [(a, b, c) for a, b, c in selected if start < b and end > a]
         if not overlapping:
             selected.append((start, end, cid))
-        elif car_ids is None and any(a == start and b == end and c != cid for a, b, c in overlapping):
+        elif quality == 0 and car_ids is None and any(a == start and b == end and c != cid for a, b, c in overlapping):
             result.ambiguities.append("Tên xe khớp nhiều mẫu; vui lòng ghi rõ hãng và model.")
     result.car_ids = list(dict.fromkeys(cid for _, _, cid in sorted(selected)))
     if car_ids is not None:
@@ -164,7 +174,8 @@ async def analyze(question: str, catalogue, classifier=None, car_ids=None) -> Qu
         result.intent = "ask_price"
     elif any(w in q for w in ("thong so", "dong co", "kich thuoc", "cong suat", "tieu hao", "xe nay", "trong anh", "trong hinh")) or result.car_ids:
         result.intent = "ask_specification"
-    elif filters or any(w in q for w in ("tim xe", "tu van", "gia dinh", "ngan sach", "suv", "sedan", "cho", "xe dien")):
+    elif filters or any(re.search(r"(?<!\w)" + re.escape(w) + r"(?!\w)", q)
+                        for w in ("tim xe", "tu van", "gia dinh", "ngan sach", "suv", "sedan", "xe dien")):
         result.intent = "find_car"
     elif classifier:
         try:
