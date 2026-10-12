@@ -42,4 +42,29 @@ describe('admin assistant', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Gửi câu hỏi' }));
     await waitFor(() => expect(mocks.request).toHaveBeenCalledWith('/admin/assistant/messages', 'POST', expect.objectContaining({ scope: 'revenue', dateFrom: '2026-09-01', dateTo: '2026-09-30', status: '', delayed: false })));
   });
+
+  it('requires a complete chronological period and keeps the draft for correction', async () => {
+    render(<MemoryRouter><AdminAssistantPage /></MemoryRouter>);
+    fireEvent.change(screen.getByLabelText('Từ ngày'), { target: { value: '2026-10-10' } });
+    fireEvent.change(screen.getByLabelText('Câu hỏi cho trợ lý'), { target: { value: 'Doanh thu trong kỳ?' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Gửi câu hỏi' }));
+    expect(screen.getByRole('alert')).toHaveTextContent('Chọn đủ ngày');
+    expect(mocks.request).not.toHaveBeenCalled();
+    fireEvent.change(screen.getByLabelText('Đến ngày'), { target: { value: '2026-10-01' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Gửi câu hỏi' }));
+    expect(screen.getByRole('alert')).toHaveTextContent('ngày kết thúc không trước ngày bắt đầu');
+    expect(mocks.request).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('Câu hỏi cho trợ lý')).toHaveValue('Doanh thu trong kỳ?');
+  });
+
+  it('excludes hidden date filters when switching to order lookup', async () => {
+    mocks.request.mockResolvedValue({ answer: 'Đã tra cứu.', grounded: true, status: 'ok', retrievedAt: '2026-10-12T10:00:00Z', links: [] });
+    render(<MemoryRouter><AdminAssistantPage /></MemoryRouter>);
+    fireEvent.change(screen.getByLabelText('Từ ngày'), { target: { value: '2026-09-01' } });
+    fireEvent.change(screen.getByLabelText('Đến ngày'), { target: { value: '2026-09-30' } });
+    fireEvent.change(screen.getByLabelText('Nhóm dữ liệu'), { target: { value: 'orders' } });
+    fireEvent.change(screen.getByLabelText('Câu hỏi cho trợ lý'), { target: { value: 'Kiểm tra đơn' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Gửi câu hỏi' }));
+    await waitFor(() => expect(mocks.request).toHaveBeenCalledWith('/admin/assistant/messages', 'POST', expect.objectContaining({ scope: 'orders', dateFrom: null, dateTo: null })));
+  });
 });
