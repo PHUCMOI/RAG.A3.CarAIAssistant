@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AdminLayout, CustomerLayout } from "./SiteLayouts";
+import { PageTitle } from './PageTitle';
 
 import HomePage from "../pages/HomePage";
 import CarCatalogPage from "../pages/CarCatalogPage";
@@ -45,6 +46,7 @@ import {
 export function AppRouter() {
   return (
     <BrowserRouter>
+      <PageTitle />
       <OrdersSession>
         <Routes>
           <Route path="/admin" element={<AdminLayout />}>
