@@ -1,0 +1,24 @@
+{
+  "started_at": "2026-10-19T14:18:36.902398+00:00",
+  "index_images": 171,
+  "test_images": 44,
+  "exact_hash_overlap": 0,
+  "repeats": 3,
+  "candidate_pool": 30,
+  "top_k": 5,
+  "batch_size": 1,
+  "search_backend": "faiss",
+  "python": "3.12.14",
+  "index_meta_sha256": "d34383015b1f7e0ff6e7d69876e858a0b6c9e126c547f25febc1cc42566c3749",
+  "test_manifest_sha256": "1296851942ffc6dc36a6512685e4709adb3bdfd1afaf755b8a6fcf1c28a7cc26",
+  "runner_sha256": "369c37f2add6e6131a510bf5cc629d5382accbab99b90110873a9803d7d43243",
+  "packages": {
+    "numpy": "2.5.3",
+    "Pillow": "12.3.0",
+    "torch": "2.8.0",
+    "transformers": "4.57.1",
+    "faiss-cpu": "1.15.1"
+  },
+  "git_commit": "11ec7184c47a9724bae6127a31da06488f59e277",
+  "completed_at": "2026-10-19T14:19:11.311097+00:00"
+}

@@ -2,6 +2,20 @@
 
 # AutoWise — Image Retrieval & Multimodal Microservice (Thành viên 3)
 
+## Chạy ablation A/B/C/D có thể tái lập
+
+Runner đã bỏ số liệu baseline gán cố định, build riêng Standalone/CLIP trên cùng
+danh sách ảnh và đo thật cả bốn cấu hình. Xem [ABLATION.md](ABLATION.md) để chạy
+và đọc bằng chứng. Các bảng baseline lịch sử bên dưới chưa được xác minh lại;
+không dùng chúng thay cho kết quả của runner mới.
+
+```powershell
+.\.venv\Scripts\python.exe -m image_service.scripts.run_ablation_study --repeats 3
+```
+
+Mỗi lượt ghi vào một thư mục mới trong `image_service/indexes/ablation_real/`,
+không ghi đè index phục vụ API hoặc báo cáo cũ.
+
 Toàn bộ nghiệp vụ và tài nguyên của **Thành viên 3 (Image Retrieval và Backend API)** đã được cô lập hoàn toàn vào thư mục `image_service/` và đóng gói thành **1 Docker Container độc lập** (không phụ thuộc PostgreSQL, chạy được tức thì).
 
 ---

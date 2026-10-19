@@ -30,6 +30,10 @@ eval/preflight*.csv
 eval/preflight*.summary.json
 eval/preflight*.responses.json
 
+# Rebuilt ablation vectors; retain the small reports, split and per-query evidence.
+image_service/indexes/ablation_real/*/*/image.index
+image_service/indexes/ablation_real/*/*/image_embeddings.npy
+
 # Exclude local build artifacts left by the previous backend.
 backend/CarRag.Api/
 
