@@ -21,6 +21,43 @@ def test_required_intents(question, intent):
     assert result.intent == intent
 
 
+def test_colloquial_price_difference_is_a_comparison():
+    result = parse('Mazda CX-5 giá cả khác bao nhiêu với Honda CRV?',
+        [car(), car('mazda', 'Mazda CX-5', ['CX-5'], brand_name='Mazda')])
+    assert result.intent == 'compare_cars'
+    assert set(result.car_ids) == {'car_34_3', 'mazda'}
+
+
+def test_price_comparison_with_missing_reference_requires_clarification():
+    result = parse('Chiếc xe bên trên giá cả khác bao nhiêu với Honda CRV?')
+    assert result.intent == 'compare_cars'
+    assert result.ambiguities
+
+
+def test_cheaper_car_search_does_not_require_two_named_models():
+    result = parse('Tìm xe rẻ hơn Honda CRV với 7 chỗ')
+    assert result.intent == 'find_car'
+    assert not any('hai mẫu xe' in message for message in result.ambiguities)
+
+
+@pytest.mark.parametrize('question', [
+    'Bảo hành của Mazda CX-5 và Honda CR-V thế nào?',
+    'Giữa Mazda CX-5 và Honda CR-V, ưu tiên giá thấp hơn thì nên cân nhắc chiếc nào?',
+])
+def test_followup_attributes_keep_both_comparison_subjects(question):
+    result = parse(question, [car(), car('mazda', 'Mazda CX-5', ['CX-5'], brand_name='Mazda')])
+    assert result.intent == 'compare_cars'
+    assert set(result.car_ids) == {'car_34_3', 'mazda'}
+    assert not result.ambiguities
+
+
+def test_ordinary_specification_request_is_not_only_a_data_scope_question():
+    from app.application.rag.intent import is_data_scope_question
+    assert not is_data_scope_question('Liệt kê thông số Honda CR-V trong dữ liệu cho thị trường Việt Nam')
+    assert not is_data_scope_question('Liệt kê thông số Honda CR-V trong dữ liệu và cho biết có đúng với phiên bản Việt Nam không')
+    assert is_data_scope_question('Thông số trong dữ liệu có đúng với phiên bản bán tại Việt Nam không?')
+
+
 @pytest.mark.parametrize("value,expected", [("800 triệu", 800_000_000), ("1 tỷ", 1_000_000_000),
     ("1,2 tỷ", 1_200_000_000), ("1.2 tỷ", 1_200_000_000)])
 def test_money_and_strict_upper_bound(value, expected):

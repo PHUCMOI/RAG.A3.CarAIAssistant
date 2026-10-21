@@ -78,6 +78,8 @@ services:
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
       AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN:-}
+    volumes:
+      - orders-session-keys:/root/.aspnet/DataProtection-Keys
     ports:
       - "127.0.0.1:5090:8080"
     depends_on:
@@ -123,6 +125,7 @@ services:
 volumes:
   car-rag-postgres:
   text-model-cache:
+  orders-session-keys:
 
 
 networks:

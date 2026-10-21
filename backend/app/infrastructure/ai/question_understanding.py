@@ -29,6 +29,20 @@ Nếu có ảnh kèm câu hỏi về đơn AW- hoặc đối chiếu ảnh với
 hasImage không được ghi đè ý định đơn hàng; backend sẽ kết hợp nhận diện ảnh và tra cứu đơn.
 Với câu tiếp nối ngắn như 'đúng', 'còn cái đó', 'bao giờ', chỉ kế thừa chủ đề rõ trong context.
 Không dùng context để thay tên xe/mã đơn mới được nêu rõ. Không đoán khi nhiều cách hiểu.
+lastContexts chỉ chứa các tên xe đã kiểm tra trong catalogue; dùng để hiểu chủ đề, không phải nguồn giá/thông số.
+Khi lastContexts có đúng hai xe, 'hai chiếc đó/hai xe đó' chỉ cả hai xe, không phải yêu cầu chọn một xe.
+Sau lượt so sánh, 'ưu tiên giá thấp hơn thì cân nhắc chiếc nào' là lựa chọn giữa các xe trong lastContexts,
+không phải tìm xe mới. Viết lại question với đầy đủ tên chính xác của cả hai xe và giữ tiêu chí giá/bảo hành.
+Được kế thừa chữ số thuộc nguyên tên xe trong lastContexts (ví dụ Mazda CX-5); không được kế thừa giá,
+ngày, số tiền hay thông số từ lastAnswer. Nếu không có đủ xe tham chiếu hoặc 'hai xe' khớp nhiều hơn hai xe,
+hỏi làm rõ các mẫu xe cần đối chiếu; không tự chọn một xe hay tự bổ sung mẫu mới.
+Nếu unresolvedCarReference=true, câu nhắc 'xe bên trên/xe đó/trong ảnh' chưa xác định được một xe:
+với route catalogue bắt buộc needsClarification=true và clarification là câu hỏi cụ thể về mẫu xe còn thiếu,
+giữ nguyên mẫu xe đối chiếu đã nêu (ví dụ Honda CR-V). Nếu nhiều xe trong lastContexts thì hỏi khách chọn,
+không tự chọn xe đầu tiên. Không nêu giá/thông số hoặc tính chênh lệch trong câu hỏi làm rõ.
+'Giá cả khác bao nhiêu với', 'chênh giá bao nhiêu', 'đắt hơn/rẻ hơn' là so sánh giá; diễn đạt rõ là so sánh
+giá các mẫu xe đã xác định, không biến thành hỏi giá riêng một xe.
+Hỏi thông số trong dữ liệu có khớp phiên bản Việt Nam không là hỏi phạm vi nguồn dữ liệu, không bắt buộc tên model.
 Nếu không đủ hiểu ý định, route=clarification, needsClarification=true và clarification là câu hỏi
 ngắn tiếng Việt về phần thiếu; không hỏi chung chung toàn bộ câu. Nếu hiểu được, false và null.
 Không hỏi chọn đơn ở bước này: route=orders, backend xác định đơn hoặc hỏi mã đơn sau.
@@ -41,11 +55,21 @@ Trả JSON với question,route,needsClarification,clarification.'''},
     # Never permit the interpretation stage to substitute a sensitive reference.
     codes = lambda value: set(re.findall(r'\bAW-[A-Z0-9-]+\b', value, re.I))
     nums = lambda value: set(re.findall(r'\d+(?:[.,]\d+)*', value))
-    if {c.upper() for c in codes(question)} != {c.upper() for c in codes(result.question)} or nums(result.question) - nums(question):
+    numeric_question = result.question
+    if result.route == 'catalogue':
+        for car in (context or {}).get('lastContexts') or []:
+            name = car.get('displayName') if isinstance(car, dict) else None
+            if isinstance(name, str) and name.strip():
+                # Permit digits only inside a complete verified model name.
+                # They must not authorize new amounts or similar unknown models.
+                numeric_question = re.sub(r'(?<!\w)' + re.escape(name) + r'(?!\w)', '', numeric_question, flags=re.I)
+    if {c.upper() for c in codes(question)} != {c.upper() for c in codes(result.question)} or nums(numeric_question) - nums(question):
         result.question = question
-    if result.route == 'clarification' or result.needs_clarification:
+    unresolved = bool(context and context.get('unresolvedCarReference')) and result.route != 'orders'
+    if result.route == 'clarification' or result.needs_clarification or unresolved:
         result.question = question
         result.route = 'clarification'
         result.needs_clarification = True
-        result.clarification = result.clarification or 'Bạn muốn hỏi về xe hay đơn hàng, và cần tra cứu điều gì?'
+        result.clarification = result.clarification or ('Bạn đang nhắc tới mẫu xe nào ở phía trên?'
+            if unresolved else 'Bạn muốn hỏi về xe hay đơn hàng, và cần tra cứu điều gì?')
     return result

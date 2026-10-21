@@ -90,7 +90,8 @@ public class ContextDatabaseTests
             await Assert.ThrowsAsync<KeyNotFoundException>(() => service.Send(session.Id, Guid.NewGuid(), input, default));
             await Assert.ThrowsAsync<VersionConflictException>(() => service.Send(session.Id, user.Id, input with { RequestId=Guid.NewGuid() }, default));
             session = await service.Send(session.Id, user.Id, new(Guid.NewGuid(), restored.Version, "Xe đó giá bao nhiêu?"), default);
-            Assert.Contains("car_34_3", handler.Bodies.Last());
+            using (var followup = JsonDocument.Parse(handler.Bodies.Last()))
+                Assert.Contains("Honda CR-V", followup.RootElement.GetProperty("question").GetString());
             session = await service.Send(session.Id, user.Id, new(Guid.NewGuid(), session.Version, "Ảnh xe", "AQID", "image/png"), default);
             db.ChangeTracker.Clear();
             restored = await orders.Get(session.Id, user.Id, default);

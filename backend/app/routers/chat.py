@@ -72,12 +72,28 @@ async def chat(request: ChatRequest, service):
     from app.core.chat_access import restricted_admin_question, refusal_result
     if restricted_admin_question(request.question):
         return ChatResponse(**refusal_result())
+    from app.application.rag.intent import is_data_scope_question
+    if is_data_scope_question(request.question):
+        scope = ('Thông số kỹ thuật trong bộ dữ liệu chủ yếu tham khảo từ DVM-CAR tại thị trường Anh; '
+                 'chưa xác nhận tương ứng với các phiên bản bán tại Việt Nam. Cần đối chiếu mẫu xe, năm '
+                 'và phiên bản cụ thể với nguồn chính hãng tại Việt Nam trước khi kết luận.')
+        final = await compose_grounded(request.question, {
+            'intent': 'ask_data_scope', 'status': 'ok', 'retrievedAnswer': scope,
+            'evidence': [{'contextId': 'policy:catalogue-scope', 'section': 'data_scope', 'content': scope}],
+            'citations': [{'contextId': 'policy:catalogue-scope', 'title': 'Phạm vi nguồn dữ liệu catalogue'}]})
+        return ChatResponse(contexts=[], intent='ask_data_scope', **final)
     if request.clarification:
-        final = await compose_grounded(request.question, {'status': 'needs_clarification', 'retrievedAnswer': request.clarification})
-        return ChatResponse(contexts=[], **final)
+        return ChatResponse(answer=request.clarification, contexts=[], grounded=False,
+                            status='needs_clarification', generationMode='clarification')
     result = await service.answer(request.question, image_name=request.image_name,
         explicit_filters=request.filters, car_ids=request.car_ids, top_k=request.top_k)
     r = result.retrieval_result
+    if result.status == 'needs_clarification':
+        # The retrieval layer already supplies the missing-information question.
+        # It contains no retrieved vehicle claims requiring a model audit.
+        return ChatResponse(answer=result.answer, contexts=[], grounded=False,
+                            status='needs_clarification', generationMode='clarification',
+                            intent=r.analysis.intent, filters=r.filters, retrieval=r.retrieval)
     from app.application.rag.documents import ENUMS
     def context(car):
         body = ENUMS.get(car.body_type, car.body_type) if car.body_type else "ô tô"
@@ -90,11 +106,17 @@ async def chat(request: ChatRequest, service):
                 specs[label] = f"{value} chỗ" if field == "seats" else str(ENUMS.get(value, value))
         return ChatContext(carId=car.car_id, displayName=car.display_name, description=car.description,
                            presenceSourceId=car.presence_source_id, summary=summary, specifications=specs)
-    sections = {e.section for e in r.evidence}
     cars = [c.model_dump(mode="json", by_alias=True) for c in r.cars]
     for car in cars:
-        if "warranty" not in sections:
-            for field in ("warrantyMonths", "warrantyDistanceKm"):
+        policy_facts = {key: fact for e in r.evidence
+                        if e.section == "warranty" and e.car_id == car["carId"]
+                        for key, fact in e.metadata.get("facts", {}).items()}
+        for field, fact_key in (("warrantyMonths", "duration_months"),
+                                ("warrantyDistanceKm", "distance_limit_km")):
+            fact = policy_facts.get(fact_key)
+            if fact and fact.get("sourceId"):
+                car[field] = fact["value"]
+            else:
                 car.pop(field, None)
     price_differences = []
     if r.analysis.intent == "compare_cars":

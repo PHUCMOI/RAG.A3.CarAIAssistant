@@ -50,6 +50,17 @@ def test_chat_passes_extracted_constraints_to_composer(client):
     assert constraints["maxPriceInclusive"] is True
 
 
+def test_chat_omits_catalogue_warranty_without_sourced_policy(client):
+    composer = AsyncMock(return_value={"answer": "Chưa có dữ liệu bảo hành có nguồn.", "grounded": False,
+        "status": "no_data", "evidence": [], "citations": [], "generationMode": "bedrock-natural"})
+    with patch("app.routers.chat.compose_grounded", composer):
+        response = client.post("/api/chat", json={"question": "Bảo hành Honda CR-V"})
+    assert response.status_code == 200
+    data = composer.call_args.args[1]
+    assert data["cars"]
+    assert all("warrantyMonths" not in car and "warrantyDistanceKm" not in car for car in data["cars"])
+
+
 def test_preserves_measurement_units_instead_of_confusing_mm_with_metres():
     with pytest.raises(ValueError, match="measurement unit"):
         validate_answer("Chiều dài 4.808 m", {"lengthMm": 4808})

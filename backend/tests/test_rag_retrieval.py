@@ -86,6 +86,22 @@ def test_comparison_has_evidence_for_both_cars():
     assert {e.car_id for e in result.evidence} == {"car_34_3", "b"}
 
 
+def test_comparison_covers_price_seats_and_warranty_for_each_car():
+    from app.application.rag.intent import analyze
+    from app.application.rag.text_retriever import TextRetriever
+    repo = MemoryRepository([car(), car("b", "Mazda CX-5", ["CX-5"], brand_name="Mazda")])
+
+    async def run():
+        analysis = await analyze("So sánh Honda CR-V và Mazda CX-5 về giá, số ghế và bảo hành.", repo.cars)
+        return await TextRetriever(repo).retrieve(analysis, top_k=5)
+
+    result = asyncio.run(run())
+    assert {(e.car_id, e.section) for e in result.evidence} >= {
+        (cid, section) for cid in ("car_34_3", "b")
+        for section in ("price", "specifications", "warranty")
+    }
+
+
 def test_comparison_requested_price_and_specifications_are_present():
     from app.application.rag.intent import analyze
     from app.application.rag.text_retriever import TextRetriever

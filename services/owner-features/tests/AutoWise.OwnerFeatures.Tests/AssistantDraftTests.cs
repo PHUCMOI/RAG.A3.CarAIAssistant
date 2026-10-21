@@ -69,7 +69,10 @@ public class AssistantDraftTests
             Assert.Equal("submitted",session.Draft.Status); Assert.Contains(session.Draft.Audit,x=>x.Action=="confirm");
             var unchanged=OrderStore.Read(await db.Orders.AsNoTracking().SingleAsync(x=>x.Id==order.Id));
             Assert.Equal(order.Version,unchanged.Version); Assert.Null(unchanged.PlannedDate); Assert.Equal(0,unchanged.NetReceived);
-            await Assert.ThrowsAsync<BusinessRuleException>(()=>Send("Hủy đơn vì bận"));
+            await Send("Hủy đơn vì bận");
+            Assert.Equal("GetMyPendingChangeRequest", session.Messages.Last().Tool);
+            Assert.Contains(change.Code, session.Messages.Last().Content);
+            Assert.Equal("submitted", session.Draft!.Status);
             db.ChangeTracker.Clear(); await db.Changes.Where(x=>x.OrderId==order.Id).ExecuteDeleteAsync();
             await Send("Hủy đơn vì không còn nhu cầu"); await Act(Input("discard"));
             await Assert.ThrowsAsync<BusinessRuleException>(()=>Act(Input("confirm")));

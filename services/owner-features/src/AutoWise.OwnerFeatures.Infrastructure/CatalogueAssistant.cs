@@ -40,6 +40,7 @@ public sealed class CatalogueAssistant(OrdersDb db, HttpClient http, CatalogueCh
         }
         HttpResponseMessage response;
         string? imageUrl = null;
+        bool? referencedUncertain = null;
         if (input.Clarification != null)
         {
             response = await http.PostAsJsonAsync("api/chat", new { question=input.Content, clarification=input.Clarification }, ct);
@@ -67,10 +68,11 @@ public sealed class CatalogueAssistant(OrdersDb db, HttpClient http, CatalogueCh
             var confirmed = Regex.IsMatch(normalized.Trim(), @"^(dung|dung roi|vang|ok|chinh xac|yes)[.! ]*$");
             var previousQuestion = turns.SelectMany(t => t.Messages).LastOrDefault(m => m.Role == "user" && m.Catalog)?.Content;
             var effectiveQuestion = confirmed && previousQuestion != null ? previousQuestion : input.Content;
-            var refers = Regex.IsMatch(normalized, @"xe (do|nay)|mau (do|nay)|trong anh|trong hinh");
-            var question = refers && context?.Count > 0 ? $"{input.Content} (Xe đang trao đổi: {context[0].DisplayName})" : effectiveQuestion;
-            var carIds = confirmed && context?.Count > 0 ? context.Select(c => c.CarId).ToArray() : refers && context?.Count > 0 && !Regex.IsMatch(normalized, "so sanh|compare") ? new[] { context[0].CarId } : null;
-            response = await http.PostAsJsonAsync("api/chat", new { question, carIds, clarification=input.Clarification }, ct);
+            var reference = CatalogueReferences.Resolve(effectiveQuestion, turns.SelectMany(t => t.Messages));
+            if (reference.Uncertain) referencedUncertain = true;
+            var carIds = confirmed && context?.Count > 0 ? context.Select(c => c.CarId).ToArray() : null;
+            response = await http.PostAsJsonAsync("api/chat", new { question=reference.Question, carIds,
+                clarification=reference.Clarification, imageMatch=reference.Uncertain ? new { uncertain=true } : null }, ct);
         }
         using (response)
         {
@@ -91,7 +93,7 @@ public sealed class CatalogueAssistant(OrdersDb db, HttpClient http, CatalogueCh
                     var name = string.Join(" ", new[] { car.TryGetProperty("brand", out var brand) ? brand.GetString() : null, car.TryGetProperty("model", out var model) ? model.GetString() : null }.Where(s => !string.IsNullOrWhiteSpace(s)));
                     contexts.Add(new(id, name.Length > 0 ? name : id));
                 }
-            bool? uncertain = root.TryGetProperty("uncertain", out var uncertainty) && uncertainty.ValueKind is JsonValueKind.True or JsonValueKind.False ? uncertainty.GetBoolean() : null;
+            bool? uncertain = root.TryGetProperty("uncertain", out var uncertainty) && uncertainty.ValueKind is JsonValueKind.True or JsonValueKind.False ? uncertainty.GetBoolean() : referencedUncertain;
             await using var tx = await db.Database.BeginTransactionAsync(ct);
             await db.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock(hashtextextended({sessionId.ToString()},0))", ct);
             var current = await db.ChatSessions.SingleAsync(s => s.Id == sessionId && s.UserId == userId, ct);

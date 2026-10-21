@@ -147,10 +147,14 @@ def test_complete_comparison_can_use_llm_without_requiring_unasked_fields():
     assert "7 chỗ" in r.answer and "5 chỗ" in r.answer
 
 
-def test_comparison_with_insufficient_evidence_budget_is_partial():
+def test_comparison_expands_ranking_budget_for_requested_facts():
     s, _ = service([car(), car("b", "Mazda CX-5", ["CX-5"], brand_name="Mazda")])
     r = asyncio.run(s.answer("So sánh CRV và CX-5 về giá và số chỗ", top_k=2))
-    assert r.status == "partial"
+    assert r.status == "ok"
+    assert {(e.car_id, e.section) for e in r.retrieval_result.evidence} == {
+        (cid, section) for cid in ("car_34_3", "b")
+        for section in ("price", "specifications")
+    }
 
 
 def test_comparison_of_wheelbase_only_requires_overall_length_when_also_requested():

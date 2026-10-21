@@ -10,6 +10,19 @@ def normalize(value: str) -> str:
     return " ".join("".join(c for c in value if unicodedata.category(c) != "Mn").split())
 
 
+CAR_REFERENCE = re.compile(r'\b(?:chiec\s+)?(?:xe|mau(?: xe)?)\s+(?:ben tren|o tren|vua roi|truoc do|do|nay|trong anh|trong hinh)\b')
+
+
+def is_data_scope_question(question: str) -> bool:
+    q = normalize(question)
+    return (not re.search(r'\bdon\b|\b(?:aw|pr)-', q)
+            and not re.search(r'\b(?:liet ke|cho xem|cung cap|so sanh)\b', q)
+            and bool(re.search(r'\b(?:dung|khop|xac nhan|ap dung|tuong ung|phu hop|lay tu dau|nguon nao)\b', q))
+            and any(word in q for word in ('du lieu', 'catalogue', 'nguon'))
+            and any(word in q for word in ('thong so', 'phien ban'))
+            and any(word in q for word in ('viet nam', 'ban viet', 'thi truong anh')))
+
+
 def merge_filters(parsed: RagFilters, explicit: RagFilters | None) -> RagFilters:
     values = parsed.model_dump(by_alias=False)
     if explicit:
@@ -157,7 +170,13 @@ async def analyze(question: str, catalogue, classifier=None, car_ids=None) -> Qu
         result.car_ids = list(dict.fromkeys(cid for cid in car_ids if cid in known))
         if set(car_ids) - known:
             result.ambiguities.append("Mẫu xe được chọn chưa có trong catalogue; chưa thể tra cứu dữ liệu.")
-    if "so sanh" in q or "compare" in q:
+    car_search = any(w in q for w in ("tim xe", "tim ", "loc xe", "ngan sach", "tu van"))
+    price_comparison = (not car_search
+                        and bool(re.search(r'chenh(?: lech)?|khac bao nhieu|dat hon|re hon', q))
+                        and (len(result.car_ids) >= 2 or bool(re.search(r'\bvoi\b', q))))
+    multi_car_attributes = (len(result.car_ids) >= 2 and not car_search and 'dai ly' not in q
+                            and bool(re.search(r'\b(?:gia|bao hanh|thong so|dong co|kich thuoc|so cho|so ghe|cong suat|tieu hao)\b', q)))
+    if "so sanh" in q or "compare" in q or price_comparison or multi_car_attributes:
         result.intent = "compare_cars"
         if len(result.car_ids) < 2:
             result.ambiguities.append("Vui lòng nêu ít nhất hai mẫu xe để so sánh.")
@@ -168,7 +187,7 @@ async def analyze(question: str, catalogue, classifier=None, car_ids=None) -> Qu
         result.intent = "find_dealer"
     elif "bao hanh" in q:
         result.intent = "ask_warranty"
-    elif any(w in q for w in ("tim xe", "tim ", "loc xe", "ngan sach", "tu van")):
+    elif car_search:
         result.intent = "find_car"
     elif re.search(r"\b(gia|bao nhieu tien)\b", q) and (result.car_ids or not any(w in q for w in ("duoi", "gia dinh"))):
         result.intent = "ask_price"

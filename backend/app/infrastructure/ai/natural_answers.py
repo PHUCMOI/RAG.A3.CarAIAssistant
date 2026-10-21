@@ -139,6 +139,10 @@ async def compose_grounded(question: str, verified_data: dict) -> dict:
         aws_secret_access_key=settings.aws_secret_access_key,
         aws_session_token=settings.aws_session_token, aws_profile=settings.aws_profile)
     presentation = ""
+    if verified_data.get('intent') == 'ask_data_scope':
+        presentation += "\nTrả lời trực tiếp câu hỏi về phạm vi dữ liệu theo evidence data_scope. Không yêu cầu tên xe mới trả lời được giới hạn chung. Không khẳng định thông số khớp bản Việt Nam; có thể hỏi tên xe/năm/phiên bản ở cuối nếu khách cần đối chiếu cụ thể."
+    if verified_data.get('draftPrepared') is True and verified_data.get('draft'):
+        presentation += "\nĐây là kết quả chuẩn bị bản nháp. Nêu đúng mã đơn, ngày mong muốn (requestedDateDisplay), lý do đã có trong draft; đây là thông tin khách đề nghị, chưa phải lịch được đại lý chấp nhận. Nếu draft.ready=true, hướng dẫn kiểm tra bản nháp và bấm Xác nhận gửi yêu cầu; không yêu cầu nhập lại ngày/lý do đã có. Nói rõ chưa gửi yêu cầu và lịch nhận xe chưa thay đổi. Không khẳng định ngày mong muốn còn chỗ, đã duyệt hoặc thao tác đã thực hiện. Nếu draft.ready=false, chỉ hỏi phần còn thiếu. Không yêu cầu thực hiện đổi lịch ngay để hoàn thành việc tạo bản nháp."
     if verified_data.get('intent') == 'find_car':
         presentation = "\nVới lượt tìm xe này: mở đầu đúng 'Các mẫu xe phù hợp'. Không nhắc lại ngân sách hoặc chia xe thành nhóm đang bán/ngừng bán. Mỗi xe chỉ nêu tên, số chỗ, giá tham khảo đầy đủ VND và ngày giá nếu có. Không nêu động cơ/hộp số/công suất. Backend sẽ đính kèm requiredQualifiers nguyên văn; không tự diễn giải lại tình trạng phân phối."
     if verified_data.get('intent') == 'ask_specification':

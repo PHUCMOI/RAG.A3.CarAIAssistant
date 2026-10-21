@@ -15,6 +15,56 @@ DATA = {'status': 'ok', 'cars': [
                   {'contextId': 'hrv:price', 'sourceId': 'honda', 'title': 'Honda'}]}
 
 
+PRICE_COMPARISON = {'status': 'ok', 'cars': [
+    {'displayName': 'Mazda CX-5', 'priceVndFrom': 699000000},
+    {'displayName': 'Honda CR-V', 'priceVndFrom': 1039000000}],
+    'referencePriceDifferences': [{'cars': ['Mazda CX-5', 'Honda CR-V'], 'differenceVnd': 340000000}],
+    'evidence': [{'contextId': 'mazda:price', 'section': 'price', 'content': 'Mazda CX-5: 699000000 VND'},
+                 {'contextId': 'honda:price', 'section': 'price', 'content': 'Honda CR-V: 1039000000 VND'}]}
+
+PRICE_TABLE = ('| Tiêu chí | Mazda CX-5 | Honda CR-V |\n|---|---|---|\n'
+               '| Giá tham khảo | 699.000.000 VND | 1.039.000.000 VND |\n'
+               '| Chênh lệch giá | — | Cao hơn 340.000.000 VND |')
+
+
+@pytest.mark.parametrize('answer', [PRICE_TABLE,
+    'Honda CR-V có mức giá cao hơn là 1.039.000.000 VND.',
+    'Honda CR-V có giá 1.039.000.000 VND, chênh lệch giá 340.000.000 VND.',
+    'Mazda CX-5 giá 699.000.000 VND.\nHonda CR-V giá 1.039.000.000 VND.\nChênh lệch giá: 340.000.000 VND.',
+])
+def test_verified_price_difference_is_not_mistaken_for_a_sticker_price(answer):
+    assert validate_answer(answer, PRICE_COMPARISON) == answer
+
+
+@pytest.mark.parametrize('answer', [
+    PRICE_TABLE.replace('Cao hơn 340.000.000', 'Cao hơn 699.000.000'),
+    PRICE_TABLE.replace('Cao hơn 340.000.000', 'Cao hơn 1.039.000.000'),
+    PRICE_TABLE.replace('699.000.000 VND | 1.039.000.000', '1.039.000.000 VND | 699.000.000'),
+    'Honda CR-V giá 699.000.000 VND, chênh lệch giá 340.000.000 VND.',
+    'Honda CR-V có mức giá cao hơn là 699.000.000 VND.',
+])
+def test_difference_label_cannot_authorize_a_wrong_price_or_difference(answer):
+    with pytest.raises(ValueError):
+        validate_answer(answer, PRICE_COMPARISON)
+
+
+def test_price_difference_requires_the_same_verified_pair():
+    data = dict(PRICE_COMPARISON, referencePriceDifferences=[
+        {'cars': ['Toyota Camry', 'Honda CR-V'], 'differenceVnd': 340000000}])
+    with pytest.raises(ValueError):
+        validate_answer(PRICE_TABLE, data)
+
+
+def test_correct_comparison_table_reaches_final_semantic_review():
+    provider = AsyncMock()
+    provider._chat.side_effect = [{'answer': PRICE_TABLE},
+        {'supported': True, 'contextIds': ['mazda:price', 'honda:price'], 'reason': 'Prices and difference match both cars'}]
+    with patch('app.infrastructure.ai.natural_answers.BedrockProvider', return_value=provider):
+        final = asyncio.run(compose_grounded('“Tôi ưu tiên giá thấp hơn thì nên cân nhắc chiếc nào?”', PRICE_COMPARISON))
+    assert final['grounded'] and final['status'] == 'ok'
+    assert {e['contextId'] for e in final['evidence']} == {'mazda:price', 'honda:price'}
+
+
 @pytest.mark.parametrize('answer', [
     'Ford Edge giá 699.000.000 VND.',
     '| Tiêu chí | Ford Edge | Honda HR-V |\n|---|---|---|\n| Giá | 699.000.000 VND | 1.560.000.000 VND |'])

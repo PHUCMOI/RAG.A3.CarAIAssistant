@@ -1,4 +1,6 @@
 import logging
+import re
+from app.application.rag.context_builder import requested_spec_fields
 from app.application.rag.contracts import RetrievalResult
 from app.application.rag.documents import build_documents
 from app.application.rag.intent import merge_filters, matches_filters, normalize
@@ -118,15 +120,32 @@ class TextRetriever:
             ranked.sort(key=lambda e: (preference[e.section], -e.score, e.context_id))
         # Reserve a slot per explicit car before filling the remaining evidence budget.
         selected = []
+        if analysis.intent == "compare_cars":
+            # top_k is a ranking budget, not permission to omit an explicitly
+            # requested comparison cell. Use fresh complete documents here so
+            # split search chunks cannot hide a requested attribute or policy.
+            requested_sections = set()
+            question = normalize(analysis.question)
+            if re.search(r"\bgia\b(?!\s+dinh\b)|bao nhieu tien", question):
+                requested_sections.add("price")
+            if requested_spec_fields(analysis.question):
+                requested_sections.add("specifications")
+            if "bao hanh" in question:
+                requested_sections.add("warranty")
+            selected = [d.evidence() for d in documents
+                        if d.car_id in analysis.car_ids and d.section in requested_sections]
+            top_k = max(top_k, len(selected))
         reserve_ids = ids or list(dict.fromkeys(e.car_id for e in ranked if e.car_id))
         for cid in reserve_ids:
+            if any(e.car_id == cid for e in selected):
+                continue
             evidence = next((e for e in ranked if e.car_id == cid), None)
             if evidence:
                 selected.append(evidence)
             if len(selected) == top_k:
                 break
-        selected_ids = {e.context_id for e in selected}
-        selected += [e for e in ranked if e.context_id not in selected_ids][:max(0, top_k - len(selected))]
+        selected_ids = {e.metadata.get("parentContextId", e.context_id) for e in selected}
+        selected += [e for e in ranked if e.metadata.get("parentContextId", e.context_id) not in selected_ids][:max(0, top_k - len(selected))]
         result.evidence = selected
         used_ids = {e.car_id for e in selected if e.car_id}
         result.cars = [c for c in cars if c.car_id in used_ids][:top_k]

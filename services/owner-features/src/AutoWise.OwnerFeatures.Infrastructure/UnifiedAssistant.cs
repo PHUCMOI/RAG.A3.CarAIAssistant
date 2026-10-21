@@ -39,8 +39,14 @@ public sealed class UnifiedAssistant(OrdersDb db, HttpClient http, CatalogueChat
         if (imageBytes != null) await ChatAttachments.CheckBudget(db, sessionId, imageBytes.Length, ct);
         var messages = turns.SelectMany(t => t.Messages).ToList();
         var original = string.IsNullOrWhiteSpace(input.Content) ? "Nhận diện xe trong ảnh" : input.Content;
-        using var response = await http.PostAsJsonAsync("api/chat/understand", new { question=original,
+        var reference = imageBytes == null ? CatalogueReferences.Resolve(original, messages) : new CatalogueReference(original);
+        if (reference.Clarification != null)
+            return await catalogue.Send(sessionId,userId,new(input.RequestId,input.Version,original,
+                OriginalContent:original,Clarification:reference.Clarification),ct,hash);
+        using var response = await http.PostAsJsonAsync("api/chat/understand", new { question=reference.Question,
             context=new { hasImage=imageBytes != null, lastRoute=messages.LastOrDefault()?.Catalog == false ? "orders" : "catalogue",
+                lastContexts=messages.LastOrDefault(m => m.Catalog && m.Role == "assistant" && m.Contexts?.Count > 0)
+                    ?.Contexts!.Select(c => new { c.CarId, c.DisplayName }),
                 recentQuestions=messages.Where(m => m.Role == "user").TakeLast(3).Select(m => m.Content),
                 lastAnswer=messages.LastOrDefault()?.Content is {} last ? last[..Math.Min(last.Length,1800)] : null } }, ct);
         response.EnsureSuccessStatusCode();

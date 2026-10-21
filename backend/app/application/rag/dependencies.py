@@ -33,6 +33,15 @@ class LazyRagService:
     def __init__(self, request):
         self.request = request
 
+    async def catalogue_context(self, car_ids):
+        """Guest history supplies hints; canonical names come from catalogue rows."""
+        connection_provider = self.request.app.dependency_overrides.get(get_db_connection, get_db_connection)
+        from contextlib import asynccontextmanager
+        async with asynccontextmanager(connection_provider)() as connection:
+            cars = await RagRepository(connection).catalogue()
+        known = {c.car_id: c.display_name for c in cars}
+        return [{'carId': cid, 'displayName': known[cid]} for cid in dict.fromkeys(car_ids) if cid in known]
+
     async def answer(self, *args, **kwargs):
         connection_provider = self.request.app.dependency_overrides.get(get_db_connection, get_db_connection)
         from contextlib import asynccontextmanager

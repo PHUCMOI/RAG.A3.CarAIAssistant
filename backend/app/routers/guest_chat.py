@@ -8,9 +8,8 @@ from pydantic import BaseModel, Field
 from app.core.config import get_settings
 from app.models.schemas import ChatRequest
 from app.application.rag.dependencies import get_lazy_rag_service
-from app.application.rag.intent import normalize
+from app.application.rag.intent import normalize, CAR_REFERENCE, is_data_scope_question
 from app.infrastructure.ai.question_understanding import understand
-from app.infrastructure.ai.natural_answers import compose_grounded
 from app.routers.chat import chat
 
 router = APIRouter(prefix='/chat', tags=['Chat'])
@@ -29,6 +28,12 @@ class GuestTurn(BaseModel):
     recentQuestions: list[str] = Field(default_factory=list, max_length=3)
     lastAnswer: str = Field(default='', max_length=1800)
     lastContexts: list[RememberedCar] = Field(default_factory=list, max_length=10)
+
+
+def login_required():
+    return dict(answer='Bạn cần đăng nhập để tra cứu đơn hoặc tạo đề nghị cho đơn thuộc tài khoản của mình. Câu hỏi chưa được thực hiện.',
+                grounded=False, status='needs_clarification', evidence=[], citations=[], contexts=[],
+                generationMode='authorization-policy', requiresLogin=True)
 
 
 @router.post('/turns')
@@ -51,15 +56,33 @@ async def guest_turn(request: GuestTurn, service=Depends(get_lazy_rag_service)):
     question = request.question.strip() or 'Nhận diện xe trong ảnh'
     if any(len(q) > 1000 for q in request.recentQuestions):
         raise HTTPException(413, 'Lịch sử câu hỏi quá lớn.')
+    # Explicit account references require authentication regardless of AI availability.
+    if re.search(r'\b(?:AW|PR)-[A-Z0-9]+(?:-[A-Z0-9]+)*\b', question, re.I):
+        return login_required()
+    if image is None and is_data_scope_question(question):
+        return await chat(ChatRequest(question=question), service)
+    remembered = await service.catalogue_context([c.car_id for c in request.lastContexts]) if request.lastContexts else []
+    # Resolve once, before interpretation; never pick the first of multiple cars.
+    reference = CAR_REFERENCE.search(normalize(question)) if image is None else None
+    unresolved = reference is not None and len(remembered) != 1
+    resolved_question = question
+    if reference and len(remembered) == 1:
+        # Normalization changes accents and spaces, so replace through word spans
+        # in the original input rather than using normalized character offsets.
+        words = list(re.finditer(r'\w+', question))
+        start_word = len(re.findall(r'\w+', normalize(question)[:reference.start()]))
+        end_word = start_word + len(re.findall(r'\w+', reference.group()))
+        if end_word <= len(words):
+            resolved_question = (question[:words[start_word].start()] + remembered[0]['displayName']
+                                 + question[words[end_word - 1].end():])
     try:
-        interpreted = await understand(question, {'hasImage': image is not None, 'lastRoute': 'catalogue',
-            'recentQuestions': request.recentQuestions, 'lastAnswer': request.lastAnswer})
+        interpreted = await understand(resolved_question, {'hasImage': image is not None, 'lastRoute': 'catalogue',
+            'recentQuestions': request.recentQuestions, 'lastAnswer': request.lastAnswer,
+            'lastContexts': remembered, 'unresolvedCarReference': unresolved})
     except Exception as exc:
         raise HTTPException(503, 'Chưa hiểu được câu hỏi qua Bedrock. Vui lòng thử lại.') from exc
     if interpreted.route == 'orders':
-        final = await compose_grounded(question, {'status': 'needs_clarification',
-            'retrievedAnswer': 'Khách chưa đăng nhập. Cần đăng nhập để tra cứu/đối chiếu ảnh với đơn thuộc tài khoản; chưa có dữ liệu đơn hàng.'})
-        return dict(final, contexts=[], requiresLogin=True)
+        return login_required()
     if interpreted.needs_clarification:
         return await chat(ChatRequest(question=question, clarification=interpreted.clarification), service)
     if image is not None:
@@ -75,14 +98,14 @@ async def guest_turn(request: GuestTurn, service=Depends(get_lazy_rag_service)):
         except (httpx.HTTPError, ValueError, KeyError) as exc:
             raise HTTPException(503, 'Chưa xử lý được ảnh. Vui lòng thử lại.') from exc
     q = interpreted.question
+    if reference and len(remembered) == 1 and normalize(remembered[0]['displayName']) not in normalize(q):
+        # Keep the one resolved subject if interpretation removes it or restores
+        # an unresolved pronoun; do not perform another history selection.
+        q = resolved_question
     car_ids = None
     normalized = normalize(q)
-    if request.lastContexts:
+    if remembered:
         if re.fullmatch(r'(dung|dung roi|vang|ok|chinh xac|yes)[.! ]*', normalized) and request.recentQuestions:
             q = request.recentQuestions[-1]
-            car_ids = [c.car_id for c in request.lastContexts]
-        elif re.search(r'xe (do|nay)|mau (do|nay)|trong anh|trong hinh', normalized):
-            q += f' (Xe đang trao đổi: {request.lastContexts[0].display_name})'
-            if not re.search(r'so sanh|compare', normalized):
-                car_ids = [request.lastContexts[0].car_id]
+            car_ids = [c['carId'] for c in remembered]
     return await chat(ChatRequest(question=q, carIds=car_ids), service)

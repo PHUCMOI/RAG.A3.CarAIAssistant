@@ -143,15 +143,33 @@ public sealed class OrderAssistant(OrdersDb db,ICommonCatalogue common, BedrockA
             if(order==null) answer="Hãy chọn một đơn của bạn trước khi tạo bản nháp yêu cầu.";
             else {
                 CustomerRules.ActiveOrder(order);
-                if(await db.Changes.AnyAsync(x=>x.OrderId==order.Id&&x.Status=="pending",ct)) throw new BusinessRuleException("Đơn đã có đề nghị đang chờ xử lý.");
-                if(context.Drafts.Count>=20) throw new BusinessRuleException("Tối đa 20 bản nháp mỗi hội thoại; hãy mở hội thoại mới.");
-                var draft=new AssistantDraft {OrderId=order.Id,OrderCode=order.Code,Type=kind,OrderVersion=order.Version,OrderStatus=order.Status,CurrentDate=order.PlannedDate,
-                    Reason=DraftParser.Reason(input.Content),Date=DraftParser.Date(input.Content),Time=DraftParser.Time(input.Content),ExpiresAt=DateTimeOffset.UtcNow.AddMinutes(30),
-                    Audit=[new("prepare",DateTimeOffset.UtcNow,input.RequestId,1)]};
-                if(draft.Reason.Length>800) throw new BusinessRuleException("Lý do tối đa 800 ký tự.");
-                context=context.Remember(order.Id,"status",DateTimeOffset.UtcNow) with {Drafts=[..context.Drafts.Select(x=>x.Status=="draft"?x with {Status="discarded"}:x),draft]};
-                answer="Đã chuẩn bị bản nháp " +(kind=="cancel"?"hủy đơn":"đổi lịch")+". Điền lý do"+(kind=="reschedule"?" và ngày cụ thể (dd/MM/yyyy hoặc yyyy-MM-dd)":"")+" rồi lưu, kiểm tra và bấm Xác nhận gửi yêu cầu. Tin nhắn đồng ý không gửi yêu cầu; đại lý sẽ xử lý sau.";
-                tool="PrepareChangeDraft";
+                var pending=await db.Changes.AsNoTracking()
+                    .Where(x=>x.OrderId==order.Id&&x.CustomerId==userId&&x.Status=="pending")
+                    .OrderByDescending(x=>x.CreatedAt).ThenBy(x=>x.Id).FirstOrDefaultAsync(ct);
+                if(pending!=null)
+                {
+                    var requestedDate=kind=="reschedule"?DraftParser.Date(input.Content):null;
+                    answer=$"Đơn {order.Code} đã có đề nghị {pending.Code} đang chờ xử lý, tạo lúc "+
+                        pending.CreatedAt.ToOffset(TimeSpan.FromHours(7)).ToString("HH:mm dd/MM/yyyy",CultureInfo.InvariantCulture)+
+                        $" (giờ Việt Nam). Nội dung đề nghị đang chờ: {pending.Reason}. "+
+                        (requestedDate==null?"":$"Ngày bạn vừa đề nghị trong câu hỏi mới: {requestedDate:dd/MM/yyyy}. ")+
+                        "Chưa tạo bản nháp mới, chưa gửi thêm đề nghị và chưa thay đổi lịch nhận xe. "+
+                        "Hãy xem đề nghị đang chờ qua liên kết bên dưới; cần chờ đề nghị đó được xử lý trước khi tạo đề nghị khác. Nếu cần sửa nội dung đang chờ, hãy liên hệ đại lý.";
+                    sections=[new("change_request",answer,"success",retrieved,"/account/change-requests?requestId="+pending.Id)];
+                    context=context.Remember(order.Id,"status",retrieved);
+                    tool="GetMyPendingChangeRequest";
+                }
+                else
+                {
+                    if(context.Drafts.Count>=20) throw new BusinessRuleException("Tối đa 20 bản nháp mỗi hội thoại; hãy mở hội thoại mới.");
+                    var draft=new AssistantDraft {OrderId=order.Id,OrderCode=order.Code,Type=kind,OrderVersion=order.Version,OrderStatus=order.Status,CurrentDate=order.PlannedDate,
+                        Reason=DraftParser.Reason(input.Content),Date=DraftParser.Date(input.Content),Time=DraftParser.Time(input.Content),ExpiresAt=DateTimeOffset.UtcNow.AddMinutes(30),
+                        Audit=[new("prepare",DateTimeOffset.UtcNow,input.RequestId,1)]};
+                    if(draft.Reason.Length>800) throw new BusinessRuleException("Lý do tối đa 800 ký tự.");
+                    context=context.Remember(order.Id,"status",DateTimeOffset.UtcNow) with {Drafts=[..context.Drafts.Select(x=>x.Status=="draft"?x with {Status="discarded"}:x),draft]};
+                    answer="Đã chuẩn bị bản nháp " +(kind=="cancel"?"hủy đơn":"đổi lịch")+". Điền lý do"+(kind=="reschedule"?" và ngày cụ thể (dd/MM/yyyy hoặc yyyy-MM-dd)":"")+" rồi lưu, kiểm tra và bấm Xác nhận gửi yêu cầu. Tin nhắn đồng ý không gửi yêu cầu; đại lý sẽ xử lý sau.";
+                    tool="PrepareChangeDraft";
+                }
             }
         }
         else if(intent=="readonly") answer="Bạn cần liên hệ đại lý để thay đổi thanh toán, giá hoặc trạng thái đơn. Tôi có thể chuẩn bị yêu cầu đổi lịch hoặc hủy đơn để bạn xác nhận.";
@@ -169,7 +187,7 @@ public sealed class OrderAssistant(OrdersDb db,ICommonCatalogue common, BedrockA
         }
         {
             if(sections is {Count:>0}) context=context with {LookupFailures=sections.Any(s=>s.ResultStatus is "error" or "missing")?context.LookupFailures+1:0};
-            var successful=sections?.Where(s=>s.ResultStatus=="success").Select(s=>s.Topic).ToList();
+            var successful=sections?.Where(s=>s.ResultStatus=="success"&&ConversationContext.IsBusinessIntent(s.Topic)).Select(s=>s.Topic).ToList();
             if(order != null && successful is {Count:>0})
                 context=context.Remember(order.Id,successful,DateTimeOffset.UtcNow);
             else if(order == null && ConversationContext.IsBusinessIntent(intent) && context.PendingClarification == null)
@@ -191,12 +209,21 @@ public sealed class OrderAssistant(OrdersDb db,ICommonCatalogue common, BedrockA
         }
         NaturalAnswers.Result? final=null;
         if(naturalAnswers != null) {
+            var preparedDraft = tool is "PrepareChangeDraft" or "PrepareSupportDraft"
+                ? context.Drafts.LastOrDefault(d => d.Status == "draft") : null;
             final=await naturalAnswers.ComposeGrounded(input.Content,new { RetrievedAnswer=answer, Sections=sections,
                 status=context.PendingClarification != null ? "needs_clarification" :
                     sections is {Count:>0} ? sections.All(s=>s.ResultStatus=="success") ? "ok" : "partial" :
                     order == null && tool == null ? "no_data" : "ok",
                 OrderCode=order?.Code, OrderStatusLabel=order == null ? null : Status(order.Status), PendingClarification=context.PendingClarification,
                 Tool=tool, DraftPrepared=tool is "PrepareChangeDraft" or "PrepareSupportDraft",
+                Draft=preparedDraft == null ? null : new {
+                    preparedDraft.Type, preparedDraft.OrderCode, preparedDraft.Status, preparedDraft.Subject,
+                    RequestedDate=preparedDraft.Date?.ToString("yyyy-MM-dd",CultureInfo.InvariantCulture),
+                    RequestedDateDisplay=preparedDraft.Date?.ToString("dd/MM/yyyy",CultureInfo.InvariantCulture),
+                    preparedDraft.Time, preparedDraft.Reason, preparedDraft.Ready,
+                    RequiresConfirmation=true, Submitted=false, ScheduleChanged=false,
+                    OrderDetailUrl=preparedDraft.OrderId == Guid.Empty ? null : "/account/orders/"+preparedDraft.OrderId },
                 imageOrderComparison=input.ImageMatch, ActionExecuted=false },ct);
             answer=final.Answer;
         }
